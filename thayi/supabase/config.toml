@@ -1,0 +1,9 @@
+project_id = "thayi"
+
+[functions.send-email]
+# Auth signs the request itself; Supabase's own JWT gate would reject it.
+verify_jwt = false
+
+[auth.hook.send_email]
+enabled = true
+uri = "https://api.supabase.com/functions/v1/send-email"

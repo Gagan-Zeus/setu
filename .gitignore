@@ -19,10 +19,10 @@ local.properties
 .cxx/
 
 # iOS / macOS
-ios/Pods/
-ios/.symlinks/
-ios/Flutter/Flutter.framework
-ios/Flutter/Flutter.podspec
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
 .DS_Store
 
 # Editors
@@ -44,4 +44,9 @@ ios/Flutter/Flutter.podspec
 **/android/gradle/wrapper/gradle-wrapper.jar
 **/android/.gradle/
 **/android/captures/
-.gitignore
+
+# Secrets. The Resend API key and the Auth hook secret live in these; the
+# .example files carry placeholders only and are meant to be committed.
+.env
+.env.*
+!.env.example

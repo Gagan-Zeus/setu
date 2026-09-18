@@ -88,12 +88,16 @@ class AuthController extends StateNotifier<AuthState> {
     );
   }
 
-  /// Set when the project cannot send a code (provider disabled, SMTP
-  /// rejected). She must not be dead-ended at the login screen because of a
-  /// backend setting, so the app falls back to the local flow.
-  bool _otpUnavailable = false;
+  /// True only for a build that deliberately ships without a backend
+  /// (`--dart-define=USE_SUPABASE=false`), for a demo where there is no
+  /// signal at all.
+  ///
+  /// Nothing at runtime may turn this on. Mock sign-in accepts any six
+  /// digits, so reaching it because a send failed would quietly turn a
+  /// mailer outage into an open door on a real mother's record.
+  bool get _mockMode => _client == null;
 
-  bool get otpUnavailable => _otpUnavailable;
+  bool get otpUnavailable => _mockMode;
 
   static bool _isProviderDisabled(sb.AuthException error) {
     final code = error.code ?? '';
@@ -123,10 +127,7 @@ class AuthController extends StateNotifier<AuthState> {
   /// server-side config and never touch this app.
   Future<void> sendOtp(String email) async {
     final client = _client;
-    if (client == null) {
-      _otpUnavailable = true;
-      return;
-    }
+    if (client == null) return;
     try {
       await client.auth.signInWithOtp(
         email: email.trim(),
@@ -134,15 +135,16 @@ class AuthController extends StateNotifier<AuthState> {
         // were bypassed, Supabase must refuse an unknown address.
         shouldCreateUser: false,
       );
-      _otpUnavailable = false;
     } on sb.AuthException catch (error) {
+      // A misconfigured project used to drop her into the mock flow here.
+      // It now fails loudly: the login screen shows otpSendFailed, and the
+      // reason goes to the log so the cause is findable.
       if (_isProviderDisabled(error)) {
-        _otpUnavailable = true;
         debugPrint(
-          'Supabase email auth is not configured; using the local sign-in '
-          'flow and mock data.',
+          'Supabase email auth is disabled for this project. Enable the email '
+          'provider, or build with --dart-define=USE_SUPABASE=false to run '
+          'the offline demo flow.',
         );
-        return;
       }
       rethrow;
     }
@@ -155,7 +157,7 @@ class AuthController extends StateNotifier<AuthState> {
     required String code,
   }) async {
     final client = _client;
-    if (client == null || _otpUnavailable) {
+    if (client == null) {
       await _signInMock(email: email);
       return;
     }
