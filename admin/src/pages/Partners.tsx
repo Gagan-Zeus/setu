@@ -12,6 +12,7 @@ export default function Partners({ me }: { me: AdminUser }) {
   const [open, setOpen] = useState<PartnerOrg | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [issued, setIssued] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   if (partners.isLoading) return <Loading />
 
@@ -54,9 +55,25 @@ export default function Partners({ me }: { me: AdminUser }) {
     apiKeys.refetch()
   }
 
+  const formUrl = `${window.location.origin}/partner-access`
+
   return (
     <Page title="Partner API access"
-      subtitle="Private hospitals and labs that look up a mother by scanning her QR code.">
+      subtitle="Private hospitals and labs that look up a mother by scanning her QR code."
+      actions={
+        <>
+          <a className="btn-ghost" href="/partner-access" target="_blank" rel="noreferrer">
+            Open the request form
+          </a>
+          <button className="btn-primary" onClick={() => {
+            navigator.clipboard?.writeText(formUrl)
+            setCopied(true)
+            window.setTimeout(() => setCopied(false), 2000)
+          }}>
+            {copied ? 'Link copied' : 'Copy link for a partner'}
+          </button>
+        </>
+      }>
       <ErrorNote error={error} />
 
       {issued && (
@@ -71,6 +88,31 @@ export default function Partners({ me }: { me: AdminUser }) {
             Only a SHA-256 hash is stored. If they lose it, they rotate — we cannot retrieve it.
           </div>
           <button className="btn-ghost mt-2" onClick={() => setIssued(null)}>Done</button>
+        </div>
+      )}
+
+      {(partners.data ?? []).length === 0 && (
+        <div className="card p-5 mb-4">
+          <div className="font-semibold mb-1">No partner requests yet</div>
+          <p className="text-soft mb-3 max-w-xl">
+            Requests arrive here on their own. A hospital, lab or NGO fills in the public form and
+            the submission lands in this queue as <span className="chip bg-warn-soft text-warn">pending</span>
+            {' '}for you to approve or reject. There is nothing to create from this side — an
+            administrator never applies on a partner's behalf, because the registration number and
+            the intended use have to come from them.
+          </p>
+          <div className="flex items-center gap-2 mb-3">
+            <code className="card bg-paper px-2 py-1 font-mono text-[12px]">{formUrl}</code>
+            <button className="btn-ghost" onClick={() => {
+              navigator.clipboard?.writeText(formUrl)
+              setCopied(true)
+              window.setTimeout(() => setCopied(false), 2000)
+            }}>{copied ? 'Copied' : 'Copy'}</button>
+          </div>
+          <p className="text-soft">
+            Send that to anyone asking for access. It needs no sign-in, and it is the only page on
+            this site that does not.
+          </p>
         </div>
       )}
 

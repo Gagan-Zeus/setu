@@ -89,6 +89,15 @@ export default function Login() {
             </button>
           </form>
         )}
+
+        <div className="border-t border-divider mt-5 pt-4">
+          <p className="text-soft">
+            A hospital, lab or NGO needing to look up a mother by her QR code?{' '}
+            <a className="text-teal font-medium underline" href="/partner-access">
+              Request API access
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   )
