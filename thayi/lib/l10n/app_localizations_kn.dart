@@ -233,10 +233,10 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get otpSendFailed =>
-      'ಕೋಡ್ ಕಳುಹಿಸಲು ಆಗಲಿಲ್ಲ. ನಂಬರ್ ಸರಿ ಇದೆಯೇ ನೋಡಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+      'ಕೋಡ್ ಕಳುಹಿಸಲು ಆಗಲಿಲ್ಲ. ಇಮೇಲ್ ವಿಳಾಸ ಸರಿ ಇದೆಯೇ ನೋಡಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
 
   @override
-  String get otpWrongCode => 'ಈ ಕೋಡ್ ಸರಿಯಿಲ್ಲ. ಎಸ್‌ಎಂಎಸ್ ನೋಡಿ ಮತ್ತೆ ಹಾಕಿ.';
+  String get otpWrongCode => 'ಈ ಕೋಡ್ ಸರಿಯಿಲ್ಲ. ಇಮೇಲ್ ನೋಡಿ ಮತ್ತೆ ಹಾಕಿ.';
 
   @override
   String get noNetwork => 'ಇಂಟರ್ನೆಟ್ ಇಲ್ಲ. ಸಂಪರ್ಕ ನೋಡಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
