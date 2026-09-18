@@ -30,7 +30,15 @@ alter table public.mothers
   add column if not exists height_cm numeric(5,1),
   add column if not exists prev_complications text[] not null default '{}',
   add column if not exists phone text,
-  add column if not exists abha_id text;
+  add column if not exists abha_id text,
+  -- The address she signs in on. It lives here rather than in
+  -- mother_email_gate.sql, which is where it used to be added, because that
+  -- file and email_verification.sql each needed a column the other created:
+  -- the gate function reads email_verified, and the backfill at the end of
+  -- email_verification.sql reads email. Neither file could go first. Hoisting
+  -- the column into the contract breaks the cycle rather than papering over
+  -- it, and this is where every other shared mothers column already lives.
+  add column if not exists email text;
 
 alter table public.asha_workers
   add column if not exists village text;
@@ -42,12 +50,25 @@ create table if not exists public.staff (
   auth_user_id  uuid unique references auth.users (id) on delete cascade,
   role          text not null check (role in ('asha', 'doctor')),
   name          text not null,
+  -- The address the login arrives on, and the only thing tying a staff row to
+  -- its auth user before that user exists. link_staff_trigger.sql matches on
+  -- it, access_grants.sql refuses an address already used by a mother, and
+  -- brand_for_email.sql reads it to pick which app's logo the OTP wears.
+  --
+  -- It used to be created halfway through seed.sql's DO block, which meant a
+  -- database built from this file alone was missing a column four other files
+  -- depend on. It belongs here, with the rest of the contract.
+  email         text unique,
   phone         text,
   facility      text,
   -- An ASHA is scoped to one sub-centre; a doctor to the whole facility.
   sub_centre    text,
   created_at    timestamptz not null default now()
 );
+
+-- For a database created before the column moved up here.
+alter table public.staff
+  add column if not exists email text unique;
 
 create index if not exists staff_auth_idx on public.staff (auth_user_id);
 
