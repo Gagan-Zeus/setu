@@ -20,7 +20,13 @@ export interface Email {
 export function render(brand: Brand, code: string, logoUrl: string): Email {
   // Spaced so a screen reader says "four, one, nine" rather than a number in
   // the hundred thousands, and so the digits are easy to copy by eye.
-  const spaced = code.split("").join(" ");
+  //
+  // Thin spaces rather than ordinary ones. Six digits joined by normal spaces
+  // is eleven characters, and at the old size that came to about 326px of
+  // monospace inside the roughly 248px a phone-width client leaves - so the
+  // code broke across two lines, which is the one thing in the email that must
+  // never happen.
+  const spaced = code.split("").join("\u2009");
 
   return {
     subject: brand.subject(code),
@@ -83,7 +89,7 @@ export function render(brand: Brand, code: string, logoUrl: string): Email {
               <td style="padding:12px 24px 0 24px;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${C.tealSoft};border-radius:14px;">
                   <tr>
-                    <td align="center" style="padding:20px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:36px;font-weight:700;letter-spacing:8px;color:${brand.accent};">
+                    <td align="center" style="padding:20px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:25px;font-weight:700;letter-spacing:5px;white-space:nowrap;color:${brand.accent};">
                       ${spaced}
                     </td>
                   </tr>
