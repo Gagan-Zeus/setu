@@ -37,6 +37,20 @@ const HOOK_SECRET = Deno.env.get("SEND_EMAIL_HOOK_SECRET");
 const FROM_ADDRESS = Deno.env.get("OTP_FROM_ADDRESS") ?? "no-reply@mysetu.live";
 const FROM_OVERRIDE = Deno.env.get("OTP_FROM");
 
+// TESTING ONLY. With no verified domain, Resend refuses every recipient
+// except the address that owns the account, so two of the three apps cannot
+// send a code at all - the function returns 502, the app shows "could not be
+// sent", and nobody can sign in. Setting this sends every code to one inbox
+// instead, with the real recipient in the subject line, so all three apps can
+// be signed into from one mailbox.
+//
+// While it is set, NO real user can receive their own code - every code for
+// every address goes to this one inbox. Unset it the moment a domain is
+// verified in Resend:
+//
+//   npx supabase secrets unset OTP_TEST_REDIRECT --project-ref <ref>
+const TEST_REDIRECT = Deno.env.get("OTP_TEST_REDIRECT");
+
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const ASSET_BASE = Deno.env.get("BRAND_ASSET_BASE") ??
@@ -139,13 +153,23 @@ Deno.serve(async (req) => {
 
   const brand = await resolveBrand(payload);
   // The brand key is safe to log; the address and the code are not.
-  console.log(`send-email: sending as ${brand.key}`);
+  console.log(
+    `send-email: sending as ${brand.key}` +
+      (TEST_REDIRECT ? " (redirected to the test inbox)" : ""),
+  );
 
   const { subject, html, text } = render(
     brand,
     payload.email_data.token,
     logoUrl(brand),
   );
+
+  // Who the code is really for stays in the subject, so one inbox holding
+  // codes for three apps is still readable at a glance.
+  const recipient = TEST_REDIRECT ?? payload.user.email;
+  const finalSubject = TEST_REDIRECT
+    ? `[${brand.nameLatin} - ${payload.user.email}] ${subject}`
+    : subject;
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -155,8 +179,8 @@ Deno.serve(async (req) => {
     },
     body: JSON.stringify({
       from: fromHeader(brand),
-      to: [payload.user.email],
-      subject,
+      to: [recipient],
+      subject: finalSubject,
       html,
       text,
     }),
