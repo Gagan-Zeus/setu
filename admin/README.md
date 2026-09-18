@@ -56,3 +56,35 @@ A `viewer` never sees a control that would fail at the database anyway.
 
 `migrations/0001…0006` — apply in order. See the header of `0001` for why
 administrators are not `staff` rows; it is the load-bearing decision.
+
+## Deploying to Vercel
+
+Import the repo at vercel.com/new with **Root Directory: `admin`**. Everything
+else comes from `vercel.json` — Vite preset, `npm run build`, `dist/`, the SPA
+rewrite, and the security headers.
+
+Set both environment variables before the first deploy:
+
+```
+VITE_SUPABASE_URL       https://<ref>.supabase.co
+VITE_SUPABASE_ANON_KEY  sb_publishable_xxxx
+```
+
+They are read at **build** time, not runtime — Vite compiles them into the
+bundle — so a deploy without them produces an app that throws on load.
+`src/lib/supabase.ts` fails loudly rather than silently pointing at nothing.
+
+`vercel.json` carries no comments on purpose. Vercel validates it with
+`additionalProperties: false` at the top level and inside `rewrites[]` and
+`headers[]`, so a `"//"` key fails the deploy with "should NOT have additional
+properties". The reasoning lives here instead:
+
+- **rewrite** `/((?!assets/).*)` → `/index.html` — every route except the built
+  assets is client-side, and without this a hard refresh on `/partner-access`
+  returns a 404.
+- **X-Robots-Tag: noindex** — the portal renders mothers' names and risk
+  levels. It should never appear in a search index.
+- **X-Frame-Options: DENY** — nothing here should ever be framed.
+
+For GitHub Pages instead, build with `VITE_BASE=/setu/`, copy `index.html` to
+`404.html`, and add `.nojekyll`.
