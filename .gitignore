@@ -45,3 +45,9 @@ ios/Flutter/Flutter.podspec
 **/android/.gradle/
 **/android/captures/
 .gitignore
+
+# Secrets. The Resend API key and the Auth hook secret live in these; the
+# .example files carry placeholders only and are meant to be committed.
+.env
+.env.*
+!.env.example
