@@ -1,0 +1,123 @@
+export type AdminRole = 'super_admin' | 'district_admin' | 'viewer'
+
+export interface AdminUser {
+  id: string
+  auth_user_id: string | null
+  full_name: string
+  email: string
+  role: AdminRole
+  active: boolean
+}
+
+export interface District { id: string; name: string; state: string }
+
+export interface Phc {
+  id: string
+  name_en: string
+  name_kn: string | null
+  phone: string
+  district_id: string | null
+  contact_name: string | null
+  address: string | null
+  active: boolean
+}
+
+export interface Village {
+  id: string; name: string; phc_id: string | null; district_id: string | null
+  population_estimate: number | null; active: boolean
+}
+
+export interface Staff {
+  id: string
+  auth_user_id: string | null
+  name: string
+  email: string | null
+  phone: string | null
+  role: 'asha' | 'doctor'
+  phc_id: string | null
+  district_id: string | null
+  employee_code: string | null
+  active: boolean
+}
+
+export interface Assignment {
+  id: string
+  asha_id: string
+  medical_officer_id: string
+  phc_id: string
+  villages: string[]
+  assigned_at: string
+  active: boolean
+}
+
+export interface Mother {
+  id: string
+  thayi_card_number: string
+  name_en: string
+  village_en: string | null
+  sub_centre: string | null
+  risk_level: 'green' | 'amber' | 'red'
+  phc_id: string | null
+  asha_worker_id: string | null
+  active: boolean
+  is_sandbox: boolean
+  last_visit_date: string | null
+}
+
+export type PartnerStatus = 'pending' | 'approved' | 'rejected' | 'suspended'
+
+export interface PartnerOrg {
+  id: string
+  legal_name: string
+  type: 'private_hospital' | 'lab' | 'ngo'
+  registration_number: string
+  contact_name: string
+  contact_email: string
+  contact_phone: string
+  address: string
+  district_id: string | null
+  intended_use: string
+  status: PartnerStatus
+  requested_at: string
+  reviewed_at: string | null
+  rejection_reason: string | null
+  live_access_granted_at: string | null
+}
+
+export interface ApiKey {
+  id: string
+  partner_org_id: string
+  key_prefix: string
+  scopes: string[]
+  environment: 'sandbox' | 'live'
+  rate_limit_per_min: number
+  created_at: string
+  last_used_at: string | null
+  revoked_at: string | null
+  revocation_reason: string | null
+  // key_hash is deliberately absent: it is not granted to `authenticated`, so
+  // selecting it would be refused by Postgres, not merely hidden here.
+}
+
+export interface AuditRow {
+  id: number
+  actor_email: string | null
+  action: 'insert' | 'update' | 'delete'
+  entity_type: string
+  entity_id: string | null
+  before: unknown
+  after: unknown
+  created_at: string
+}
+
+export interface PhiAccessRow {
+  id: number
+  partner_org_id: string | null
+  mother_id: string | null
+  endpoint: string
+  qr_token_jti: string | null
+  ip_address: string | null
+  response_status: number
+  failure_reason: string | null
+  accessed_at: string
+}

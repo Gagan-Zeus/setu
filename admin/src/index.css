@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { color-scheme: light; }
+  body { @apply bg-paper text-ink font-sans text-[13px] antialiased; }
+  /* An operations tool is read at a glance and scanned in bulk, so the base
+     size is small and the density is high. This is the opposite of the mother
+     app, which is oversized because she reads it in sunlight. */
+}
+
+@layer components {
+  .card { @apply bg-white border border-divider rounded-lg; }
+  .btn {
+    @apply inline-flex items-center gap-1.5 px-3 h-8 rounded-md text-[13px]
+           font-medium border transition-colors disabled:opacity-40
+           disabled:cursor-not-allowed;
+  }
+  .btn-primary { @apply btn bg-teal text-white border-teal hover:bg-ink; }
+  .btn-ghost   { @apply btn bg-white text-ink border-divider hover:bg-paper; }
+  .btn-danger  { @apply btn bg-white text-danger border-danger/40 hover:bg-danger-soft; }
+  .input {
+    @apply w-full h-8 px-2.5 rounded-md border border-divider bg-white text-[13px]
+           outline-none focus:border-teal focus:ring-1 focus:ring-teal;
+  }
+  .label { @apply block text-[11px] font-semibold uppercase tracking-wide text-soft mb-1; }
+  .th { @apply text-left font-semibold text-[11px] uppercase tracking-wide text-soft px-3 py-2; }
+  .td { @apply px-3 py-2 border-t border-divider align-middle; }
+  .chip { @apply inline-flex items-center px-1.5 h-5 rounded text-[11px] font-medium; }
+}
