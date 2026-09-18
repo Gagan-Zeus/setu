@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "note": "Edited without a rebuild. The engine reads these at startup; the evaluation for each id lives in lib/risk/risk_engine.dart.",
+  "rules": [
+    {
+      "id": "R1",
+      "severity": "amber",
+      "enabled": true,
+      "params": { "sys": 140, "dia": 90 },
+      "title_kn": "ರಕ್ತದೊತ್ತಡ ಹೆಚ್ಚಿದೆ",
+      "title_en": "Raised blood pressure",
+      "message_kn": "ರಕ್ತದೊತ್ತಡ 140/90 ಕ್ಕಿಂತ ಹೆಚ್ಚಿದೆ. 48 ಗಂಟೆಯೊಳಗೆ ಪಿಎಚ್‌ಸಿಗೆ ಕಳುಹಿಸಿ.",
+      "message_en": "Blood pressure is 140/90 or above. Refer to the PHC within 48 hours."
+    },
+    {
+      "id": "R2",
+      "severity": "red",
+      "enabled": true,
+      "params": { "sys": 160, "dia": 110, "warn_sys": 140, "warn_dia": 90 },
+      "title_kn": "ಪ್ರೀ-ಎಕ್ಲಾಂಪ್ಸಿಯಾ ಅಪಾಯ",
+      "title_en": "Pre-eclampsia risk",
+      "message_kn": "ರಕ್ತದೊತ್ತಡ ತುಂಬಾ ಹೆಚ್ಚಿದೆ. ಇಂದೇ ಪಿಎಚ್‌ಸಿಗೆ ಕರೆದೊಯ್ಯಿರಿ. ಕಾಯಬೇಡಿ.",
+      "message_en": "Blood pressure is dangerously high. Take her to the PHC today. Do not wait."
+    },
+    {
+      "id": "R3",
+      "severity": "red",
+      "enabled": true,
+      "params": { "hb": 7.0 },
+      "title_kn": "ತೀವ್ರ ರಕ್ತಹೀನತೆ",
+      "title_en": "Severe anaemia",
+      "message_kn": "ಹಿಮೋಗ್ಲೋಬಿನ್ 7 ಕ್ಕಿಂತ ಕಡಿಮೆ. ತಕ್ಷಣ ಪಿಎಚ್‌ಸಿಗೆ ಕಳುಹಿಸಿ.",
+      "message_en": "Haemoglobin is below 7. Refer to the PHC immediately."
+    },
+    {
+      "id": "R4",
+      "severity": "amber",
+      "enabled": true,
+      "params": { "low": 7.0, "high": 9.9 },
+      "title_kn": "ಮಧ್ಯಮ ರಕ್ತಹೀನತೆ",
+      "title_en": "Moderate anaemia",
+      "message_kn": "ಹಿಮೋಗ್ಲೋಬಿನ್ ಕಡಿಮೆ ಇದೆ. ಕಬ್ಬಿಣಾಂಶದ ಮಾತ್ರೆ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದ್ದಾರೆಯೇ ಪರಿಶೀಲಿಸಿ.",
+      "message_en": "Haemoglobin is low. Check that she is taking her IFA tablets."
+    },
+    {
+      "id": "R5",
+      "severity": "red",
+      "enabled": true,
+      "params": { "fever": 38.5 },
+      "title_kn": "ಅಪಾಯದ ಲಕ್ಷಣ",
+      "title_en": "Danger sign present",
+      "message_kn": "ಅಪಾಯದ ಲಕ್ಷಣ ಕಂಡಿದೆ. ಈಗಲೇ ತುರ್ತು ಉಲ್ಲೇಖ ಮಾಡಿ.",
+      "message_en": "A danger sign is present. Make an emergency referral now."
+    },
+    {
+      "id": "R6",
+      "severity": "amber",
+      "enabled": true,
+      "params": { "min_age": 18, "max_age": 35, "gravida": 5 },
+      "title_kn": "ಅಧಿಕ ಅಪಾಯದ ಗರ್ಭಾವಸ್ಥೆ",
+      "title_en": "High-risk pregnancy",
+      "message_kn": "ಈ ಗರ್ಭಾವಸ್ಥೆ ಅಧಿಕ ಅಪಾಯದ್ದು. ಪ್ರತಿ ತಪಾಸಣೆಯನ್ನೂ ತಪ್ಪಿಸಬೇಡಿ.",
+      "message_en": "This is a high-risk pregnancy. Do not let her miss any checkup."
+    },
+    {
+      "id": "R7",
+      "severity": "amber",
+      "enabled": true,
+      "params": { "days": 30 },
+      "title_kn": "ತಪಾಸಣೆ ತಡವಾಗಿದೆ",
+      "title_en": "Checkup overdue",
+      "message_kn": "30 ದಿನಗಳಿಂದ ತಪಾಸಣೆ ಆಗಿಲ್ಲ. ಮನೆಗೆ ಭೇಟಿ ಕೊಡಿ.",
+      "message_en": "No checkup in 30 days. Make a home visit."
+    },
+    {
+      "id": "R8",
+      "severity": "amber",
+      "enabled": true,
+      "params": { "min_gain_kg": 1.0, "weeks": 4, "after_week": 20 },
+      "title_kn": "ತೂಕ ಹೆಚ್ಚುತ್ತಿಲ್ಲ",
+      "title_en": "Poor weight gain",
+      "message_kn": "4 ವಾರದಲ್ಲಿ 1 ಕೆ.ಜಿ.ಗಿಂತ ಕಡಿಮೆ ತೂಕ ಹೆಚ್ಚಿದೆ. ಪೌಷ್ಟಿಕ ಆಹಾರದ ಬಗ್ಗೆ ತಿಳಿಸಿ.",
+      "message_en": "Less than 1 kg gained in 4 weeks. Give nutrition counselling."
+    }
+  ]
+}
