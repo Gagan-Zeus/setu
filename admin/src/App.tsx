@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { supabase } from './lib/supabase'
+import { configError, supabase } from './lib/supabase'
 import { useMe } from './lib/queries'
 import Shell from './components/Shell'
 import { Loading } from './components/ui'
+import { ConfigError, ErrorBoundary } from './components/Fatal'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Phcs from './pages/Phcs'
@@ -76,7 +77,12 @@ function Authed() {
 }
 
 export default function App() {
+  // Checked before anything else renders. Without it the first Supabase call
+  // fails somewhere deep in a query and the screen just stays blank.
+  if (configError) return <ConfigError reason={configError} />
+
   return (
+    <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       {/* Matches vite's `base`, so the same bundle works at / and at /setu/. */}
       <BrowserRouter basename={import.meta.env.BASE_URL}>
@@ -87,5 +93,6 @@ export default function App() {
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
+    </ErrorBoundary>
   )
 }

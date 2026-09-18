@@ -92,8 +92,19 @@ update public.staff s
 -- ----------------------------------------------------- the first super_admin
 -- Seeded without auth_user_id. The trigger in 0001 attaches it the first time
 -- that address signs in, so no password is set here and none is known.
+--
+-- Deliberately NOT dhrruwa@gmail.com, which is the demo doctor. An account
+-- cannot be both clinical staff and an administrator - that separation is what
+-- keeps admins out of clinical writes, and the triggers in 0001 enforce it - so
+-- the administrator needs an address of its own. Gmail delivers a +suffix to
+-- the same inbox, so it is one person and one mailbox with two distinct logins.
+--
+-- Note the link trigger fires on auth.users INSERT. If this address already has
+-- an auth user from before the seed ran, nothing attaches it and the sign-in
+-- ends at "this account is not an administrator". Create the auth user after
+-- seeding, not before.
 insert into public.admin_users (full_name, email, role)
-values ('Setu Platform Admin', 'dhrruwa@gmail.com', 'super_admin')
+values ('Setu Platform Admin', 'dhrruwa+admin@gmail.com', 'super_admin')
 on conflict (email) do nothing;
 
 -- ------------------------------------------------------- sandbox mothers
