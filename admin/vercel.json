@@ -4,11 +4,7 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
-    {
-      "//": "SPA fallback. /partner-access and every in-app route are client-side; without this they 404 on a hard refresh.",
-      "source": "/((?!assets/).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/((?!assets/).*)", "destination": "/index.html" }
   ],
   "headers": [
     {
@@ -17,11 +13,7 @@
         { "key": "X-Frame-Options", "value": "DENY" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        {
-          "//": "The portal reads a mother's name and risk level. It should never be indexed.",
-          "key": "X-Robots-Tag",
-          "value": "noindex, nofollow"
-        }
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
       ]
     }
   ]
