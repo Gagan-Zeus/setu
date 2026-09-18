@@ -1,0 +1,32 @@
+name: setu_care
+description: "Setu Care - the doctor-facing console of Setu, a maternal health platform for rural Karnataka."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  intl: any
+  flutter_riverpod: ^2.6.1
+  shared_preferences: ^2.3.3
+  supabase_flutter: ^2.16.0
+  mobile_scanner: ^7.4.0
+  image_picker: ^1.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+dependency_overrides:
+  # path_provider_android 2.3.x pulls package:jni, whose android/build.gradle
+  # calls kotlin {} without applying the Kotlin plugin under AGP 9.
+  path_provider_android: 2.2.23
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/brand/
