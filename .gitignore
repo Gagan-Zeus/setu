@@ -1,0 +1,47 @@
+# Build output. These are what got a 156 MB libflutter.so rejected by GitHub.
+build/
+.dart_tool/
+.gradle/
+.m2/
+*.apk
+*.aab
+
+# Flutter / Dart
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+
+# Android
+local.properties
+*.iml
+.cxx/
+
+# iOS / macOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+.DS_Store
+
+# Editors
+.idea/
+.vscode/
+
+# Flutter-generated, regenerated on every build — never commit these.
+**/GeneratedPluginRegistrant.*
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/flutter_export_environment.sh
+**/android/local.properties
+
+# Gradle wrapper binaries. Flutter ignores these via each project's nested
+# android/.gitignore, but that file disappears when a branch without that app
+# is checked out, leaving the wrapper visible. Rules at the root survive.
+**/android/gradlew
+**/android/gradlew.bat
+**/android/gradle/wrapper/gradle-wrapper.jar
+**/android/.gradle/
+**/android/captures/
+.gitignore
