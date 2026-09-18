@@ -1,0 +1,54 @@
+name: setu_asha
+description: "ASHA Setu - the field app of Setu, a maternal health platform for rural Karnataka."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+
+  flutter_riverpod: ^2.6.1
+  google_fonts: ^6.2.1
+
+  # Local-first storage. Every read and write in this app goes here.
+  drift: ^2.20.0
+  sqlite3_flutter_libs: ^0.5.24
+  path_provider: ^2.1.4
+  path: any
+
+  connectivity_plus: ^6.1.0
+  geolocator: ^13.0.1
+  image_picker: ^1.1.2
+  shared_preferences: ^2.3.3
+  url_launcher: ^6.3.1
+  qr_flutter: ^4.1.0
+  supabase_flutter: ^2.16.0
+  # Local ids are text (m-<micros>); Supabase keys on uuid. v5 maps one to the
+  # other deterministically, so a retry never creates a second row.
+  uuid: ^4.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  drift_dev: ^2.20.0
+  build_runner: ^2.4.13
+
+dependency_overrides:
+  # Same reason as the Thayi app: path_provider_android 2.3.x pulls package:jni,
+  # whose android/build.gradle breaks under AGP 9.
+  path_provider_android: 2.2.23
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/google_fonts/
+    - assets/rules/
+    - assets/brand/
