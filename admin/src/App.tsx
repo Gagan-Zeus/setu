@@ -78,7 +78,8 @@ function Authed() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      {/* Matches vite's `base`, so the same bundle works at / and at /setu/. */}
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
           {/* The one unauthenticated route. */}
           <Route path="/partner-access" element={<PartnerAccess />} />
