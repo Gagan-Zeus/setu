@@ -1,0 +1,532 @@
+{
+  "@@locale": "en",
+  "appName": "Thayi Setu",
+  "appTagline": "Your pregnancy companion",
+  "langKannada": "ಕನ್ನಡ",
+  "langEnglish": "English",
+  "chooseLanguage": "Choose your language",
+  "languageLabel": "Language",
+  "continueLabel": "Continue",
+  "close": "Close",
+  "cancel": "Cancel",
+  "ok": "OK",
+  "retry": "Try again",
+  "loading": "Loading…",
+  "errorTitle": "Could not load your information",
+  "errorBody": "Please try again in a moment.",
+  "emptyGeneric": "Nothing here yet",
+  "notRecorded": "Not recorded",
+  "settingsTitle": "Settings",
+  "logout": "Sign out",
+  "welcomeCongrats": "Congratulations",
+  "welcomeBody": "You are going to be a mother. This app will walk with you through your pregnancy.",
+  "welcomeHow": "First we will help you find an ASHA worker near you. Call her, and she will visit you and register you.",
+  "welcomeStart": "Let us begin",
+  "welcomeAlreadyRegistered": "My ASHA has already registered me",
+  "nameTitle": "What is your name?",
+  "nameWhy": "We use it only to greet you. Nobody else sees this yet.",
+  "nameLabel": "Your name",
+  "nameHint": "For example, Lakshmi",
+  "nameRequired": "Please enter your name",
+  "locationTitle": "Where are you?",
+  "locationWhy": "We will show you the ASHA workers closest to you, so you can call the right one.",
+  "locationPrivacy": "Your location is used once, on this phone, to sort the list. It is not saved or sent anywhere.",
+  "locationAllow": "Use my location",
+  "locationSkip": "Skip this",
+  "ashaNearbyTitle": "ASHA workers near you",
+  "ashaNearbyIntro": "These are the ASHA workers closest to you. Call one and tell her you are pregnant.",
+  "ashaNearbyIntroNoLocation": "These are the ASHA workers in your area. Call one and tell her you are pregnant.",
+  "ashaNearbyCall": "Call her",
+  "ashaNearbyWhatToSay": "Tell her your name, your village, and that you are pregnant. She will come to your home.",
+  "ashaNearbyDone": "I have called",
+  "waitingTitle": "Your ASHA will come soon",
+  "waitingTitleNamed": "{name}, your ASHA will come soon",
+  "@waitingTitleNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "waitingBody": "She will visit your home, check your reports, and register you. Then you can sign in.",
+  "waitingWhatNext": "WHAT HAPPENS NEXT",
+  "waitingStep1": "You called an ASHA worker",
+  "waitingStep2": "She visits your home and checks your reports",
+  "waitingStep3": "She registers you and enters your email address",
+  "waitingStep4": "You get a message at that email, then sign in here",
+  "waitingHaveEmail": "I have received the email",
+  "waitingCallAgain": "Call an ASHA again",
+  "loginTitle": "Enter your email address",
+  "loginSubtitle": "We will email you a 6 digit code",
+  "phoneLabel": "Mobile number",
+  "phoneHint": "10 digits",
+  "phoneInvalid": "Please enter a 10 digit number",
+  "emailLabel": "Email address",
+  "emailHint": "name@example.com",
+  "emailInvalid": "Please enter a correct email address",
+  "checkYourEmail": "Check your email. The code can take a minute to arrive.",
+  "emailNotRegistered": "This email is not registered yet. Your ASHA worker adds it when she registers you — please ask her.",
+  "emailChecking": "Checking…",
+  "sendOtp": "Send code",
+  "otpTitle": "Enter the code",
+  "otpSentTo": "Sent to {phone}",
+  "@otpSentTo": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "otpInvalid": "Please enter all 6 digits",
+  "verify": "Verify",
+  "changeNumber": "Change number",
+  "resendOtp": "Send the code again",
+  "otpSending": "Sending the code…",
+  "otpVerifying": "Checking…",
+  "otpSendFailed": "The code could not be sent. Please check your number and try again.",
+  "otpWrongCode": "That code is not right. Please check the SMS and try again.",
+  "noNetwork": "No internet. Please check your connection and try again.",
+  "recordNotLinked": "Your Thayi Card record is not linked to this number yet. Please ask your ASHA worker.",
+  "consentTitle": "About your information",
+  "consentWhatTitle": "What we keep",
+  "consentWhatBody": "Your name, phone number, and the health details written in your Thayi Card.",
+  "consentWhoTitle": "Who can see it",
+  "consentWhoBody": "Only your ASHA worker and the doctors at your health centre.",
+  "consentWithdrawTitle": "You are in control",
+  "consentWithdrawBody": "You can take back this permission at any time. Tell your ASHA worker.",
+  "consentAccept": "I understand and agree",
+  "consentMustAccept": "Please agree to continue",
+  "greeting": "Namaskara, {name}",
+  "@greeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeToday": "Your health today",
+  "weeksPregnantLabel": "Weeks pregnant",
+  "weeksValue": "{weeks} weeks",
+  "@weeksValue": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "weeksProgress": "Week {weeks} of 40",
+  "@weeksProgress": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "eddLabel": "Expected delivery date",
+  "daysRemaining": "{days} days to go",
+  "@daysRemaining": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "nextCheckupLabel": "Next checkup",
+  "checkupOverdueBadge": "Overdue",
+  "askSetuCardTitle": "Ask Setu",
+  "askSetuCardBody": "Ask anything about your pregnancy. Speak or type.",
+  "exploreLabel": "YOUR RECORD",
+  "moreLabel": "MORE",
+  "navThayiCard": "My Thayi Card",
+  "navCheckups": "My Checkups",
+  "navHealth": "My Health",
+  "navSchemes": "My Schemes",
+  "navProfile": "My Details",
+  "profileTitle": "My Details",
+  "photoSectionLabel": "PHOTO",
+  "addPhoto": "Add a photo",
+  "changePhoto": "Change photo",
+  "removePhoto": "Remove photo",
+  "takePhoto": "Take a photo",
+  "chooseFromGallery": "Choose from phone",
+  "photoPrivacyNote": "This photo stays on your phone. It is not sent anywhere.",
+  "photoFailed": "The photo could not be saved. Please try again.",
+  "photoRemoved": "Photo removed",
+  "yourDetailsSection": "YOUR DETAILS",
+  "detailsWrittenByAsha": "These details are written by your ASHA worker. You cannot change them here.",
+  "reportMistake": "Something here is wrong",
+  "accessSection": "WHO WANTS TO SEE YOUR RECORD",
+  "accessRequestFrom": "{name} wants to see your health record",
+  "@accessRequestFrom": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "accessRequestReason": "Reason: {reason}",
+  "@accessRequestReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "accessApprove": "Allow",
+  "accessReject": "Do not allow",
+  "accessApproved": "You allowed {name}",
+  "@accessApproved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "accessRejected": "You did not allow {name}",
+  "@accessRejected": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "accessNone": "Nobody has asked to see your record",
+  "accessActiveTitle": "Can see your record now",
+  "accessActiveUntil": "Until {date}",
+  "@accessActiveUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accessByQr": "Because you showed your QR code",
+  "accessRevoke": "Stop this",
+  "accessRevoked": "Stopped",
+  "accessExplain": "A doctor can only open your record if you allow it, or if you show your QR code at the hospital.",
+  "consentSection": "YOUR PERMISSION",
+  "consentGivenOn": "You agreed on {date}",
+  "@consentGivenOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "consentNotRecorded": "No agreement recorded",
+  "withdrawConsent": "Take back my permission",
+  "withdrawConsentTitle": "Take back your permission?",
+  "withdrawConsentBody": "You will be signed out and this phone will stop showing your record. Your ASHA worker and health centre still keep your paper record. You can agree again any time.",
+  "withdrawConsentConfirm": "Yes, take it back",
+  "settingsSection": "SETTINGS",
+  "navDangerSigns": "Danger Signs",
+  "navAsha": "My ASHA Worker",
+  "navAfterDelivery": "After Delivery",
+  "emergencyShort": "Emergency",
+  "emergencyTitle": "Emergency",
+  "emergencyIntro": "Show this screen to whoever is helping you.",
+  "bloodGroupLabel": "Blood group",
+  "riskFlagsLabel": "Health warnings",
+  "allergiesLabel": "Allergies",
+  "noneRecorded": "None recorded",
+  "callAsha": "Call ASHA worker",
+  "callPhc": "Call health centre",
+  "callAmbulance": "Call 108 ambulance",
+  "nearestHospitalLabel": "Nearest hospital",
+  "directions": "Show the way",
+  "distanceKm": "{km} km away",
+  "@distanceKm": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "callFailed": "Could not open the dialler",
+  "thayiCardTitle": "My Thayi Card",
+  "qrCaption": "Show this code at the hospital",
+  "worksOffline": "Works without internet",
+  "fieldName": "Name",
+  "fieldAge": "Age",
+  "ageYears": "{age} years",
+  "@ageYears": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "fieldGuardian": "Husband / guardian",
+  "fieldVillage": "Village",
+  "fieldBloodGroup": "Blood group",
+  "fieldEdd": "Delivery date",
+  "fieldCardNumber": "Thayi Card number",
+  "fieldAsha": "ASHA worker",
+  "fieldPhc": "Health centre",
+  "checkupsTitle": "My Checkups",
+  "tabUpcoming": "Coming up",
+  "tabCompleted": "Done",
+  "visitNumber": "Checkup {number}",
+  "@visitNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "whatHappensLabel": "What will be done",
+  "locationLabel": "Where",
+  "weightLabel": "Weight",
+  "weightKg": "{kg} kg",
+  "@weightKg": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "bpLabel": "Blood pressure",
+  "bpValue": "{systolic}/{diastolic}",
+  "@bpValue": {
+    "placeholders": {
+      "systolic": {
+        "type": "int"
+      },
+      "diastolic": {
+        "type": "int"
+      }
+    }
+  },
+  "recordedBy": "Recorded by {name}",
+  "@recordedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "overdueTitle": "This checkup is overdue",
+  "overdueBody": "Please do not wait. Talk to your ASHA worker today.",
+  "contactAsha": "Contact your ASHA",
+  "emptyUpcoming": "No checkups booked yet",
+  "emptyCompleted": "No checkups done yet",
+  "healthTitle": "My Health",
+  "riskFlagsSection": "BLOOD GROUP AND WARNINGS",
+  "noRiskFlags": "No warnings",
+  "weightHistory": "WEIGHT",
+  "bpHistory": "BLOOD PRESSURE",
+  "systolic": "Upper",
+  "diastolic": "Lower",
+  "weekShort": "W{week}",
+  "@weekShort": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "tabletsSection": "TABLETS TODAY",
+  "tabletIfa": "Iron tablet (IFA)",
+  "tabletCalcium": "Calcium tablet",
+  "tabletIfaNote": "One tablet after food",
+  "tabletCalciumNote": "One tablet, not with the iron tablet",
+  "markTaken": "Taken",
+  "markNotTaken": "Not taken",
+  "ttSection": "TT VACCINE",
+  "ttDose": "TT dose {number}",
+  "@ttDose": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "statusGiven": "Given",
+  "statusDue": "Due",
+  "givenOn": "Given on {date}",
+  "@givenOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "chartNoData": "No readings yet",
+  "schemesTitle": "My Schemes",
+  "badgeEligible": "You are eligible",
+  "badgeNotEligible": "Not eligible now",
+  "whatYouGet": "What you get",
+  "documentsNeeded": "Papers to carry",
+  "nearbyHospitals": "Nearby hospitals",
+  "schemesFootnote": "Benefits and eligibility shown here are indicative only. Please confirm with your ASHA worker or your health centre.",
+  "schemeThayiBhagyaName": "Thayi Bhagya",
+  "schemeThayiBhagyaBenefit": "Free delivery at an approved private hospital when a government hospital is far away.",
+  "schemePmmvyName": "PMMVY",
+  "schemePmmvyBenefit": "Cash help for your first child, paid into your bank account in instalments after checkups.",
+  "schemeJsyName": "JSY",
+  "schemeJsyBenefit": "Cash help when you deliver in a government hospital, given after the delivery.",
+  "schemePrasootiAraikeName": "Prasooti Araike",
+  "schemePrasootiAraikeBenefit": "Help for rest and food during the last months of pregnancy for BPL families.",
+  "schemeMadiluName": "Madilu Kit",
+  "schemeMadiluBenefit": "A kit of clothes and things for you and the baby, given at the hospital after delivery.",
+  "schemeJsskName": "JSSK",
+  "schemeJsskBenefit": "Free delivery, free medicines, free tests, free food and free transport at government hospitals.",
+  "docThayiCard": "Thayi Card",
+  "docAadhaar": "Your Aadhaar card",
+  "docBankPassbook": "Bank passbook in your name",
+  "docBplCard": "BPL / ration card",
+  "docHusbandAadhaar": "Husband's Aadhaar card",
+  "docMchRegistration": "Pregnancy registration slip",
+  "docDeliveryProof": "Delivery discharge paper",
+  "askSetuTitle": "Ask Setu",
+  "chatWelcome": "Namaskara. Ask me anything about your pregnancy. You can speak or type.",
+  "chatHint": "Write your question",
+  "chatSend": "Send",
+  "chatSpeak": "Speak",
+  "chatListening": "Listening…",
+  "chatThinking": "Thinking…",
+  "chatDisclaimer": "Advice only — not a doctor's opinion",
+  "suggestionsLabel": "Common questions",
+  "topicFood": "Food",
+  "topicRest": "Rest and work",
+  "topicAfterDelivery": "After delivery",
+  "qFood1": "What should I eat every day?",
+  "qFood2": "Can I drink tea and coffee?",
+  "qFood3": "I feel sick in the morning. What can I do?",
+  "qRest1": "How much should I rest?",
+  "qRest2": "Can I do my usual housework?",
+  "qRest3": "Can I travel to my mother's village?",
+  "qAfter1": "When should I start feeding the baby?",
+  "qAfter2": "How long should I rest after delivery?",
+  "qAfter3": "When is the baby's first vaccine?",
+  "aMedicineRefusal": "I cannot advise you about medicines or doses. Please ask your ASHA worker or the doctor at your health centre — they know your record.",
+  "contactAshaFromChat": "Send this to my ASHA",
+  "messageSentToAsha": "Your question has been noted for {name}. She will call you back.",
+  "@messageSentToAsha": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "micPermissionTitle": "Microphone permission",
+  "micPermissionBody": "Setu needs the microphone only to listen to your question and turn it into words. Nothing is recorded or kept.",
+  "micAllow": "Allow microphone",
+  "micDenied": "Microphone was not allowed. You can still type your question.",
+  "micUnavailable": "Voice input is not available on this phone. Please type your question.",
+  "dangerInterruptTitle": "This needs attention now",
+  "dangerInterruptBody": "What you described can be serious. Do not wait for an answer here. Call for help now.",
+  "dangerInterruptDismiss": "I am safe, go back",
+  "dangerInterruptNote": "Your message was not sent. Your safety comes first.",
+  "dangerSignsTitle": "Danger Signs",
+  "dangerSignsIntro": "If any of these happen, get help the same hour. Do not wait for the next checkup.",
+  "whatToDoLabel": "What to do",
+  "callMyAsha": "Call my ASHA",
+  "dsBleedingTitle": "Bleeding",
+  "dsBleedingBody": "Any bleeding from below during pregnancy, even a small amount.",
+  "dsBleedingDo": "Lie down, do not travel alone, and call your ASHA worker or 108 at once.",
+  "dsHeadacheTitle": "Severe headache",
+  "dsHeadacheBody": "A bad headache that does not go away, especially with swelling.",
+  "dsHeadacheDo": "Go to the health centre the same day. Your blood pressure must be checked.",
+  "dsVisionTitle": "Blurred vision",
+  "dsVisionBody": "Things look blurred, or you see flashes or spots before your eyes.",
+  "dsVisionDo": "This can come with high blood pressure. Go to the health centre now.",
+  "dsSwellingTitle": "Swelling of face and hands",
+  "dsSwellingBody": "Puffy face, or fingers so swollen that a ring becomes tight.",
+  "dsSwellingDo": "Get your blood pressure and urine checked today.",
+  "dsFeverTitle": "Fever",
+  "dsFeverBody": "Fever with chills, or a burning feeling when passing urine.",
+  "dsFeverDo": "Do not take any tablet on your own. Go to the health centre.",
+  "dsConvulsionsTitle": "Fits or convulsions",
+  "dsConvulsionsBody": "The body shakes and stiffens, or she becomes unconscious.",
+  "dsConvulsionsDo": "This is an emergency. Turn her on her side and call 108 immediately.",
+  "dsMovementTitle": "Baby is not moving",
+  "dsMovementBody": "The baby moves less than usual, or you have felt no movement for some hours.",
+  "dsMovementDo": "Lie on your left side and count the movements. If still less, go to the health centre now.",
+  "ashaTitle": "My ASHA Worker",
+  "ashaRole": "Your ASHA worker",
+  "subCentreLabel": "Sub-centre",
+  "phoneNumberLabel": "Phone number",
+  "callNow": "Call now",
+  "ashaNote": "She writes your record and visits you at home. Ask her anything, at any time.",
+  "afterDeliveryTitle": "After Delivery",
+  "afterDeliveryNote": "This is what will happen after your baby is born. Nothing here needs to be done yet.",
+  "immunisationSection": "BABY'S VACCINES",
+  "growthSection": "BABY'S GROWTH",
+  "growthEmpty": "Your baby's weight will be written here after birth",
+  "statusPending": "Pending",
+  "vacBcg": "BCG",
+  "vacOpv": "Polio drops (OPV)",
+  "vacHepB": "Hepatitis B",
+  "vacPenta": "Pentavalent",
+  "vacRota": "Rotavirus",
+  "vacMr": "Measles-Rubella",
+  "ageAtBirth": "At birth",
+  "age6Weeks": "6 weeks",
+  "age10Weeks": "10 weeks",
+  "age14Weeks": "14 weeks",
+  "age9Months": "9 months",
+  "riskAnaemia": "Low blood (anaemia)",
+  "riskHighBp": "High blood pressure",
+  "riskUnderweight": "Low weight",
+  "riskPreviousCsection": "Previous caesarean",
+  "riskAgeRisk": "Age risk",
+  "riskTwins": "Twins",
+  "actWeightBp": "Weight and blood pressure",
+  "actBloodTest": "Blood test",
+  "actUrineTest": "Urine test",
+  "actTtVaccine": "TT vaccine",
+  "actIfaTablets": "Iron tablets given",
+  "actScan": "Scan",
+  "actBabyHeartbeat": "Baby's heartbeat",
+  "actGeneralCheck": "General checkup",
+  "actDeliveryPlanning": "Delivery planning",
+  "chatOffline": "I could not reach the assistant just now. Please check your connection, or ask your ASHA worker.",
+  "@chatOffline": {
+    "description": "Shown in Ask Setu when the assistant cannot answer."
+  },
+  "chatNoAnswer": "I do not know the answer to that one. Your ASHA worker can tell you properly.",
+  "@chatNoAnswer": {
+    "description": "Shown in Ask Setu when the assistant cannot answer."
+  },
+  "chatSourceNote": "Answers come from government and WHO health guidance.",
+  "@chatSourceNote": {
+    "description": "Shown in Ask Setu when the assistant cannot answer."
+  },
+  "voiceListen": "Listen",
+  "@voiceListen": {
+    "description": "Voice input and playback in Ask Setu."
+  },
+  "voiceStop": "Stop",
+  "@voiceStop": {
+    "description": "Voice input and playback in Ask Setu."
+  },
+  "voiceUnavailable": "Could not play it just now. Check your connection.",
+  "@voiceUnavailable": {
+    "description": "Voice input and playback in Ask Setu."
+  },
+  "voiceHold": "Hold to speak",
+  "@voiceHold": {
+    "description": "Voice input and playback in Ask Setu."
+  },
+  "voiceRecording": "Listening… release to send",
+  "@voiceRecording": {
+    "description": "Voice input and playback in Ask Setu."
+  },
+  "voiceNothingHeard": "I did not catch that. Try once more.",
+  "@voiceNothingHeard": {
+    "description": "Voice input and playback in Ask Setu."
+  },
+  "chatClearTitle": "Clear these messages?",
+  "@chatClearTitle": {
+    "description": "Clearing the saved Ask Setu transcript."
+  },
+  "chatClearBody": "This removes the questions and answers saved on this phone. Nothing else in your record changes.",
+  "@chatClearBody": {
+    "description": "Clearing the saved Ask Setu transcript."
+  },
+  "chatClearConfirm": "Clear",
+  "@chatClearConfirm": {
+    "description": "Clearing the saved Ask Setu transcript."
+  }
+}
