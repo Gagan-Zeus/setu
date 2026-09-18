@@ -515,13 +515,13 @@ abstract class AppLocalizations {
   /// No description provided for @otpSendFailed.
   ///
   /// In en, this message translates to:
-  /// **'The code could not be sent. Please check your number and try again.'**
+  /// **'The code could not be sent. Please check the email address and try again.'**
   String get otpSendFailed;
 
   /// No description provided for @otpWrongCode.
   ///
   /// In en, this message translates to:
-  /// **'That code is not right. Please check the SMS and try again.'**
+  /// **'That code is not right. Please check your email and try again.'**
   String get otpWrongCode;
 
   /// No description provided for @noNetwork.

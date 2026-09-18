@@ -240,32 +240,56 @@ class _OtpBoxesState extends State<_OtpBoxes> {
     if (mounted) setState(() {});
   }
 
+  /// One digit box. Sized by its parent, so the row fits any screen.
+  Widget _box(String text, int i) {
+    final active = i == text.length && widget.focusNode.hasFocus;
+    return AspectRatio(
+      aspectRatio: 44 / 52,
+      child: Container(
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: C.bg,
+          borderRadius: BorderRadius.circular(S.sm),
+          border: Border.all(
+            color: active ? C.teal : C.divider,
+            width: active ? 2 : 1,
+          ),
+        ),
+        // On the narrowest phones a box is ~32pt wide; scaleDown keeps the
+        // digit inside it instead of clipping.
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            i < text.length ? text[i] : '',
+            style: T.h1.copyWith(fontSize: 22),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final text = widget.controller.text;
     return Stack(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(6, (i) {
-            final filled = i < text.length;
-            final active = i == text.length && widget.focusNode.hasFocus;
-            return Container(
-              width: 44,
-              height: 52,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: C.bg,
-                borderRadius: BorderRadius.circular(S.sm),
-                border: Border.all(
-                  color: active ? C.teal : C.divider,
-                  width: active ? 2 : 1,
-                ),
-              ),
-              child: Text(filled ? text[i] : '',
-                  style: T.h1.copyWith(fontSize: 22)),
-            );
-          }),
+        // Six boxes that shrink rather than overflow. They were a fixed 44pt
+        // each - 264pt of hard minimum inside a card that offers about 232pt on
+        // a 320pt phone, so the row overflowed there and sat with ~3pt gaps on a
+        // 393pt one. Expanded splits whatever width there is, AspectRatio keeps
+        // the shape, and maxWidth stops them ballooning on a tablet.
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 304),
+            child: Row(
+              children: [
+                for (var i = 0; i < 6; i++) ...[
+                  if (i > 0) const SizedBox(width: S.sm),
+                  Expanded(child: _box(text, i)),
+                ],
+              ],
+            ),
+          ),
         ),
         Positioned.fill(
           child: Opacity(

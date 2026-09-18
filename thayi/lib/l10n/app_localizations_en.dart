@@ -233,11 +233,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get otpSendFailed =>
-      'The code could not be sent. Please check your number and try again.';
+      'The code could not be sent. Please check the email address and try again.';
 
   @override
   String get otpWrongCode =>
-      'That code is not right. Please check the SMS and try again.';
+      'That code is not right. Please check your email and try again.';
 
   @override
   String get noNetwork =>
