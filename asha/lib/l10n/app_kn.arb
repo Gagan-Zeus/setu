@@ -1,0 +1,397 @@
+{
+  "@@locale": "kn",
+  "appName": "ಆಶಾ ಸೇತು",
+  "appTagline": "ನಿಮ್ಮ ಕ್ಷೇತ್ರ ಸಂಗಾತಿ",
+  "langKannada": "ಕನ್ನಡ",
+  "langEnglish": "English",
+  "chooseLanguage": "ನಿಮ್ಮ ಭಾಷೆ ಆರಿಸಿ",
+  "languageLabel": "ಭಾಷೆ",
+  "continueLabel": "ಮುಂದೆ",
+  "save": "ಉಳಿಸಿ",
+  "cancel": "ಬೇಡ",
+  "ok": "ಸರಿ",
+  "retry": "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
+  "close": "ಮುಚ್ಚಿ",
+  "yes": "ಹೌದು",
+  "no": "ಇಲ್ಲ",
+  "optional": "ಬೇಕಿದ್ದರೆ",
+  "loading": "ಬರುತ್ತಿದೆ…",
+  "errorTitle": "ಏನೋ ತೊಂದರೆ ಆಯಿತು",
+  "emptyGeneric": "ಇಲ್ಲಿ ಇನ್ನೂ ಏನೂ ಇಲ್ಲ",
+  "notRecorded": "ಬರೆದಿಲ್ಲ",
+  "requiredField": "ಇದು ಬೇಕೇ ಬೇಕು",
+  "settingsTitle": "ಸೆಟ್ಟಿಂಗ್ಸ್",
+  "logout": "ಹೊರಗೆ ಬನ್ನಿ",
+  "accountSection": "ಖಾತೆ",
+  "signedInAs": "{email} ಆಗಿ ಒಳಗಿದ್ದೀರಿ",
+  "@signedInAs": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "logoutWarningTitle": "ಹೊರಗೆ ಬರಬೇಕೇ?",
+  "logoutWarningBody": "ಮತ್ತೆ ಒಳಗೆ ಬರಲು ಇಂಟರ್ನೆಟ್ ಬೇಕು. ನೆಟ್‌ವರ್ಕ್ ಇಲ್ಲದ ಊರಿನಲ್ಲಿ ಇದ್ದಾಗ ಹೊರಗೆ ಬರಬೇಡಿ.",
+  "logoutPendingWarning": "{count} ನಮೂದುಗಳು ಇನ್ನೂ ಕಳುಹಿಸಿಲ್ಲ. ಅವು ಈ ಫೋನಿನಲ್ಲೇ ಇರುತ್ತವೆ, ಆದರೆ ಬೇಗ ಮತ್ತೆ ಒಳಗೆ ಬಂದು ಕಳುಹಿಸಿ.",
+  "@logoutPendingWarning": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "logoutConfirm": "ಹೌದು, ಹೊರಗೆ ಬರುತ್ತೇನೆ",
+  "loginTitle": "ಒಳಗೆ ಬನ್ನಿ",
+  "loginSubtitle": "ಒಮ್ಮೆ ಒಳಗೆ ಬಂದರೆ ಸಾಕು. ನೆಟ್‌ವರ್ಕ್ ಇಲ್ಲದಿದ್ದರೂ ಒಳಗೇ ಇರುತ್ತೀರಿ.",
+  "emailLabel": "ಇಮೇಲ್",
+  "emailHint": "name@example.com",
+  "emailInvalid": "ಸರಿಯಾದ ಇಮೇಲ್ ವಿಳಾಸ ಹಾಕಿ",
+  "passwordLabel": "ಪಾಸ್‌ವರ್ಡ್",
+  "passwordInvalid": "ಪಾಸ್‌ವರ್ಡ್ ಹಾಕಿ",
+  "signIn": "ಒಳಗೆ ಬನ್ನಿ",
+  "otpTitle": "ಕೋಡ್ ಹಾಕಿ",
+  "otpSentTo": "{email} ಗೆ ಕಳುಹಿಸಿದ್ದೇವೆ",
+  "@otpSentTo": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "otpInvalid": "6 ಅಂಕಿಗಳನ್ನೂ ಹಾಕಿ",
+  "otpVerify": "ಪರಿಶೀಲಿಸಿ",
+  "otpSending": "ಕೋಡ್ ಕಳುಹಿಸುತ್ತಿದ್ದೇವೆ…",
+  "otpVerifying": "ಪರಿಶೀಲಿಸುತ್ತಿದ್ದೇವೆ…",
+  "otpSendFailed": "ಕೋಡ್ ಕಳುಹಿಸಲು ಆಗಲಿಲ್ಲ. ವಿಳಾಸ ಸರಿ ಇದೆಯೇ ನೋಡಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+  "otpWrongCode": "ಈ ಕೋಡ್ ಸರಿಯಿಲ್ಲ. ಇಮೇಲ್ ನೋಡಿ ಮತ್ತೆ ಹಾಕಿ.",
+  "otpResend": "ಕೋಡ್ ಮತ್ತೆ ಕಳುಹಿಸಿ",
+  "otpChangeEmail": "ಇಮೇಲ್ ಬದಲಿಸಿ",
+  "otpNoNetwork": "ಇಂಟರ್ನೆಟ್ ಇಲ್ಲ. ಮೊದಲ ಸಲ ಒಳಗೆ ಬರಲು ಒಮ್ಮೆ ನೆಟ್‌ವರ್ಕ್ ಬೇಕು.",
+  "otpOfflineFallback": "ನೆಟ್‌ವರ್ಕ್ ಇಲ್ಲ — ಈ ಫೋನಿನಲ್ಲಿ ಮಾತ್ರ ಒಳಗೆ ಬಂದಿದ್ದೀರಿ. ಸಿಗ್ನಲ್ ಸಿಕ್ಕಾಗ ಸರಿಯಾಗಿ ಒಳಗೆ ಬನ್ನಿ.",
+  "forgotPassword": "ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿರಾ?",
+  "forgotPasswordTitle": "ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿರಾ",
+  "forgotPasswordBody": "ಪಾಸ್‌ವರ್ಡ್ ಬದಲಿಸಲು ನಿಮ್ಮ ಎಎನ್‌ಎಂ ಅವರನ್ನು ಸಂಪರ್ಕಿಸಿ. ಆ್ಯಪ್‌ನಲ್ಲೇ ಬದಲಿಸುವ ಸೌಲಭ್ಯ ಶೀಘ್ರದಲ್ಲಿ ಬರುತ್ತದೆ.",
+  "loginFailed": "ಒಳಗೆ ಬರಲು ಆಗಲಿಲ್ಲ. ಇಮೇಲ್ ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್ ನೋಡಿ.",
+  "setPinTitle": "4 ಅಂಕಿಯ ಪಿನ್ ಇಡಿ",
+  "setPinBody": "ಈ ಫೋನ್ ಬೇರೆಯವರೂ ಬಳಸಬಹುದು. ಪಿನ್ ಇತರ ತಾಯಂದಿರ ಮಾಹಿತಿಯನ್ನು ಸುರಕ್ಷಿತವಾಗಿ ಇಡುತ್ತದೆ.",
+  "confirmPinTitle": "ಪಿನ್ ಮತ್ತೊಮ್ಮೆ ಹಾಕಿ",
+  "pinMismatch": "ಎರಡು ಪಿನ್ ಒಂದೇ ಆಗಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+  "enterPinTitle": "ನಿಮ್ಮ ಪಿನ್ ಹಾಕಿ",
+  "enterPinBody": "ಮುಂದೆ ಹೋಗಲು 4 ಅಂಕಿಯ ಪಿನ್ ಹಾಕಿ",
+  "pinWrong": "ಪಿನ್ ಸರಿಯಿಲ್ಲ. ಮತ್ತೆ ಹಾಕಿ.",
+  "unlock": "ತೆರೆಯಿರಿ",
+  "greeting": "ನಮಸ್ಕಾರ, {name}",
+  "@greeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "todaysWork": "ಇಂದಿನ ಕೆಲಸ",
+  "syncOffline": "ಆಫ್‌ಲೈನ್ — {count} ನಮೂದುಗಳು ಕಾಯುತ್ತಿವೆ",
+  "@syncOffline": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncPending": "{count} ನಮೂದುಗಳು ಕಳುಹಿಸಲು ಬಾಕಿ",
+  "@syncPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncAllDone": "ಎಲ್ಲವೂ ಕಳುಹಿಸಲಾಗಿದೆ",
+  "syncing": "ಕಳುಹಿಸುತ್ತಿದೆ…",
+  "statAssigned": "ತಾಯಂದಿರು",
+  "statHighRisk": "ಅಧಿಕ ಅಪಾಯ",
+  "statVisitsDue": "ಬಾಕಿ ಭೇಟಿ",
+  "registerMother": "ಹೊಸ ತಾಯಿ ನೋಂದಣಿ",
+  "noTasks": "ಇಂದು ಬಾಕಿ ಕೆಲಸ ಇಲ್ಲ",
+  "originDoctor": "ವೈದ್ಯರು ನೀಡಿದ್ದು",
+  "originSystem": "ತಡವಾಗಿದೆ",
+  "originSelf": "ನನ್ನ ಟಿಪ್ಪಣಿ",
+  "gestationWeeks": "{weeks} ವಾರ",
+  "@gestationWeeks": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "dueOn": "{date} ರೊಳಗೆ",
+  "@dueOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "overdue": "ತಡವಾಗಿದೆ",
+  "mothersTitle": "ತಾಯಂದಿರು",
+  "searchMothers": "ಹೆಸರು ಅಥವಾ ಗ್ರಾಮ ಹುಡುಕಿ",
+  "tabAll": "ಎಲ್ಲರೂ",
+  "tabHighRisk": "ಅಧಿಕ ಅಪಾಯ",
+  "tabVisitsDue": "ಬಾಕಿ ಭೇಟಿ",
+  "noMothers": "ಇನ್ನೂ ಯಾರೂ ನೋಂದಣಿ ಆಗಿಲ್ಲ",
+  "registerTitle": "ಹೊಸ ತಾಯಿ ನೋಂದಣಿ",
+  "scanThayiCard": "ತಾಯಿ ಕಾರ್ಡ್ ಸ್ಕ್ಯಾನ್",
+  "scanHint": "ಅವರ ಕಾಗದದ ಕಾರ್ಡಿನ ಫೋಟೋ ತೆಗೆಯಿರಿ",
+  "manualEntry": "ಕೈಯಿಂದ ಬರೆಯಿರಿ",
+  "scanning": "ಕಾರ್ಡ್ ಓದುತ್ತಿದೆ…",
+  "confirmEachField": "ಕೆಳಗಿನ ಪ್ರತಿ ವಿವರವನ್ನೂ ಪರಿಶೀಲಿಸಿ. ತಪ್ಪಿದ್ದರೆ ಸರಿಪಡಿಸಿ ನಂತರ ಉಳಿಸಿ.",
+  "fieldName": "ಹೆಸರು",
+  "fieldAge": "ವಯಸ್ಸು",
+  "fieldHusband": "ಪತಿ / ಪಾಲಕರು",
+  "fieldPhone": "ಫೋನ್ ನಂಬರ್",
+  "fieldEmail": "ಇಮೇಲ್ ವಿಳಾಸ",
+  "fieldEmailWhy": "ಇದರಿಂದಲೇ ಅವರು ತಾಯಿ ಸೇತು ಆ್ಯಪ್‌ಗೆ ಒಳಗೆ ಬರುತ್ತಾರೆ. ಇದಿಲ್ಲದೆ ಅವರು ತಮ್ಮ ದಾಖಲೆ ನೋಡಲು ಆಗುವುದಿಲ್ಲ.",
+  "emailInvalidField": "ಸರಿಯಾದ ಇಮೇಲ್ ವಿಳಾಸ ಹಾಕಿ",
+  "fieldVillage": "ಗ್ರಾಮ",
+  "fieldSubCentre": "ಉಪ ಕೇಂದ್ರ",
+  "fieldAbha": "ಆಭಾ ಸಂಖ್ಯೆ",
+  "fieldLmp": "ಕೊನೆಯ ಮುಟ್ಟಿನ ದಿನ (LMP)",
+  "fieldGravida": "ಗರ್ಭಧಾರಣೆ ಸಂಖ್ಯೆ",
+  "fieldPara": "ಹೆರಿಗೆ ಸಂಖ್ಯೆ",
+  "fieldBloodGroup": "ರಕ್ತದ ಗುಂಪು",
+  "fieldHeight": "ಎತ್ತರ (ಸೆ.ಮೀ.)",
+  "fieldBpl": "ಬಿ.ಪಿ.ಎಲ್. ಕುಟುಂಬ",
+  "pickDate": "ದಿನ ಆರಿಸಿ",
+  "homeLocationSection": "ಅವರ ಮನೆ",
+  "homeLocationCapture": "ಈ ಮನೆಯ ಸ್ಥಳ ಗುರುತಿಸಿ",
+  "homeLocationBusy": "ಸ್ಥಳ ಹುಡುಕುತ್ತಿದೆ…",
+  "homeLocationFound": "ಸ್ಥಳ ಗುರುತಿಸಲಾಗಿದೆ",
+  "homeLocationMissing": "ಇನ್ನೂ ಸ್ಥಳ ಇಲ್ಲ — ಮುಂದಿನ ಭೇಟಿಯಲ್ಲಿ ಗುರುತಿಸಬಹುದು",
+  "homeLocationWhy": "ಈಗ ಗುರುತಿಸಿದರೆ, ಮುಂದಿನ ಸಲ ನೀವು ಅಥವಾ ನಿಮ್ಮ ಬದಲಿಗೆ ಬರುವವರು ನೇರವಾಗಿ ಇಲ್ಲಿಗೆ ಬರಬಹುದು.",
+  "homeLocationDirections": "ಅವರ ಮನೆಗೆ ದಾರಿ",
+  "homeLocationStreetView": "ಬೀದಿ ನೋಟ",
+  "homeLocationNoStreetView": "ಇಲ್ಲಿ ಬೀದಿ ನೋಟ ಇಲ್ಲ. ಹೆಚ್ಚಿನ ಹಳ್ಳಿಗಳಲ್ಲಿ ಇದು ಸಿಗುವುದಿಲ್ಲ.",
+  "homeLocationSaved": "ಸ್ಥಳ ಉಳಿಸಲಾಗಿದೆ",
+  "homeLocationFailed": "ಸ್ಥಳ ಸಿಗಲಿಲ್ಲ. ಮನೆಯ ಹೊರಗೆ ನಿಂತು ಪ್ರಯತ್ನಿಸಿ.",
+  "homeLocationOpenFailed": "ನಕ್ಷೆ ತೆರೆಯಲು ಆಗಲಿಲ್ಲ",
+  "prevComplications": "ಹಿಂದಿನ ತೊಂದರೆಗಳು",
+  "compCSection": "ಸಿಸೇರಿಯನ್",
+  "compStillbirth": "ಮೃತ ಶಿಶು ಜನನ",
+  "compPph": "ಹೆರಿಗೆ ನಂತರ ರಕ್ತಸ್ರಾವ",
+  "compHypertension": "ಅಧಿಕ ರಕ್ತದೊತ್ತಡ",
+  "compGdm": "ಗರ್ಭಾವಸ್ಥೆಯ ಸಕ್ಕರೆ ಕಾಯಿಲೆ",
+  "compAnaemia": "ರಕ್ತಹೀನತೆ",
+  "eddComputed": "ಹೆರಿಗೆ ದಿನ {date}",
+  "@eddComputed": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "gaComputed": "{weeks} ವಾರ {days} ದಿನ ಗರ್ಭಿಣಿ",
+  "@gaComputed": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "saveMother": "ಉಳಿಸಿ ಮತ್ತು ನೋಂದಾಯಿಸಿ",
+  "motherSaved": "{name} ನೋಂದಣಿ ಆಗಿದೆ",
+  "@motherSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "schemesQualified": "ಈ ಯೋಜನೆಗಳಿಗೆ ಅರ್ಹರು",
+  "schemeThayiBhagya": "ತಾಯಿ ಭಾಗ್ಯ",
+  "schemePmmvy": "ಪಿ.ಎಂ.ಎಂ.ವಿ.ವೈ",
+  "schemeJsy": "ಜನನಿ ಸುರಕ್ಷಾ ಯೋಜನೆ",
+  "schemePrasootiAraike": "ಪ್ರಸೂತಿ ಆರೈಕೆ",
+  "schemeMadilu": "ಮಡಿಲು ಕಿಟ್",
+  "schemeJssk": "ಜೆ.ಎಸ್.ಎಸ್.ಕೆ",
+  "schemesNote": "ಇಲ್ಲಿ ತೋರಿಸಿರುವ ಅರ್ಹತೆ ಸೂಚನೆ ಮಾತ್ರ. ಪಿಎಚ್‌ಸಿಯಲ್ಲಿ ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ.",
+  "profileTabTimeline": "ಕಾಲಪಟ್ಟಿ",
+  "profileTabVitals": "ಅಳತೆಗಳು",
+  "profileTabSchemes": "ಯೋಜನೆ",
+  "profileTabQr": "ಕ್ಯೂಆರ್",
+  "gaLabel": "GA {weeks} ವಾರ {days} ದಿನ",
+  "@gaLabel": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "eddLabel": "ಹೆರಿಗೆ ದಿನ",
+  "bloodGroupLabel": "ರಕ್ತದ ಗುಂಪು",
+  "riskGreen": "ಸಾಮಾನ್ಯ",
+  "riskAmber": "ಗಮನ ಬೇಕು",
+  "riskRed": "ಅಧಿಕ ಅಪಾಯ",
+  "newVisit": "ಹೊಸ ಭೇಟಿ",
+  "timelineEmpty": "ಇನ್ನೂ ಯಾವ ಭೇಟಿಯೂ ದಾಖಲಾಗಿಲ್ಲ",
+  "recordedBy": "{name} ದಾಖಲಿಸಿದ್ದಾರೆ",
+  "@recordedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "entryVisit": "ಎಎನ್‌ಸಿ ಭೇಟಿ",
+  "entryAlert": "ಎಚ್ಚರಿಕೆ",
+  "entryReferral": "ಉಲ್ಲೇಖ",
+  "correctionOf": "{number}ನೇ ಭೇಟಿಯ ತಿದ್ದುಪಡಿ",
+  "@correctionOf": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "vitalsBp": "ರಕ್ತದೊತ್ತಡ",
+  "vitalsWeight": "ತೂಕ",
+  "vitalsHb": "ಹಿಮೋಗ್ಲೋಬಿನ್",
+  "chartNoData": "ಇನ್ನೂ ಅಳತೆ ಆಗಿಲ್ಲ",
+  "qrCaption": "ಆಸ್ಪತ್ರೆಯಲ್ಲಿ ಈ ಕೋಡ್ ತೋರಿಸಿ",
+  "callMother": "ಅವರಿಗೆ ಕರೆ ಮಾಡಿ",
+  "newVisitTitle": "ಹೊಸ ಎಎನ್‌ಸಿ ಭೇಟಿ",
+  "visitNumberLabel": "{number}ನೇ ಭೇಟಿ",
+  "@visitNumberLabel": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "sectionBp": "ರಕ್ತದೊತ್ತಡ",
+  "bpSys": "ಮೇಲಿನದು",
+  "bpDia": "ಕೆಳಗಿನದು",
+  "sectionMeasure": "ತೂಕ ಮತ್ತು ಅಳತೆ",
+  "weightKgLabel": "ತೂಕ (ಕೆ.ಜಿ.)",
+  "fundalHeightLabel": "ಗರ್ಭದ ಎತ್ತರ (ಸೆ.ಮೀ.)",
+  "sectionLab": "ಪರೀಕ್ಷೆಗಳು",
+  "hbLabel": "ಹಿಮೋಗ್ಲೋಬಿನ್ (g/dL)",
+  "urineAlbuminLabel": "ಮೂತ್ರದ ಅಲ್ಬುಮಿನ್",
+  "albuminNil": "ಇಲ್ಲ",
+  "albuminTrace": "ಸ್ವಲ್ಪ",
+  "albuminPlus1": "+1",
+  "albuminPlus2": "+2 ಅಥವಾ ಹೆಚ್ಚು",
+  "sectionFetal": "ಮಗುವಿನ ಸ್ಥಿತಿ",
+  "fetalHrLabel": "ಹೃದಯ ಬಡಿತ (ನಿಮಿಷಕ್ಕೆ)",
+  "fetalMovementLabel": "ಮಗು ಆಡುತ್ತಿದೆ",
+  "sectionDanger": "ಅಪಾಯದ ಲಕ್ಷಣಗಳು",
+  "dsBleeding": "ರಕ್ತಸ್ರಾವ",
+  "dsHeadache": "ತೀವ್ರ ತಲೆನೋವು",
+  "dsVision": "ಕಣ್ಣು ಮಂಜಾಗುವುದು",
+  "dsSwelling": "ಮುಖ ಅಥವಾ ಕೈ ಊತ",
+  "dsFever": "ಜ್ವರ",
+  "dsConvulsions": "ಸೆಳೆತ",
+  "dsNoMovement": "ಮಗು ಆಡುತ್ತಿಲ್ಲ",
+  "sectionTablets": "ಮಾತ್ರೆ ಮತ್ತು ಲಸಿಕೆ",
+  "ifaTakenLabel": "ಕಬ್ಬಿಣಾಂಶದ ಮಾತ್ರೆ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದ್ದಾರೆ",
+  "calciumTakenLabel": "ಕ್ಯಾಲ್ಸಿಯಂ ಮಾತ್ರೆ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದ್ದಾರೆ",
+  "ttDoseLabel": "ಟಿ.ಟಿ. ಡೋಸ್ ಹಾಕಲಾಗಿದೆ",
+  "ttNone": "ಇಲ್ಲ",
+  "sectionNotes": "ಟಿಪ್ಪಣಿ",
+  "notesHint": "ಬೇರೆ ಏನಾದರೂ ಬರೆಯಬೇಕಿದ್ದರೆ",
+  "addPhoto": "ಫೋಟೋ ಸೇರಿಸಿ",
+  "photoAdded": "ಫೋಟೋ ಸೇರಿಸಲಾಗಿದೆ",
+  "saveVisit": "ಭೇಟಿ ಉಳಿಸಿ",
+  "visitSaved": "ಭೇಟಿ ಈ ಫೋನಿನಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ",
+  "rangeConfirmTitle": "ಇದು ಸರಿಯೇ?",
+  "rangeConfirmBody": "{value} — ಇದು ಸರಿಯೇ?",
+  "@rangeConfirmBody": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "rangeYes": "ಹೌದು, ಸರಿ ಇದೆ",
+  "rangeNo": "ಇಲ್ಲ, ತಿದ್ದುತ್ತೇನೆ",
+  "riskBannerNormal": "ಇಲ್ಲಿಯವರೆಗೆ ಚಿಂತೆಯ ವಿಷಯ ಇಲ್ಲ",
+  "gpsUnavailable": "ಜಿಪಿಎಸ್ ಸಿಗಲಿಲ್ಲ — ಭೇಟಿ ಉಳಿಸಲಾಗಿದೆ",
+  "riskAlertTitle": "ಈಗಲೇ ಗಮನ ಬೇಕು",
+  "referToPhc": "ಪಿಎಚ್‌ಸಿಗೆ ಕಳುಹಿಸಿ",
+  "callPhc": "ಪಿಎಚ್‌ಸಿಗೆ ಕರೆ",
+  "advisoryFooter": "ಸಲಹೆ ಮಾತ್ರ — ರೋಗನಿರ್ಣಯವಲ್ಲ",
+  "referralCreated": "ಉಲ್ಲೇಖ ಉಳಿಸಲಾಗಿದೆ, ಕಳುಹಿಸಲು ಸಾಲಿನಲ್ಲಿದೆ",
+  "dismissAlert": "ನಾನು ನೋಡಿದೆ",
+  "referralTo": "{facility} ಗೆ ಕಳುಹಿಸಲಾಗಿದೆ",
+  "@referralTo": {
+    "placeholders": {
+      "facility": {
+        "type": "String"
+      }
+    }
+  },
+  "phcName": "ಸರ್ಕಾರಿ ಪ್ರಾಥಮಿಕ ಆರೋಗ್ಯ ಕೇಂದ್ರ, ಹೊಸಳ್ಳಿ",
+  "callFailed": "ಕರೆ ಮಾಡಲು ಆಗಲಿಲ್ಲ",
+  "tasksTitle": "ನನ್ನ ಕೆಲಸಗಳು",
+  "tabOpen": "ಬಾಕಿ",
+  "tabDone": "ಮುಗಿದವು",
+  "tabMissed": "ತಪ್ಪಿದವು",
+  "markDone": "ಮುಗಿಯಿತು ಎಂದು ಗುರುತಿಸಿ",
+  "taskDoneVia": "ಭೇಟಿಯಿಂದ ಮುಗಿದಿದೆ",
+  "noTasksHere": "ಇಲ್ಲಿ ಏನೂ ಇಲ್ಲ",
+  "incentiveTitle": "ಪ್ರೋತ್ಸಾಹ ಧನ ಪಟ್ಟಿ",
+  "incentiveNote": "ಇಲ್ಲಿ ಚಟುವಟಿಕೆಗಳನ್ನು ಮಾತ್ರ ತೋರಿಸಲಾಗಿದೆ. ಕ್ಲೈಮ್ ಮಾಡುವ ಮೊದಲು ಈಗಿನ ದರಗಳನ್ನು ನಿಮ್ಮ ಎಎನ್‌ಎಂ ಅವರಲ್ಲಿ ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ.",
+  "claimableItems": "{count} ಚಟುವಟಿಕೆಗಳು ಕ್ಲೈಮ್‌ಗೆ ಅರ್ಹ",
+  "@claimableItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "catRegistration": "ತಾಯಿ ನೋಂದಣಿ",
+  "catAncVisit": "ಎಎನ್‌ಸಿ ಭೇಟಿ",
+  "catReferral": "ಪಿಎಚ್‌ಸಿಗೆ ಉಲ್ಲೇಖ",
+  "catHighRiskFollowUp": "ಅಧಿಕ ಅಪಾಯದ ಅನುಸರಣೆ",
+  "incentiveOffline": "ಈ ಫೋನಿನ ಮಾಹಿತಿಯಿಂದ ತಯಾರಿಸಲಾಗಿದೆ. ನೆಟ್‌ವರ್ಕ್ ಇಲ್ಲದೆಯೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ.",
+  "shareSummary": "ಹಂಚಿಕೊಳ್ಳಿ",
+  "syncTitle": "ಸಿಂಕ್ ಸ್ಥಿತಿ",
+  "retryNow": "ಈಗ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
+  "outboxEmpty": "ಎಲ್ಲವೂ ಕಳುಹಿಸಲಾಗಿದೆ",
+  "outStatusPending": "ಕಾಯುತ್ತಿದೆ",
+  "outStatusSyncing": "ಕಳುಹಿಸುತ್ತಿದೆ",
+  "outStatusSynced": "ಕಳುಹಿಸಲಾಗಿದೆ",
+  "outStatusFailed": "ವಿಫಲವಾಗಿದೆ",
+  "retryCountLabel": "{count} ಪ್ರಯತ್ನ",
+  "@retryCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "demoOfflineToggle": "ಡೆಮೊ: ಆಫ್‌ಲೈನ್ ಮಾಡಿ",
+  "demoOfflineOn": "ಆಫ್‌ಲೈನ್ ಮೋಡ್ ಚಾಲೂ ಇದೆ. ಏನೂ ಕಳುಹಿಸುವುದಿಲ್ಲ.",
+  "recordVisit": "ಎಎನ್‌ಸಿ ಭೇಟಿ",
+  "recordMother": "ತಾಯಿ ನೋಂದಣಿ",
+  "recordReferral": "ಉಲ್ಲೇಖ",
+  "recordAlert": "ಎಚ್ಚರಿಕೆ",
+  "recordTask": "ಕೆಲಸ",
+  "emailVerifyAction": "ಪರಿಶೀಲಿಸಿ",
+  "emailVerifiedChip": "ಪರಿಶೀಲಿಸಲಾಗಿದೆ",
+  "emailNotVerifiedOffline": "ಇಂಟರ್ನೆಟ್ ಇದ್ದಾಗ ಪರಿಶೀಲಿಸಿ",
+  "emailVerifyTitle": "ಅವರ ಇಮೇಲ್ ಪರಿಶೀಲಿಸಿ",
+  "emailVerifyBody": "{email} ಗೆ ಕೋಡ್ ಕಳುಹಿಸಲಾಗಿದೆ. ಅವರನ್ನು ಓದಲು ಹೇಳಿ, ಇಲ್ಲಿ ನಮೂದಿಸಿ.",
+  "emailVerifyConfirm": "ಖಚಿತಪಡಿಸಿ",
+  "emailVerifiedOk": "ಇಮೇಲ್ ಪರಿಶೀಲಿಸಲಾಗಿದೆ. ಇದರಿಂದ ಅವರು ತಾಯಿ ಸೇತು ಆ್ಯಪ್‌ಗೆ ಲಾಗಿನ್ ಮಾಡಬಹುದು.",
+  "emailVerifiedPending": "ಕೋಡ್ ಸರಿಯಾಗಿದೆ. ಅವರ ದಾಖಲೆ ಸಿಂಕ್ ಆದಾಗ ಉಳಿಸಲಾಗುತ್ತದೆ.",
+  "emailVerifyWrongCode": "ಕೋಡ್ ತಾಳೆಯಾಗಲಿಲ್ಲ. ಇನ್ನೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.",
+  "emailVerifyOffline": "ಕೋಡ್ ಕಳುಹಿಸಲು ಆಗಲಿಲ್ಲ. ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ.",
+  "resendEverything": "ಎಲ್ಲವನ್ನೂ ಮತ್ತೆ ಕಳುಹಿಸಿ",
+  "resendQueued": "{count} ದಾಖಲೆಗಳನ್ನು ಮತ್ತೆ ಕಳುಹಿಸಲು ಸಾಲಿಗೆ ಸೇರಿಸಲಾಗಿದೆ"
+}

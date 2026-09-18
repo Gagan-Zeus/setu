@@ -1,0 +1,443 @@
+{
+  "@@locale": "en",
+  "appName": "ASHA Setu",
+  "appTagline": "Your field companion",
+  "langKannada": "ಕನ್ನಡ",
+  "langEnglish": "English",
+  "chooseLanguage": "Choose your language",
+  "languageLabel": "Language",
+  "continueLabel": "Continue",
+  "save": "Save",
+  "cancel": "Cancel",
+  "ok": "OK",
+  "retry": "Try again",
+  "close": "Close",
+  "yes": "Yes",
+  "no": "No",
+  "optional": "optional",
+  "loading": "Loading…",
+  "errorTitle": "Something went wrong",
+  "emptyGeneric": "Nothing here yet",
+  "notRecorded": "Not recorded",
+  "requiredField": "This is needed",
+  "settingsTitle": "Settings",
+  "logout": "Sign out",
+  "accountSection": "ACCOUNT",
+  "signedInAs": "Signed in as {email}",
+  "@signedInAs": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "logoutWarningTitle": "Sign out?",
+  "logoutWarningBody": "You will need internet to sign in again. Do not sign out while you are in a village with no network.",
+  "logoutPendingWarning": "{count} entries have not been sent yet. They stay on this phone, but sign in again soon so they can be sent.",
+  "@logoutPendingWarning": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "logoutConfirm": "Yes, sign out",
+  "loginTitle": "Sign in",
+  "loginSubtitle": "Sign in once. You stay signed in even with no network.",
+  "emailLabel": "Email",
+  "emailHint": "name@example.com",
+  "emailInvalid": "Please enter a correct email address",
+  "passwordLabel": "Password",
+  "passwordInvalid": "Please enter your password",
+  "signIn": "Sign in",
+  "otpTitle": "Enter the code",
+  "otpSentTo": "Sent to {email}",
+  "@otpSentTo": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "otpInvalid": "Please enter all 6 digits",
+  "otpVerify": "Verify",
+  "otpSending": "Sending the code…",
+  "otpVerifying": "Checking…",
+  "otpSendFailed": "The code could not be sent. Please check the address and try again.",
+  "otpWrongCode": "That code is not right. Please check your email and try again.",
+  "otpResend": "Send the code again",
+  "otpChangeEmail": "Change email",
+  "otpNoNetwork": "No internet. You need a signal once, to sign in the first time.",
+  "otpOfflineFallback": "No network — signed in on this phone only. Sign in properly when you have a signal.",
+  "forgotPassword": "Forgot password?",
+  "forgotPasswordTitle": "Forgot password",
+  "forgotPasswordBody": "Please contact your ANM supervisor to reset your password. Password reset from the app is coming soon.",
+  "loginFailed": "Could not sign in. Please check your email and password.",
+  "setPinTitle": "Set a 4 digit PIN",
+  "setPinBody": "This phone may be shared. The PIN keeps other women's records private.",
+  "confirmPinTitle": "Enter the PIN again",
+  "pinMismatch": "The two PINs do not match. Please try again.",
+  "enterPinTitle": "Enter your PIN",
+  "enterPinBody": "Enter your 4 digit PIN to continue",
+  "pinWrong": "Wrong PIN. Please try again.",
+  "unlock": "Unlock",
+  "greeting": "Namaskara, {name}",
+  "@greeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "todaysWork": "TODAY'S WORK",
+  "syncOffline": "Offline — {count} entries waiting",
+  "@syncOffline": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncPending": "{count} entries waiting to be sent",
+  "@syncPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncAllDone": "Everything is sent",
+  "syncing": "Sending…",
+  "statAssigned": "Mothers",
+  "statHighRisk": "High risk",
+  "statVisitsDue": "Visits due",
+  "registerMother": "Register a mother",
+  "noTasks": "No work pending today",
+  "originDoctor": "Doctor assigned",
+  "originSystem": "Overdue",
+  "originSelf": "My note",
+  "gestationWeeks": "{weeks} weeks",
+  "@gestationWeeks": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "dueOn": "Due {date}",
+  "@dueOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "overdue": "Overdue",
+  "mothersTitle": "Mothers",
+  "searchMothers": "Search by name or village",
+  "tabAll": "All",
+  "tabHighRisk": "High risk",
+  "tabVisitsDue": "Visits due",
+  "noMothers": "No mothers registered yet",
+  "registerTitle": "Register a mother",
+  "scanThayiCard": "Scan Thayi Card",
+  "scanHint": "Take a photo of her paper card",
+  "manualEntry": "Enter by hand",
+  "scanning": "Reading the card…",
+  "confirmEachField": "Check every detail below. Correct anything that is wrong before saving.",
+  "fieldName": "Name",
+  "fieldAge": "Age",
+  "fieldHusband": "Husband / guardian",
+  "fieldPhone": "Phone number",
+  "fieldEmail": "Email address",
+  "fieldEmailWhy": "She signs in to Thayi Setu with this. Without it she cannot open her own record.",
+  "emailInvalidField": "Please enter a correct email address",
+  "fieldVillage": "Village",
+  "fieldSubCentre": "Sub-centre",
+  "fieldAbha": "ABHA id",
+  "fieldLmp": "Last period date (LMP)",
+  "fieldGravida": "Gravida",
+  "fieldPara": "Para",
+  "fieldBloodGroup": "Blood group",
+  "fieldHeight": "Height (cm)",
+  "fieldBpl": "BPL family",
+  "pickDate": "Choose date",
+  "homeLocationSection": "HER HOUSE",
+  "homeLocationCapture": "Pin this house",
+  "homeLocationBusy": "Finding the location…",
+  "homeLocationFound": "Location pinned",
+  "homeLocationMissing": "No location yet — you can pin it on your next visit",
+  "homeLocationWhy": "Pinning it now means you, or anyone covering for you, can navigate straight here next time.",
+  "homeLocationDirections": "Directions to her house",
+  "homeLocationStreetView": "Street view",
+  "homeLocationNoStreetView": "No street view here. Most villages have no coverage.",
+  "homeLocationSaved": "Location saved",
+  "homeLocationFailed": "Could not get a location. Try outside the house.",
+  "homeLocationOpenFailed": "Could not open maps",
+  "prevComplications": "PREVIOUS COMPLICATIONS",
+  "compCSection": "Caesarean",
+  "compStillbirth": "Stillbirth",
+  "compPph": "Bleeding after delivery",
+  "compHypertension": "High blood pressure",
+  "compGdm": "Diabetes in pregnancy",
+  "compAnaemia": "Anaemia",
+  "eddComputed": "Delivery date {date}",
+  "@eddComputed": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "gaComputed": "{weeks} weeks {days} days pregnant",
+  "@gaComputed": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "saveMother": "Save and register",
+  "motherSaved": "{name} is registered",
+  "@motherSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "schemesQualified": "SHE QUALIFIES FOR",
+  "schemeThayiBhagya": "Thayi Bhagya",
+  "schemePmmvy": "PMMVY",
+  "schemeJsy": "JSY",
+  "schemePrasootiAraike": "Prasooti Araike",
+  "schemeMadilu": "Madilu Kit",
+  "schemeJssk": "JSSK",
+  "schemesNote": "Eligibility shown here is indicative. Confirm with the PHC.",
+  "profileTabTimeline": "Timeline",
+  "profileTabVitals": "Vitals",
+  "profileTabSchemes": "Schemes",
+  "profileTabQr": "QR card",
+  "gaLabel": "GA {weeks}w {days}d",
+  "@gaLabel": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "eddLabel": "EDD",
+  "bloodGroupLabel": "Blood group",
+  "riskGreen": "Normal",
+  "riskAmber": "Needs attention",
+  "riskRed": "High risk",
+  "newVisit": "New visit",
+  "timelineEmpty": "No visits recorded yet",
+  "recordedBy": "Recorded by {name}",
+  "@recordedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "entryVisit": "ANC visit",
+  "entryAlert": "Alert",
+  "entryReferral": "Referral",
+  "correctionOf": "Correction of visit {number}",
+  "@correctionOf": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "vitalsBp": "BLOOD PRESSURE",
+  "vitalsWeight": "WEIGHT",
+  "vitalsHb": "HAEMOGLOBIN",
+  "chartNoData": "No readings yet",
+  "qrCaption": "Show this code at the facility",
+  "callMother": "Call her",
+  "newVisitTitle": "New ANC visit",
+  "visitNumberLabel": "Visit {number}",
+  "@visitNumberLabel": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "sectionBp": "BLOOD PRESSURE",
+  "bpSys": "Upper",
+  "bpDia": "Lower",
+  "sectionMeasure": "WEIGHT AND MEASUREMENT",
+  "weightKgLabel": "Weight (kg)",
+  "fundalHeightLabel": "Fundal height (cm)",
+  "sectionLab": "TESTS",
+  "hbLabel": "Haemoglobin (g/dL)",
+  "urineAlbuminLabel": "Urine albumin",
+  "albuminNil": "Nil",
+  "albuminTrace": "Trace",
+  "albuminPlus1": "+1",
+  "albuminPlus2": "+2 or more",
+  "sectionFetal": "BABY",
+  "fetalHrLabel": "Heart rate (per minute)",
+  "fetalMovementLabel": "Baby is moving",
+  "sectionDanger": "DANGER SIGNS",
+  "dsBleeding": "Bleeding",
+  "dsHeadache": "Severe headache",
+  "dsVision": "Blurred vision",
+  "dsSwelling": "Swelling of face or hands",
+  "dsFever": "Fever",
+  "dsConvulsions": "Fits",
+  "dsNoMovement": "Baby not moving",
+  "sectionTablets": "TABLETS AND VACCINE",
+  "ifaTakenLabel": "Taking iron tablets",
+  "calciumTakenLabel": "Taking calcium tablets",
+  "ttDoseLabel": "TT dose given",
+  "ttNone": "None",
+  "sectionNotes": "NOTES",
+  "notesHint": "Anything else worth recording",
+  "addPhoto": "Add a photo",
+  "photoAdded": "Photo added",
+  "saveVisit": "Save visit",
+  "visitSaved": "Visit saved on this phone",
+  "rangeConfirmTitle": "Is this correct?",
+  "rangeConfirmBody": "{value} — is that right?",
+  "@rangeConfirmBody": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "rangeYes": "Yes, that is right",
+  "rangeNo": "No, let me fix it",
+  "riskBannerNormal": "Nothing worrying so far",
+  "gpsUnavailable": "No GPS — the visit was saved anyway",
+  "riskAlertTitle": "This needs attention now",
+  "referToPhc": "Refer to PHC",
+  "callPhc": "Call PHC",
+  "advisoryFooter": "Advisory only — not a diagnosis",
+  "referralCreated": "Referral saved and queued",
+  "dismissAlert": "I have seen this",
+  "referralTo": "Referred to {facility}",
+  "@referralTo": {
+    "placeholders": {
+      "facility": {
+        "type": "String"
+      }
+    }
+  },
+  "phcName": "Government PHC, Hosahalli",
+  "callFailed": "Could not open the dialler",
+  "tasksTitle": "My tasks",
+  "tabOpen": "Open",
+  "tabDone": "Done",
+  "tabMissed": "Missed",
+  "markDone": "Mark done",
+  "taskDoneVia": "Closed by a visit",
+  "noTasksHere": "Nothing here",
+  "incentiveTitle": "Incentive claim sheet",
+  "incentiveNote": "This lists activities only. Confirm the current rates with your ANM supervisor before claiming.",
+  "claimableItems": "{count} claimable activities",
+  "@claimableItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "catRegistration": "Mother registration",
+  "catAncVisit": "ANC visit",
+  "catReferral": "Referral to PHC",
+  "catHighRiskFollowUp": "High-risk follow-up",
+  "incentiveOffline": "Built from this phone. Works with no network.",
+  "shareSummary": "Share summary",
+  "syncTitle": "Sync status",
+  "retryNow": "Retry now",
+  "outboxEmpty": "Everything has been sent",
+  "outStatusPending": "Waiting",
+  "outStatusSyncing": "Sending",
+  "outStatusSynced": "Sent",
+  "outStatusFailed": "Failed",
+  "retryCountLabel": "{count} attempts",
+  "@retryCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "demoOfflineToggle": "Demo: force offline",
+  "demoOfflineOn": "Offline mode is on. Nothing will be sent.",
+  "recordVisit": "ANC visit",
+  "recordMother": "Mother registration",
+  "recordReferral": "Referral",
+  "recordAlert": "Alert",
+  "recordTask": "Task",
+  "emailVerifyAction": "Verify",
+  "@emailVerifyAction": {
+    "description": "Verifying a mother email at registration."
+  },
+  "emailVerifiedChip": "Verified",
+  "@emailVerifiedChip": {
+    "description": "Verifying a mother email at registration."
+  },
+  "emailNotVerifiedOffline": "Verify when online",
+  "@emailNotVerifiedOffline": {
+    "description": "Verifying a mother email at registration."
+  },
+  "emailVerifyTitle": "Verify her email",
+  "@emailVerifyTitle": {
+    "description": "Verifying a mother email at registration."
+  },
+  "emailVerifyBody": "A code has been sent to {email}. Ask her to read it out, and type it here.",
+  "@emailVerifyBody": {
+    "description": "Verifying a mother email at registration.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "emailVerifyConfirm": "Confirm",
+  "@emailVerifyConfirm": {
+    "description": "Verifying a mother email at registration."
+  },
+  "emailVerifiedOk": "Email verified. She can sign in to Thayi Setu with it.",
+  "@emailVerifiedOk": {
+    "description": "Verifying a mother email at registration."
+  },
+  "emailVerifiedPending": "Code confirmed. It will be saved when her record syncs.",
+  "@emailVerifiedPending": {
+    "description": "Verifying a mother email at registration."
+  },
+  "emailVerifyWrongCode": "That code did not match. Try again.",
+  "@emailVerifyWrongCode": {
+    "description": "Verifying a mother email at registration."
+  },
+  "emailVerifyOffline": "Could not send the code. Check the connection.",
+  "@emailVerifyOffline": {
+    "description": "Verifying a mother email at registration."
+  },
+  "resendEverything": "Send everything again",
+  "@resendEverything": {
+    "description": "Re-sending records stranded on the phone."
+  },
+  "resendQueued": "{count} records queued to send again",
+  "@resendQueued": {
+    "description": "Re-sending records stranded on the phone.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}
