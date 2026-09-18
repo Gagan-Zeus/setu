@@ -31,7 +31,10 @@ auth=(-H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: applic
 
 # The shared secret Auth signs each request with and the function verifies.
 # Generated here rather than typed, so it is long and never reused.
-SECRET="v1,whsec_$(openssl rand -base64 32 | tr -d '\n=' | tr '+/' '-_')"
+# Standard base64, padding and all. GoTrue base64-decodes this itself and
+# rejects the URL-safe alphabet - swapping +/ for -_ here fails at send time
+# with "illegal base64 data", long after this script has reported success.
+SECRET="v1,whsec_$(openssl rand -base64 32 | tr -d '\n')"
 
 echo "1/3  function secrets"
 npx supabase secrets set --project-ref "$REF" \

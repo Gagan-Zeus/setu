@@ -50,3 +50,6 @@ local.properties
 .env
 .env.*
 !.env.example
+
+# Supabase CLI scratch state from `npx supabase link` - machine-local.
+supabase/.temp/
