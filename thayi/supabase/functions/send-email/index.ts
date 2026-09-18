@@ -12,13 +12,13 @@
 //
 //   supabase secrets set RESEND_API_KEY=re_... \
 //     SEND_EMAIL_HOOK_SECRET=v1,whsec_... \
-//     OTP_FROM="ತಾಯಿ ಸೇತು <no-reply@yourdomain.in>"
+//     OTP_FROM="ತಾಯಿ ಸೇತು <no-reply@mysetu.live>"
 
 import { Webhook } from "https://esm.sh/standardwebhooks@1.0.0";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const HOOK_SECRET = Deno.env.get("SEND_EMAIL_HOOK_SECRET");
-const FROM = Deno.env.get("OTP_FROM") ?? "Thayi Setu <no-reply@example.invalid>";
+const FROM = Deno.env.get("OTP_FROM") ?? "ತಾಯಿ ಸೇತು <no-reply@mysetu.live>";
 
 interface HookPayload {
   user: { email: string };
