@@ -68,5 +68,15 @@ flutter pub get
 flutter gen-l10n          # after editing any .arb file
 flutter analyze
 flutter test
-flutter build apk --release
+flutter build apk --release --dart-define-from-file=../.env
+flutter build ios --release --dart-define-from-file=../.env
 ```
+
+Supabase credentials are not in the repo. They live in `.env` at the repo
+root, which is gitignored — `cp .env.example .env` and fill it in, or run
+`core/point_apps_at_project.sh <url> <publishable-key>`. Without
+`--dart-define-from-file` the app builds fine and starts on mock data, which
+is the same path a field phone with no signal takes.
+
+iOS deployment target is 15.0. Xcode 27 refuses to build anything below that,
+and the projects sat at 13.0 until it was raised.
