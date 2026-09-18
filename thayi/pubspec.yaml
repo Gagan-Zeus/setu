@@ -1,0 +1,50 @@
+name: setu_thayi
+description: "Thayi Setu - the mother-facing app of Setu, a maternal health platform for rural Karnataka."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+
+  flutter_riverpod: ^2.6.1
+  google_fonts: ^6.2.1
+  qr_flutter: ^4.1.0
+  url_launcher: ^6.3.1
+  shared_preferences: ^2.3.3
+  speech_to_text: ^7.0.0
+  permission_handler: ^12.0.0
+  supabase_flutter: ^2.16.0
+  image_picker: ^1.2.3
+  path_provider: ^2.1.6
+  geolocator: ^14.0.3
+  # Her voice in, the assistant's voice out. Recording goes to ElevenLabs
+  # Scribe; playback is the mp3 the speak function returns.
+  record: ^6.1.2
+  audioplayers: ^6.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+dependency_overrides:
+  # path_provider_android 2.3.x pulls in package:jni, whose android/build.gradle
+  # calls kotlin {} without applying the Kotlin plugin under AGP 9, which fails
+  # the Android build. 2.2.x has the same API and no jni. Drop this override
+  # once package:jni supports AGP 9.
+  path_provider_android: 2.2.23
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/brand/
+    - assets/google_fonts/
+    - assets/brand/

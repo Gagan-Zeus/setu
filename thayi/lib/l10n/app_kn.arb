@@ -1,0 +1,496 @@
+{
+  "@@locale": "kn",
+  "appName": "ತಾಯಿ ಸೇತು",
+  "appTagline": "ನಿಮ್ಮ ಗರ್ಭಾವಸ್ಥೆಯ ಸಂಗಾತಿ",
+  "langKannada": "ಕನ್ನಡ",
+  "langEnglish": "English",
+  "chooseLanguage": "ನಿಮ್ಮ ಭಾಷೆ ಆರಿಸಿ",
+  "languageLabel": "ಭಾಷೆ",
+  "continueLabel": "ಮುಂದೆ",
+  "close": "ಮುಚ್ಚಿ",
+  "cancel": "ಬೇಡ",
+  "ok": "ಸರಿ",
+  "retry": "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
+  "loading": "ಬರುತ್ತಿದೆ…",
+  "errorTitle": "ಮಾಹಿತಿ ಸಿಗಲಿಲ್ಲ",
+  "errorBody": "ಸ್ವಲ್ಪ ಹೊತ್ತಿನ ನಂತರ ಮತ್ತೆ ನೋಡಿ.",
+  "emptyGeneric": "ಇಲ್ಲಿ ಇನ್ನೂ ಏನೂ ಇಲ್ಲ",
+  "notRecorded": "ಬರೆದಿಲ್ಲ",
+  "settingsTitle": "ಸೆಟ್ಟಿಂಗ್ಸ್",
+  "logout": "ಹೊರಗೆ ಬನ್ನಿ",
+  "welcomeCongrats": "ಅಭಿನಂದನೆಗಳು",
+  "welcomeBody": "ನೀವು ತಾಯಿ ಆಗಲಿದ್ದೀರಿ. ಈ ಆ್ಯಪ್ ನಿಮ್ಮ ಗರ್ಭಾವಸ್ಥೆಯ ಉದ್ದಕ್ಕೂ ನಿಮ್ಮ ಜೊತೆ ಇರುತ್ತದೆ.",
+  "welcomeHow": "ಮೊದಲು ನಿಮ್ಮ ಹತ್ತಿರದ ಆಶಾ ಕಾರ್ಯಕರ್ತೆಯನ್ನು ಹುಡುಕಿ ಕೊಡುತ್ತೇವೆ. ಅವರಿಗೆ ಕರೆ ಮಾಡಿ, ಅವರು ಮನೆಗೆ ಬಂದು ನಿಮ್ಮನ್ನು ನೋಂದಾಯಿಸುತ್ತಾರೆ.",
+  "welcomeStart": "ಪ್ರಾರಂಭಿಸೋಣ",
+  "welcomeAlreadyRegistered": "ನನ್ನ ಆಶಾ ಈಗಾಗಲೇ ನೋಂದಾಯಿಸಿದ್ದಾರೆ",
+  "nameTitle": "ನಿಮ್ಮ ಹೆಸರೇನು?",
+  "nameWhy": "ನಿಮ್ಮನ್ನು ಕರೆಯಲು ಮಾತ್ರ ಬಳಸುತ್ತೇವೆ. ಇದನ್ನು ಬೇರೆ ಯಾರೂ ಈಗ ನೋಡುವುದಿಲ್ಲ.",
+  "nameLabel": "ನಿಮ್ಮ ಹೆಸರು",
+  "nameHint": "ಉದಾಹರಣೆಗೆ, ಲಕ್ಷ್ಮಿ",
+  "nameRequired": "ದಯವಿಟ್ಟು ನಿಮ್ಮ ಹೆಸರು ಹಾಕಿ",
+  "locationTitle": "ನೀವು ಎಲ್ಲಿದ್ದೀರಿ?",
+  "locationWhy": "ನಿಮ್ಮ ಹತ್ತಿರದ ಆಶಾ ಕಾರ್ಯಕರ್ತೆಯರನ್ನು ತೋರಿಸುತ್ತೇವೆ, ಸರಿಯಾದವರಿಗೆ ಕರೆ ಮಾಡಬಹುದು.",
+  "locationPrivacy": "ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಈ ಫೋನಿನಲ್ಲಿ ಒಮ್ಮೆ ಮಾತ್ರ ಪಟ್ಟಿ ಜೋಡಿಸಲು ಬಳಸುತ್ತೇವೆ. ಎಲ್ಲಿಯೂ ಉಳಿಸುವುದಿಲ್ಲ, ಕಳುಹಿಸುವುದಿಲ್ಲ.",
+  "locationAllow": "ನನ್ನ ಸ್ಥಳ ಬಳಸಿ",
+  "locationSkip": "ಇದನ್ನು ಬಿಟ್ಟುಬಿಡಿ",
+  "ashaNearbyTitle": "ನಿಮ್ಮ ಹತ್ತಿರದ ಆಶಾ ಕಾರ್ಯಕರ್ತೆಯರು",
+  "ashaNearbyIntro": "ಇವರು ನಿಮ್ಮ ಹತ್ತಿರದ ಆಶಾ ಕಾರ್ಯಕರ್ತೆಯರು. ಒಬ್ಬರಿಗೆ ಕರೆ ಮಾಡಿ ನೀವು ಗರ್ಭಿಣಿ ಎಂದು ಹೇಳಿ.",
+  "ashaNearbyIntroNoLocation": "ಇವರು ನಿಮ್ಮ ಪ್ರದೇಶದ ಆಶಾ ಕಾರ್ಯಕರ್ತೆಯರು. ಒಬ್ಬರಿಗೆ ಕರೆ ಮಾಡಿ ನೀವು ಗರ್ಭಿಣಿ ಎಂದು ಹೇಳಿ.",
+  "ashaNearbyCall": "ಅವರಿಗೆ ಕರೆ ಮಾಡಿ",
+  "ashaNearbyWhatToSay": "ನಿಮ್ಮ ಹೆಸರು, ಗ್ರಾಮ, ಮತ್ತು ನೀವು ಗರ್ಭಿಣಿ ಎಂದು ಹೇಳಿ. ಅವರು ನಿಮ್ಮ ಮನೆಗೆ ಬರುತ್ತಾರೆ.",
+  "ashaNearbyDone": "ನಾನು ಕರೆ ಮಾಡಿದೆ",
+  "waitingTitle": "ನಿಮ್ಮ ಆಶಾ ಶೀಘ್ರದಲ್ಲೇ ಬರುತ್ತಾರೆ",
+  "waitingTitleNamed": "{name}, ನಿಮ್ಮ ಆಶಾ ಶೀಘ್ರದಲ್ಲೇ ಬರುತ್ತಾರೆ",
+  "@waitingTitleNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "waitingBody": "ಅವರು ಮನೆಗೆ ಬಂದು ನಿಮ್ಮ ವರದಿಗಳನ್ನು ನೋಡಿ ನಿಮ್ಮನ್ನು ನೋಂದಾಯಿಸುತ್ತಾರೆ. ನಂತರ ನೀವು ಒಳಗೆ ಬರಬಹುದು.",
+  "waitingWhatNext": "ಮುಂದೆ ಏನಾಗುತ್ತದೆ",
+  "waitingStep1": "ನೀವು ಆಶಾ ಕಾರ್ಯಕರ್ತೆಗೆ ಕರೆ ಮಾಡಿದ್ದೀರಿ",
+  "waitingStep2": "ಅವರು ಮನೆಗೆ ಬಂದು ನಿಮ್ಮ ವರದಿಗಳನ್ನು ನೋಡುತ್ತಾರೆ",
+  "waitingStep3": "ಅವರು ನಿಮ್ಮನ್ನು ನೋಂದಾಯಿಸಿ ನಿಮ್ಮ ಇಮೇಲ್ ವಿಳಾಸ ಹಾಕುತ್ತಾರೆ",
+  "waitingStep4": "ಆ ಇಮೇಲ್‌ಗೆ ಸಂದೇಶ ಬರುತ್ತದೆ, ನಂತರ ಇಲ್ಲಿ ಒಳಗೆ ಬನ್ನಿ",
+  "waitingHaveEmail": "ನನಗೆ ಇಮೇಲ್ ಬಂದಿದೆ",
+  "waitingCallAgain": "ಮತ್ತೆ ಆಶಾಗೆ ಕರೆ ಮಾಡಿ",
+  "loginTitle": "ನಿಮ್ಮ ಇಮೇಲ್ ವಿಳಾಸ ಹಾಕಿ",
+  "loginSubtitle": "ನಿಮ್ಮ ಇಮೇಲ್‌ಗೆ 6 ಅಂಕಿಯ ಕೋಡ್ ಕಳುಹಿಸುತ್ತೇವೆ",
+  "phoneLabel": "ಮೊಬೈಲ್ ನಂಬರ್",
+  "phoneHint": "10 ಅಂಕಿ",
+  "phoneInvalid": "10 ಅಂಕಿಯ ನಂಬರ್ ಹಾಕಿ",
+  "emailLabel": "ಇಮೇಲ್ ವಿಳಾಸ",
+  "emailHint": "name@example.com",
+  "emailInvalid": "ಸರಿಯಾದ ಇಮೇಲ್ ವಿಳಾಸ ಹಾಕಿ",
+  "checkYourEmail": "ನಿಮ್ಮ ಇಮೇಲ್ ನೋಡಿ. ಕೋಡ್ ಬರಲು ಒಂದು ನಿಮಿಷ ಆಗಬಹುದು.",
+  "emailNotRegistered": "ಈ ಇಮೇಲ್ ಇನ್ನೂ ನೋಂದಣಿ ಆಗಿಲ್ಲ. ನಿಮ್ಮ ಆಶಾ ಕಾರ್ಯಕರ್ತೆ ನಿಮ್ಮನ್ನು ನೋಂದಾಯಿಸುವಾಗ ಇದನ್ನು ಸೇರಿಸುತ್ತಾರೆ — ಅವರನ್ನು ಕೇಳಿ.",
+  "emailChecking": "ಪರಿಶೀಲಿಸುತ್ತಿದೆ…",
+  "sendOtp": "ಕೋಡ್ ಕಳುಹಿಸಿ",
+  "otpTitle": "ಕೋಡ್ ಹಾಕಿ",
+  "otpSentTo": "{phone} ಗೆ ಕಳುಹಿಸಿದ್ದೇವೆ",
+  "@otpSentTo": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "otpInvalid": "6 ಅಂಕಿಗಳನ್ನೂ ಹಾಕಿ",
+  "verify": "ಪರಿಶೀಲಿಸಿ",
+  "changeNumber": "ನಂಬರ್ ಬದಲಿಸಿ",
+  "resendOtp": "ಕೋಡ್ ಮತ್ತೆ ಕಳುಹಿಸಿ",
+  "otpSending": "ಕೋಡ್ ಕಳುಹಿಸುತ್ತಿದ್ದೇವೆ…",
+  "otpVerifying": "ಪರಿಶೀಲಿಸುತ್ತಿದ್ದೇವೆ…",
+  "otpSendFailed": "ಕೋಡ್ ಕಳುಹಿಸಲು ಆಗಲಿಲ್ಲ. ನಂಬರ್ ಸರಿ ಇದೆಯೇ ನೋಡಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+  "otpWrongCode": "ಈ ಕೋಡ್ ಸರಿಯಿಲ್ಲ. ಎಸ್‌ಎಂಎಸ್ ನೋಡಿ ಮತ್ತೆ ಹಾಕಿ.",
+  "noNetwork": "ಇಂಟರ್ನೆಟ್ ಇಲ್ಲ. ಸಂಪರ್ಕ ನೋಡಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+  "recordNotLinked": "ಈ ನಂಬರ್‌ಗೆ ನಿಮ್ಮ ತಾಯಿ ಕಾರ್ಡ್ ದಾಖಲೆ ಇನ್ನೂ ಜೋಡಿಸಿಲ್ಲ. ನಿಮ್ಮ ಆಶಾ ಕಾರ್ಯಕರ್ತೆಯನ್ನು ಕೇಳಿ.",
+  "consentTitle": "ನಿಮ್ಮ ಮಾಹಿತಿಯ ಬಗ್ಗೆ",
+  "consentWhatTitle": "ನಾವು ಏನು ಇಟ್ಟುಕೊಳ್ಳುತ್ತೇವೆ",
+  "consentWhatBody": "ನಿಮ್ಮ ಹೆಸರು, ಫೋನ್ ನಂಬರ್, ಮತ್ತು ನಿಮ್ಮ ತಾಯಿ ಕಾರ್ಡ್‌ನಲ್ಲಿ ಬರೆದಿರುವ ಆರೋಗ್ಯ ಮಾಹಿತಿ.",
+  "consentWhoTitle": "ಯಾರು ನೋಡಬಹುದು",
+  "consentWhoBody": "ನಿಮ್ಮ ಆಶಾ ಕಾರ್ಯಕರ್ತೆ ಮತ್ತು ನಿಮ್ಮ ಆರೋಗ್ಯ ಕೇಂದ್ರದ ವೈದ್ಯರು ಮಾತ್ರ.",
+  "consentWithdrawTitle": "ನಿರ್ಧಾರ ನಿಮ್ಮದೇ",
+  "consentWithdrawBody": "ಯಾವಾಗ ಬೇಕಾದರೂ ಈ ಒಪ್ಪಿಗೆ ಹಿಂಪಡೆಯಬಹುದು. ನಿಮ್ಮ ಆಶಾ ಕಾರ್ಯಕರ್ತೆಗೆ ಹೇಳಿದರೆ ಸಾಕು.",
+  "consentAccept": "ನನಗೆ ಅರ್ಥವಾಯಿತು, ಒಪ್ಪುತ್ತೇನೆ",
+  "consentMustAccept": "ಮುಂದೆ ಹೋಗಲು ಒಪ್ಪಿಗೆ ಕೊಡಿ",
+  "greeting": "ನಮಸ್ಕಾರ, {name}",
+  "@greeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeToday": "ಇಂದು ನಿಮ್ಮ ಆರೋಗ್ಯ",
+  "weeksPregnantLabel": "ಗರ್ಭಾವಸ್ಥೆ",
+  "weeksValue": "{weeks} ವಾರ",
+  "@weeksValue": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "weeksProgress": "40 ವಾರಗಳಲ್ಲಿ {weeks}ನೇ ವಾರ",
+  "@weeksProgress": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "eddLabel": "ನಿರೀಕ್ಷಿತ ಹೆರಿಗೆ ದಿನ",
+  "daysRemaining": "ಇನ್ನು {days} ದಿನ",
+  "@daysRemaining": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "nextCheckupLabel": "ಮುಂದಿನ ತಪಾಸಣೆ",
+  "checkupOverdueBadge": "ತಡವಾಗಿದೆ",
+  "askSetuCardTitle": "ಸೇತುವಿನ ಜೊತೆ ಮಾತಾಡಿ",
+  "askSetuCardBody": "ಗರ್ಭಾವಸ್ಥೆ ಬಗ್ಗೆ ಏನು ಬೇಕಾದರೂ ಕೇಳಿ. ಮಾತಾಡಿ ಅಥವಾ ಬರೆಯಿರಿ.",
+  "exploreLabel": "ನಿಮ್ಮ ದಾಖಲೆ",
+  "moreLabel": "ಇನ್ನಷ್ಟು",
+  "navThayiCard": "ನನ್ನ ತಾಯಿ ಕಾರ್ಡ್",
+  "navCheckups": "ನನ್ನ ತಪಾಸಣೆ",
+  "navHealth": "ನನ್ನ ಆರೋಗ್ಯ",
+  "navSchemes": "ನನ್ನ ಯೋಜನೆಗಳು",
+  "navProfile": "ನನ್ನ ವಿವರ",
+  "profileTitle": "ನನ್ನ ವಿವರ",
+  "photoSectionLabel": "ಫೋಟೋ",
+  "addPhoto": "ಫೋಟೋ ಸೇರಿಸಿ",
+  "changePhoto": "ಫೋಟೋ ಬದಲಿಸಿ",
+  "removePhoto": "ಫೋಟೋ ತೆಗೆದುಹಾಕಿ",
+  "takePhoto": "ಕ್ಯಾಮೆರಾದಲ್ಲಿ ತೆಗೆಯಿರಿ",
+  "chooseFromGallery": "ಫೋನಿನಿಂದ ಆರಿಸಿ",
+  "photoPrivacyNote": "ಈ ಫೋಟೋ ನಿಮ್ಮ ಫೋನಿನಲ್ಲೇ ಇರುತ್ತದೆ. ಎಲ್ಲಿಗೂ ಕಳುಹಿಸುವುದಿಲ್ಲ.",
+  "photoFailed": "ಫೋಟೋ ಉಳಿಸಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+  "photoRemoved": "ಫೋಟೋ ತೆಗೆದುಹಾಕಲಾಗಿದೆ",
+  "yourDetailsSection": "ನಿಮ್ಮ ವಿವರ",
+  "detailsWrittenByAsha": "ಈ ವಿವರವನ್ನು ನಿಮ್ಮ ಆಶಾ ಕಾರ್ಯಕರ್ತೆ ಬರೆದಿದ್ದಾರೆ. ಇಲ್ಲಿ ನೀವು ಬದಲಿಸಲು ಆಗುವುದಿಲ್ಲ.",
+  "reportMistake": "ಇದರಲ್ಲಿ ಏನೋ ತಪ್ಪಿದೆ",
+  "accessSection": "ನಿಮ್ಮ ದಾಖಲೆ ನೋಡಲು ಕೇಳಿದವರು",
+  "accessRequestFrom": "{name} ನಿಮ್ಮ ಆರೋಗ್ಯ ದಾಖಲೆ ನೋಡಲು ಕೇಳುತ್ತಿದ್ದಾರೆ",
+  "@accessRequestFrom": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "accessRequestReason": "ಕಾರಣ: {reason}",
+  "@accessRequestReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "accessApprove": "ಅನುಮತಿ ಕೊಡಿ",
+  "accessReject": "ಬೇಡ",
+  "accessApproved": "{name} ಅವರಿಗೆ ಅನುಮತಿ ಕೊಟ್ಟಿದ್ದೀರಿ",
+  "@accessApproved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "accessRejected": "{name} ಅವರಿಗೆ ಅನುಮತಿ ಕೊಟ್ಟಿಲ್ಲ",
+  "@accessRejected": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "accessNone": "ನಿಮ್ಮ ದಾಖಲೆ ನೋಡಲು ಯಾರೂ ಕೇಳಿಲ್ಲ",
+  "accessActiveTitle": "ಈಗ ನಿಮ್ಮ ದಾಖಲೆ ನೋಡಬಹುದು",
+  "accessActiveUntil": "{date} ವರೆಗೆ",
+  "@accessActiveUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accessByQr": "ನೀವು ಕ್ಯೂಆರ್ ಕೋಡ್ ತೋರಿಸಿದ್ದರಿಂದ",
+  "accessRevoke": "ನಿಲ್ಲಿಸಿ",
+  "accessRevoked": "ನಿಲ್ಲಿಸಲಾಗಿದೆ",
+  "accessExplain": "ನೀವು ಅನುಮತಿ ಕೊಟ್ಟರೆ ಮಾತ್ರ, ಅಥವಾ ಆಸ್ಪತ್ರೆಯಲ್ಲಿ ಕ್ಯೂಆರ್ ಕೋಡ್ ತೋರಿಸಿದರೆ ಮಾತ್ರ ವೈದ್ಯರು ನಿಮ್ಮ ದಾಖಲೆ ತೆರೆಯಬಹುದು.",
+  "consentSection": "ನಿಮ್ಮ ಒಪ್ಪಿಗೆ",
+  "consentGivenOn": "{date} ರಂದು ನೀವು ಒಪ್ಪಿಗೆ ಕೊಟ್ಟಿದ್ದೀರಿ",
+  "@consentGivenOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "consentNotRecorded": "ಒಪ್ಪಿಗೆ ದಾಖಲಾಗಿಲ್ಲ",
+  "withdrawConsent": "ನನ್ನ ಒಪ್ಪಿಗೆ ಹಿಂಪಡೆಯಿರಿ",
+  "withdrawConsentTitle": "ಒಪ್ಪಿಗೆ ಹಿಂಪಡೆಯಬೇಕೇ?",
+  "withdrawConsentBody": "ನೀವು ಹೊರಗೆ ಬರುತ್ತೀರಿ ಮತ್ತು ಈ ಫೋನಿನಲ್ಲಿ ನಿಮ್ಮ ದಾಖಲೆ ಕಾಣಿಸುವುದಿಲ್ಲ. ನಿಮ್ಮ ಆಶಾ ಕಾರ್ಯಕರ್ತೆ ಮತ್ತು ಆರೋಗ್ಯ ಕೇಂದ್ರದಲ್ಲಿ ನಿಮ್ಮ ಕಾಗದದ ದಾಖಲೆ ಇದ್ದೇ ಇರುತ್ತದೆ. ಯಾವಾಗ ಬೇಕಾದರೂ ಮತ್ತೆ ಒಪ್ಪಿಗೆ ಕೊಡಬಹುದು.",
+  "withdrawConsentConfirm": "ಹೌದು, ಹಿಂಪಡೆಯಿರಿ",
+  "settingsSection": "ಸೆಟ್ಟಿಂಗ್ಸ್",
+  "navDangerSigns": "ಅಪಾಯದ ಲಕ್ಷಣ",
+  "navAsha": "ನನ್ನ ಆಶಾ ಕಾರ್ಯಕರ್ತೆ",
+  "navAfterDelivery": "ಹೆರಿಗೆಯ ನಂತರ",
+  "emergencyShort": "ತುರ್ತು",
+  "emergencyTitle": "ತುರ್ತು",
+  "emergencyIntro": "ನಿಮಗೆ ಸಹಾಯ ಮಾಡುವವರಿಗೆ ಈ ಪರದೆ ತೋರಿಸಿ.",
+  "bloodGroupLabel": "ರಕ್ತದ ಗುಂಪು",
+  "riskFlagsLabel": "ಆರೋಗ್ಯ ಎಚ್ಚರಿಕೆ",
+  "allergiesLabel": "ಅಲರ್ಜಿ",
+  "noneRecorded": "ಯಾವುದೂ ಇಲ್ಲ",
+  "callAsha": "ಆಶಾ ಕಾರ್ಯಕರ್ತೆಗೆ ಕರೆ",
+  "callPhc": "ಆರೋಗ್ಯ ಕೇಂದ್ರಕ್ಕೆ ಕರೆ",
+  "callAmbulance": "108 ಆಂಬ್ಯುಲೆನ್ಸ್",
+  "nearestHospitalLabel": "ಹತ್ತಿರದ ಆಸ್ಪತ್ರೆ",
+  "directions": "ದಾರಿ ತೋರಿಸಿ",
+  "distanceKm": "{km} ಕಿ.ಮೀ ದೂರ",
+  "@distanceKm": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "callFailed": "ಕರೆ ಮಾಡಲು ಆಗಲಿಲ್ಲ",
+  "thayiCardTitle": "ನನ್ನ ತಾಯಿ ಕಾರ್ಡ್",
+  "qrCaption": "ಆಸ್ಪತ್ರೆಯಲ್ಲಿ ಈ ಕೋಡ್ ತೋರಿಸಿ",
+  "worksOffline": "ಇಂಟರ್ನೆಟ್ ಇಲ್ಲದೆಯೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ",
+  "fieldName": "ಹೆಸರು",
+  "fieldAge": "ವಯಸ್ಸು",
+  "ageYears": "{age} ವರ್ಷ",
+  "@ageYears": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "fieldGuardian": "ಪತಿ / ಪಾಲಕರು",
+  "fieldVillage": "ಗ್ರಾಮ",
+  "fieldBloodGroup": "ರಕ್ತದ ಗುಂಪು",
+  "fieldEdd": "ಹೆರಿಗೆ ದಿನ",
+  "fieldCardNumber": "ತಾಯಿ ಕಾರ್ಡ್ ನಂಬರ್",
+  "fieldAsha": "ಆಶಾ ಕಾರ್ಯಕರ್ತೆ",
+  "fieldPhc": "ಆರೋಗ್ಯ ಕೇಂದ್ರ",
+  "checkupsTitle": "ನನ್ನ ತಪಾಸಣೆ",
+  "tabUpcoming": "ಮುಂದಿನವು",
+  "tabCompleted": "ಮುಗಿದವು",
+  "visitNumber": "{number}ನೇ ತಪಾಸಣೆ",
+  "@visitNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "whatHappensLabel": "ಏನು ಮಾಡುತ್ತಾರೆ",
+  "locationLabel": "ಎಲ್ಲಿ",
+  "weightLabel": "ತೂಕ",
+  "weightKg": "{kg} ಕೆ.ಜಿ",
+  "@weightKg": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "bpLabel": "ರಕ್ತದೊತ್ತಡ",
+  "bpValue": "{systolic}/{diastolic}",
+  "@bpValue": {
+    "placeholders": {
+      "systolic": {
+        "type": "int"
+      },
+      "diastolic": {
+        "type": "int"
+      }
+    }
+  },
+  "recordedBy": "{name} ಬರೆದಿದ್ದಾರೆ",
+  "@recordedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "overdueTitle": "ಈ ತಪಾಸಣೆ ತಡವಾಗಿದೆ",
+  "overdueBody": "ಕಾಯಬೇಡಿ. ಇಂದೇ ನಿಮ್ಮ ಆಶಾ ಕಾರ್ಯಕರ್ತೆಯ ಜೊತೆ ಮಾತಾಡಿ.",
+  "contactAsha": "ಆಶಾ ಜೊತೆ ಮಾತಾಡಿ",
+  "emptyUpcoming": "ಮುಂದಿನ ತಪಾಸಣೆ ಇನ್ನೂ ಗೊತ್ತಾಗಿಲ್ಲ",
+  "emptyCompleted": "ಇನ್ನೂ ಯಾವ ತಪಾಸಣೆಯೂ ಆಗಿಲ್ಲ",
+  "healthTitle": "ನನ್ನ ಆರೋಗ್ಯ",
+  "riskFlagsSection": "ರಕ್ತದ ಗುಂಪು ಮತ್ತು ಎಚ್ಚರಿಕೆ",
+  "noRiskFlags": "ಯಾವ ಎಚ್ಚರಿಕೆಯೂ ಇಲ್ಲ",
+  "weightHistory": "ತೂಕ",
+  "bpHistory": "ರಕ್ತದೊತ್ತಡ",
+  "systolic": "ಮೇಲಿನದು",
+  "diastolic": "ಕೆಳಗಿನದು",
+  "weekShort": "{week}ವಾ",
+  "@weekShort": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "tabletsSection": "ಇಂದಿನ ಮಾತ್ರೆ",
+  "tabletIfa": "ಕಬ್ಬಿಣಾಂಶದ ಮಾತ್ರೆ (IFA)",
+  "tabletCalcium": "ಕ್ಯಾಲ್ಸಿಯಂ ಮಾತ್ರೆ",
+  "tabletIfaNote": "ಊಟದ ನಂತರ ಒಂದು ಮಾತ್ರೆ",
+  "tabletCalciumNote": "ಒಂದು ಮಾತ್ರೆ, ಕಬ್ಬಿಣಾಂಶದ ಮಾತ್ರೆಯ ಜೊತೆ ಬೇಡ",
+  "markTaken": "ತೆಗೆದುಕೊಂಡೆ",
+  "markNotTaken": "ತೆಗೆದುಕೊಂಡಿಲ್ಲ",
+  "ttSection": "ಟಿ.ಟಿ. ಲಸಿಕೆ",
+  "ttDose": "ಟಿ.ಟಿ. {number}ನೇ ಡೋಸ್",
+  "@ttDose": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "statusGiven": "ಹಾಕಿಸಲಾಗಿದೆ",
+  "statusDue": "ಬಾಕಿ ಇದೆ",
+  "givenOn": "{date} ರಂದು ಹಾಕಿಸಲಾಗಿದೆ",
+  "@givenOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "chartNoData": "ಇನ್ನೂ ಅಳತೆ ಆಗಿಲ್ಲ",
+  "schemesTitle": "ನನ್ನ ಯೋಜನೆಗಳು",
+  "badgeEligible": "ನೀವು ಅರ್ಹರು",
+  "badgeNotEligible": "ಈಗ ಅರ್ಹರಲ್ಲ",
+  "whatYouGet": "ಏನು ಸಿಗುತ್ತದೆ",
+  "documentsNeeded": "ತೆಗೆದುಕೊಂಡು ಹೋಗಬೇಕಾದ ದಾಖಲೆ",
+  "nearbyHospitals": "ಹತ್ತಿರದ ಆಸ್ಪತ್ರೆಗಳು",
+  "schemesFootnote": "ಇಲ್ಲಿ ತೋರಿಸಿರುವ ಸೌಲಭ್ಯ ಮತ್ತು ಅರ್ಹತೆ ಸೂಚನೆ ಮಾತ್ರ. ನಿಮ್ಮ ಆಶಾ ಕಾರ್ಯಕರ್ತೆ ಅಥವಾ ಆರೋಗ್ಯ ಕೇಂದ್ರದಲ್ಲಿ ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ.",
+  "schemeThayiBhagyaName": "ತಾಯಿ ಭಾಗ್ಯ",
+  "schemeThayiBhagyaBenefit": "ಸರ್ಕಾರಿ ಆಸ್ಪತ್ರೆ ದೂರ ಇದ್ದಾಗ, ಗುರುತಿಸಿದ ಖಾಸಗಿ ಆಸ್ಪತ್ರೆಯಲ್ಲಿ ಉಚಿತ ಹೆರಿಗೆ.",
+  "schemePmmvyName": "ಪಿ.ಎಂ.ಎಂ.ವಿ.ವೈ",
+  "schemePmmvyBenefit": "ಮೊದಲ ಮಗುವಿಗೆ ಹಣದ ನೆರವು. ತಪಾಸಣೆ ಆದ ನಂತರ ನಿಮ್ಮ ಬ್ಯಾಂಕ್ ಖಾತೆಗೆ ಕಂತುಗಳಲ್ಲಿ ಬರುತ್ತದೆ.",
+  "schemeJsyName": "ಜನನಿ ಸುರಕ್ಷಾ ಯೋಜನೆ",
+  "schemeJsyBenefit": "ಸರ್ಕಾರಿ ಆಸ್ಪತ್ರೆಯಲ್ಲಿ ಹೆರಿಗೆ ಆದರೆ ಹಣದ ನೆರವು, ಹೆರಿಗೆಯ ನಂತರ ಕೊಡುತ್ತಾರೆ.",
+  "schemePrasootiAraikeName": "ಪ್ರಸೂತಿ ಆರೈಕೆ",
+  "schemePrasootiAraikeBenefit": "ಬಿ.ಪಿ.ಎಲ್. ಕುಟುಂಬದವರಿಗೆ ಗರ್ಭಾವಸ್ಥೆಯ ಕೊನೆಯ ತಿಂಗಳುಗಳಲ್ಲಿ ವಿಶ್ರಾಂತಿ ಮತ್ತು ಊಟಕ್ಕೆ ನೆರವು.",
+  "schemeMadiluName": "ಮಡಿಲು ಕಿಟ್",
+  "schemeMadiluBenefit": "ಹೆರಿಗೆಯ ನಂತರ ಆಸ್ಪತ್ರೆಯಲ್ಲಿ ಕೊಡುವ ಕಿಟ್ — ನಿಮಗೆ ಮತ್ತು ಮಗುವಿಗೆ ಬಟ್ಟೆ ಮತ್ತು ಅಗತ್ಯ ವಸ್ತುಗಳು.",
+  "schemeJsskName": "ಜೆ.ಎಸ್.ಎಸ್.ಕೆ",
+  "schemeJsskBenefit": "ಸರ್ಕಾರಿ ಆಸ್ಪತ್ರೆಯಲ್ಲಿ ಉಚಿತ ಹೆರಿಗೆ, ಉಚಿತ ಔಷಧಿ, ಉಚಿತ ಪರೀಕ್ಷೆ, ಉಚಿತ ಊಟ ಮತ್ತು ಉಚಿತ ವಾಹನ.",
+  "docThayiCard": "ತಾಯಿ ಕಾರ್ಡ್",
+  "docAadhaar": "ನಿಮ್ಮ ಆಧಾರ್ ಕಾರ್ಡ್",
+  "docBankPassbook": "ನಿಮ್ಮ ಹೆಸರಿನ ಬ್ಯಾಂಕ್ ಪಾಸ್‌ಬುಕ್",
+  "docBplCard": "ಬಿ.ಪಿ.ಎಲ್. / ಪಡಿತರ ಚೀಟಿ",
+  "docHusbandAadhaar": "ಪತಿಯ ಆಧಾರ್ ಕಾರ್ಡ್",
+  "docMchRegistration": "ಗರ್ಭ ನೋಂದಣಿ ಚೀಟಿ",
+  "docDeliveryProof": "ಹೆರಿಗೆಯ ಡಿಸ್ಚಾರ್ಜ್ ಪತ್ರ",
+  "askSetuTitle": "ಸೇತುವನ್ನು ಕೇಳಿ",
+  "chatWelcome": "ನಮಸ್ಕಾರ. ಗರ್ಭಾವಸ್ಥೆ ಬಗ್ಗೆ ಏನು ಬೇಕಾದರೂ ಕೇಳಿ. ಮಾತಾಡಬಹುದು ಅಥವಾ ಬರೆಯಬಹುದು.",
+  "chatHint": "ನಿಮ್ಮ ಪ್ರಶ್ನೆ ಬರೆಯಿರಿ",
+  "chatSend": "ಕಳುಹಿಸಿ",
+  "chatSpeak": "ಮಾತಾಡಿ",
+  "chatListening": "ಕೇಳುತ್ತಿದ್ದೇನೆ…",
+  "chatThinking": "ಯೋಚಿಸುತ್ತಿದ್ದೇನೆ…",
+  "chatDisclaimer": "ಸಲಹೆ ಮಾತ್ರ — ವೈದ್ಯರ ಸಲಹೆಯಲ್ಲ",
+  "suggestionsLabel": "ಸಾಮಾನ್ಯ ಪ್ರಶ್ನೆಗಳು",
+  "topicFood": "ಆಹಾರ",
+  "topicRest": "ವಿಶ್ರಾಂತಿ ಮತ್ತು ಕೆಲಸ",
+  "topicAfterDelivery": "ಹೆರಿಗೆಯ ನಂತರ",
+  "qFood1": "ಪ್ರತಿ ದಿನ ಏನು ತಿನ್ನಬೇಕು?",
+  "qFood2": "ಚಹಾ ಕಾಫಿ ಕುಡಿಯಬಹುದೇ?",
+  "qFood3": "ಬೆಳಿಗ್ಗೆ ವಾಕರಿಕೆ ಆಗುತ್ತದೆ. ಏನು ಮಾಡಲಿ?",
+  "qRest1": "ಎಷ್ಟು ವಿಶ್ರಾಂತಿ ತೆಗೆದುಕೊಳ್ಳಬೇಕು?",
+  "qRest2": "ಮನೆ ಕೆಲಸ ಮಾಡಬಹುದೇ?",
+  "qRest3": "ತವರು ಮನೆಗೆ ಪ್ರಯಾಣ ಮಾಡಬಹುದೇ?",
+  "qAfter1": "ಮಗುವಿಗೆ ಯಾವಾಗ ಹಾಲುಣಿಸಬೇಕು?",
+  "qAfter2": "ಹೆರಿಗೆಯ ನಂತರ ಎಷ್ಟು ದಿನ ವಿಶ್ರಾಂತಿ ಬೇಕು?",
+  "qAfter3": "ಮಗುವಿಗೆ ಮೊದಲ ಲಸಿಕೆ ಯಾವಾಗ?",
+  "aMedicineRefusal": "ಔಷಧಿ ಅಥವಾ ಮಾತ್ರೆಯ ಪ್ರಮಾಣದ ಬಗ್ಗೆ ನಾನು ಸಲಹೆ ಕೊಡುವುದಿಲ್ಲ. ನಿಮ್ಮ ಆಶಾ ಕಾರ್ಯಕರ್ತೆ ಅಥವಾ ಆರೋಗ್ಯ ಕೇಂದ್ರದ ವೈದ್ಯರನ್ನು ಕೇಳಿ — ನಿಮ್ಮ ದಾಖಲೆ ಅವರಿಗೆ ಗೊತ್ತು.",
+  "contactAshaFromChat": "ಇದನ್ನು ನನ್ನ ಆಶಾಗೆ ಕಳುಹಿಸಿ",
+  "messageSentToAsha": "ನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು {name} ಅವರಿಗೆ ತಿಳಿಸಲಾಗಿದೆ. ಅವರು ನಿಮಗೆ ಕರೆ ಮಾಡುತ್ತಾರೆ.",
+  "@messageSentToAsha": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "micPermissionTitle": "ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿ",
+  "micPermissionBody": "ನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು ಕೇಳಿ ಅಕ್ಷರಕ್ಕೆ ಬದಲಿಸಲು ಮಾತ್ರ ಸೇತುವಿಗೆ ಮೈಕ್ರೊಫೋನ್ ಬೇಕು. ಯಾವುದನ್ನೂ ರೆಕಾರ್ಡ್ ಮಾಡುವುದಿಲ್ಲ, ಇಟ್ಟುಕೊಳ್ಳುವುದಿಲ್ಲ.",
+  "micAllow": "ಅನುಮತಿ ಕೊಡಿ",
+  "micDenied": "ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿ ಸಿಗಲಿಲ್ಲ. ಬರೆದು ಕೇಳಬಹುದು.",
+  "micUnavailable": "ಈ ಫೋನಿನಲ್ಲಿ ಮಾತಿನ ಸೌಲಭ್ಯ ಇಲ್ಲ. ದಯವಿಟ್ಟು ಬರೆದು ಕೇಳಿ.",
+  "dangerInterruptTitle": "ಇದಕ್ಕೆ ಈಗಲೇ ಗಮನ ಬೇಕು",
+  "dangerInterruptBody": "ನೀವು ಹೇಳಿದ್ದು ಗಂಭೀರವಾಗಿರಬಹುದು. ಇಲ್ಲಿ ಉತ್ತರಕ್ಕಾಗಿ ಕಾಯಬೇಡಿ. ಈಗಲೇ ಸಹಾಯಕ್ಕೆ ಕರೆ ಮಾಡಿ.",
+  "dangerInterruptDismiss": "ನಾನು ಸುರಕ್ಷಿತವಾಗಿದ್ದೇನೆ, ಹಿಂದೆ ಹೋಗಿ",
+  "dangerInterruptNote": "ನಿಮ್ಮ ಸಂದೇಶ ಕಳುಹಿಸಿಲ್ಲ. ನಿಮ್ಮ ಸುರಕ್ಷತೆ ಮೊದಲು.",
+  "dangerSignsTitle": "ಅಪಾಯದ ಲಕ್ಷಣಗಳು",
+  "dangerSignsIntro": "ಇವುಗಳಲ್ಲಿ ಯಾವುದಾದರೂ ಕಂಡರೆ ಅದೇ ಗಂಟೆಯಲ್ಲಿ ಸಹಾಯ ಪಡೆಯಿರಿ. ಮುಂದಿನ ತಪಾಸಣೆಗೆ ಕಾಯಬೇಡಿ.",
+  "whatToDoLabel": "ಏನು ಮಾಡಬೇಕು",
+  "callMyAsha": "ನನ್ನ ಆಶಾಗೆ ಕರೆ",
+  "dsBleedingTitle": "ರಕ್ತಸ್ರಾವ",
+  "dsBleedingBody": "ಗರ್ಭಾವಸ್ಥೆಯಲ್ಲಿ ಕೆಳಗಿನಿಂದ ರಕ್ತ ಹೋಗುವುದು — ಸ್ವಲ್ಪವಾದರೂ ಸರಿ.",
+  "dsBleedingDo": "ಮಲಗಿಕೊಳ್ಳಿ, ಒಬ್ಬರೇ ಪ್ರಯಾಣ ಮಾಡಬೇಡಿ, ತಕ್ಷಣ ಆಶಾ ಕಾರ್ಯಕರ್ತೆಗೆ ಅಥವಾ 108 ಗೆ ಕರೆ ಮಾಡಿ.",
+  "dsHeadacheTitle": "ತೀವ್ರ ತಲೆನೋವು",
+  "dsHeadacheBody": "ಬಿಡದೆ ಇರುವ ಜೋರಾದ ತಲೆನೋವು, ಅದರಲ್ಲೂ ಊತದ ಜೊತೆಗೆ ಬಂದರೆ.",
+  "dsHeadacheDo": "ಅದೇ ದಿನ ಆರೋಗ್ಯ ಕೇಂದ್ರಕ್ಕೆ ಹೋಗಿ. ರಕ್ತದೊತ್ತಡ ಪರೀಕ್ಷೆ ಆಗಲೇಬೇಕು.",
+  "dsVisionTitle": "ಕಣ್ಣು ಮಂಜಾಗುವುದು",
+  "dsVisionBody": "ಎಲ್ಲವೂ ಮಂಜಾಗಿ ಕಾಣುವುದು, ಅಥವಾ ಕಣ್ಣ ಮುಂದೆ ಚುಕ್ಕೆ ಮಿಂಚು ಕಾಣುವುದು.",
+  "dsVisionDo": "ಇದು ಹೆಚ್ಚಿನ ರಕ್ತದೊತ್ತಡದ ಜೊತೆ ಬರಬಹುದು. ಈಗಲೇ ಆರೋಗ್ಯ ಕೇಂದ್ರಕ್ಕೆ ಹೋಗಿ.",
+  "dsSwellingTitle": "ಮುಖ ಮತ್ತು ಕೈ ಊತ",
+  "dsSwellingBody": "ಮುಖ ಊದಿಕೊಳ್ಳುವುದು, ಅಥವಾ ಬೆರಳು ಊದಿ ಉಂಗುರ ಬಿಗಿಯಾಗುವುದು.",
+  "dsSwellingDo": "ಇಂದೇ ರಕ್ತದೊತ್ತಡ ಮತ್ತು ಮೂತ್ರ ಪರೀಕ್ಷೆ ಮಾಡಿಸಿ.",
+  "dsFeverTitle": "ಜ್ವರ",
+  "dsFeverBody": "ಚಳಿಯ ಜೊತೆ ಜ್ವರ, ಅಥವಾ ಮೂತ್ರ ಮಾಡುವಾಗ ಉರಿ.",
+  "dsFeverDo": "ನಿಮ್ಮಷ್ಟಕ್ಕೆ ಯಾವ ಮಾತ್ರೆಯನ್ನೂ ತೆಗೆದುಕೊಳ್ಳಬೇಡಿ. ಆರೋಗ್ಯ ಕೇಂದ್ರಕ್ಕೆ ಹೋಗಿ.",
+  "dsConvulsionsTitle": "ಸೆಳೆತ ಅಥವಾ ಫಿಟ್ಸ್",
+  "dsConvulsionsBody": "ಮೈ ನಡುಗಿ ಬಿಗಿಯಾಗುವುದು, ಅಥವಾ ಪ್ರಜ್ಞೆ ತಪ್ಪುವುದು.",
+  "dsConvulsionsDo": "ಇದು ತುರ್ತು ಪರಿಸ್ಥಿತಿ. ಒಂದು ಮಗ್ಗುಲಿಗೆ ತಿರುಗಿಸಿ ಮಲಗಿಸಿ, ತಕ್ಷಣ 108 ಗೆ ಕರೆ ಮಾಡಿ.",
+  "dsMovementTitle": "ಮಗು ಆಡುತ್ತಿಲ್ಲ",
+  "dsMovementBody": "ಮಗುವಿನ ಚಲನೆ ಎಂದಿಗಿಂತ ಕಡಿಮೆ, ಅಥವಾ ಕೆಲವು ಗಂಟೆಗಳಿಂದ ಚಲನೆಯೇ ಇಲ್ಲ.",
+  "dsMovementDo": "ಎಡ ಮಗ್ಗುಲಲ್ಲಿ ಮಲಗಿ ಚಲನೆ ಎಣಿಸಿ. ಇನ್ನೂ ಕಡಿಮೆ ಇದ್ದರೆ ಈಗಲೇ ಆರೋಗ್ಯ ಕೇಂದ್ರಕ್ಕೆ ಹೋಗಿ.",
+  "ashaTitle": "ನನ್ನ ಆಶಾ ಕಾರ್ಯಕರ್ತೆ",
+  "ashaRole": "ನಿಮ್ಮ ಆಶಾ ಕಾರ್ಯಕರ್ತೆ",
+  "subCentreLabel": "ಉಪ ಕೇಂದ್ರ",
+  "phoneNumberLabel": "ಫೋನ್ ನಂಬರ್",
+  "callNow": "ಈಗ ಕರೆ ಮಾಡಿ",
+  "ashaNote": "ನಿಮ್ಮ ದಾಖಲೆಯನ್ನು ಅವರೇ ಬರೆಯುತ್ತಾರೆ ಮತ್ತು ಮನೆಗೆ ಬಂದು ನೋಡುತ್ತಾರೆ. ಯಾವಾಗ ಬೇಕಾದರೂ ಏನು ಬೇಕಾದರೂ ಕೇಳಿ.",
+  "afterDeliveryTitle": "ಹೆರಿಗೆಯ ನಂತರ",
+  "afterDeliveryNote": "ಮಗು ಹುಟ್ಟಿದ ನಂತರ ಏನಾಗುತ್ತದೆ ಎಂಬುದು ಇಲ್ಲಿದೆ. ಈಗ ಏನೂ ಮಾಡಬೇಕಾಗಿಲ್ಲ.",
+  "immunisationSection": "ಮಗುವಿನ ಲಸಿಕೆಗಳು",
+  "growthSection": "ಮಗುವಿನ ಬೆಳವಣಿಗೆ",
+  "growthEmpty": "ಮಗು ಹುಟ್ಟಿದ ನಂತರ ತೂಕ ಇಲ್ಲಿ ಬರೆಯುತ್ತಾರೆ",
+  "statusPending": "ಬಾಕಿ",
+  "vacBcg": "ಬಿ.ಸಿ.ಜಿ.",
+  "vacOpv": "ಪೋಲಿಯೊ ಹನಿ (ಒ.ಪಿ.ವಿ.)",
+  "vacHepB": "ಹೆಪಟೈಟಿಸ್ ಬಿ",
+  "vacPenta": "ಪೆಂಟಾವೇಲೆಂಟ್",
+  "vacRota": "ರೋಟಾ ವೈರಸ್",
+  "vacMr": "ದಡಾರ - ರುಬೆಲ್ಲಾ",
+  "ageAtBirth": "ಹುಟ್ಟಿದಾಗ",
+  "age6Weeks": "6 ವಾರಕ್ಕೆ",
+  "age10Weeks": "10 ವಾರಕ್ಕೆ",
+  "age14Weeks": "14 ವಾರಕ್ಕೆ",
+  "age9Months": "9 ತಿಂಗಳಿಗೆ",
+  "riskAnaemia": "ರಕ್ತಹೀನತೆ",
+  "riskHighBp": "ಹೆಚ್ಚಿನ ರಕ್ತದೊತ್ತಡ",
+  "riskUnderweight": "ಕಡಿಮೆ ತೂಕ",
+  "riskPreviousCsection": "ಹಿಂದೆ ಸಿಸೇರಿಯನ್",
+  "riskAgeRisk": "ವಯಸ್ಸಿನ ಅಪಾಯ",
+  "riskTwins": "ಅವಳಿ ಮಕ್ಕಳು",
+  "actWeightBp": "ತೂಕ ಮತ್ತು ರಕ್ತದೊತ್ತಡ",
+  "actBloodTest": "ರಕ್ತ ಪರೀಕ್ಷೆ",
+  "actUrineTest": "ಮೂತ್ರ ಪರೀಕ್ಷೆ",
+  "actTtVaccine": "ಟಿ.ಟಿ. ಲಸಿಕೆ",
+  "actIfaTablets": "ಕಬ್ಬಿಣಾಂಶದ ಮಾತ್ರೆ ಕೊಡುವುದು",
+  "actScan": "ಸ್ಕ್ಯಾನ್",
+  "actBabyHeartbeat": "ಮಗುವಿನ ಹೃದಯ ಬಡಿತ",
+  "actGeneralCheck": "ಸಾಮಾನ್ಯ ತಪಾಸಣೆ",
+  "actDeliveryPlanning": "ಹೆರಿಗೆಯ ಸಿದ್ಧತೆ",
+  "chatOffline": "ಈಗ ಸಹಾಯಕವನ್ನು ಸಂಪರ್ಕಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ, ಅಥವಾ ಆಶಾ ಕಾರ್ಯಕರ್ತೆಯನ್ನು ಕೇಳಿ.",
+  "chatNoAnswer": "ಇದಕ್ಕೆ ಉತ್ತರ ನನಗೆ ಗೊತ್ತಿಲ್ಲ. ಆಶಾ ಕಾರ್ಯಕರ್ತೆ ನಿಮಗೆ ಸರಿಯಾಗಿ ಹೇಳಬಲ್ಲರು.",
+  "chatSourceNote": "ಉತ್ತರಗಳು ಸರ್ಕಾರಿ ಮತ್ತು ಡಬ್ಲ್ಯುಎಚ್‌ಒ ಆರೋಗ್ಯ ಮಾರ್ಗಸೂಚಿಗಳಿಂದ ಬಂದವು.",
+  "voiceListen": "ಕೇಳಿ",
+  "voiceStop": "ನಿಲ್ಲಿಸಿ",
+  "voiceUnavailable": "ಈಗ ಧ್ವನಿ ಕೇಳಿಸಲು ಆಗಲಿಲ್ಲ. ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ.",
+  "voiceHold": "ಮಾತನಾಡಲು ಒತ್ತಿ ಹಿಡಿಯಿರಿ",
+  "voiceRecording": "ಕೇಳುತ್ತಿದ್ದೇನೆ… ಬಿಟ್ಟರೆ ಕಳುಹಿಸುತ್ತದೆ",
+  "voiceNothingHeard": "ಸರಿಯಾಗಿ ಕೇಳಿಸಲಿಲ್ಲ. ಇನ್ನೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.",
+  "chatClearTitle": "ಈ ಸಂದೇಶಗಳನ್ನು ಅಳಿಸಬೇಕೇ?",
+  "chatClearBody": "ಈ ಫೋನಿನಲ್ಲಿ ಉಳಿಸಿರುವ ಪ್ರಶ್ನೆ ಮತ್ತು ಉತ್ತರಗಳು ಅಳಿಸಿಹೋಗುತ್ತವೆ. ನಿಮ್ಮ ಆರೋಗ್ಯ ದಾಖಲೆಯಲ್ಲಿ ಬೇರೇನೂ ಬದಲಾಗುವುದಿಲ್ಲ.",
+  "chatClearConfirm": "ಅಳಿಸಿ"
+}
