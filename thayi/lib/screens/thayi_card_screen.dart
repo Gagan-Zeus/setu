@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import '../data/qr_token_service.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/content.dart';
 import '../providers.dart';
 import '../theme/tokens.dart';
+import '../widgets/big_action_button.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/setu_card.dart';
 import '../widgets/setu_scaffold.dart';
@@ -35,22 +39,11 @@ class ThayiCardScreen extends ConsumerWidget {
                   const EdgeInsets.symmetric(vertical: S.lg, horizontal: S.md),
               child: Column(
                 children: [
-                  // Only the id and the token are encoded. Never her name,
-                  // her phone number, or anything clinical.
-                  QrImageView(
-                    data: m.qrPayload,
-                    version: QrVersions.auto,
-                    size: qrSize,
-                    backgroundColor: C.card,
-                    eyeStyle: const QrEyeStyle(
-                      eyeShape: QrEyeShape.square,
-                      color: C.ink,
-                    ),
-                    dataModuleStyle: const QrDataModuleStyle(
-                      dataModuleShape: QrDataModuleShape.square,
-                      color: C.ink,
-                    ),
-                  ),
+                  // A five minute signed token, not her record id. A QR that
+                  // resolves to her file is a permanent credential: photograph
+                  // it once and it works forever. This one stops working
+                  // before she has left the building.
+                  _LiveQr(size: qrSize, fallbackPayload: m.qrPayload),
                   const SizedBox(height: S.lg),
                   Text(
                     l.qrCaption,
@@ -112,4 +105,142 @@ class ThayiCardScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// The code itself: minted for her session, refreshed before it lapses, and
+/// honest when it cannot be.
+class _LiveQr extends ConsumerStatefulWidget {
+  const _LiveQr({required this.size, required this.fallbackPayload});
+
+  final double size;
+
+  /// Used only in the offline demo build, where there is no Supabase to mint
+  /// from. Never on a real handset - falling back to a permanent code there
+  /// would quietly restore the thing the token exists to prevent.
+  final String fallbackPayload;
+
+  @override
+  ConsumerState<_LiveQr> createState() => _LiveQrState();
+}
+
+class _LiveQrState extends ConsumerState<_LiveQr> {
+  QrToken? _token;
+  QrFailure? _failure;
+  bool _busy = false;
+  Timer? _tick;
+
+  @override
+  void initState() {
+    super.initState();
+    _token = ref.read(qrTokenServiceProvider).cached;
+    _load();
+    // Drives the countdown, and refreshes the code before it lapses rather
+    // than after - a code that expires while she is holding the phone out is
+    // refused at the counter with no explanation she can act on.
+    _tick = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      final token = _token;
+      if (token != null && token.needsRefresh && !_busy) {
+        _load();
+      } else {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tick?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final result = await ref.read(qrTokenServiceProvider).current();
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _token = result.token;
+      _failure = result.failure;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+
+    // The offline demo build has no server to mint from, and showing an error
+    // there would be a bug report about a deliberate configuration.
+    if (_failure == QrFailure.unavailable) {
+      return _qr(widget.fallbackPayload);
+    }
+
+    final token = _token;
+    if (token != null && !token.isExpired) {
+      final seconds = token.remaining.inSeconds;
+      return Column(
+        children: [
+          _qr(token.token),
+          const SizedBox(height: S.sm),
+          Text(
+            _busy ? l.qrRefreshing : l.qrExpiresIn(seconds.toString()),
+            style: T.label.copyWith(
+              fontSize: 15,
+              // Amber only in the last fifteen seconds, so the colour means
+              // "about to change" rather than decorating every glance.
+              color: seconds <= 15 ? C.amber : C.textSoft,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return SizedBox(
+      width: widget.size,
+      child: Column(
+        children: [
+          SizedBox(
+            height: widget.size,
+            child: Center(
+              child: _busy
+                  ? const CircularProgressIndicator(color: C.teal)
+                  : Icon(Icons.wifi_off_rounded, size: 56, color: C.textSoft),
+            ),
+          ),
+          const SizedBox(height: S.sm),
+          Text(
+            _busy ? l.qrRefreshing : l.qrNeedsSignal,
+            style: T.body,
+            textAlign: TextAlign.center,
+          ),
+          if (!_busy) ...[
+            const SizedBox(height: S.md),
+            BigActionButton(
+              label: l.qrRetry,
+              icon: Icons.refresh_rounded,
+              onPressed: _load,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _qr(String data) => QrImageView(
+        // Only the signed token is encoded. Never her name, her phone number,
+        // or anything clinical.
+        data: data,
+        version: QrVersions.auto,
+        size: widget.size,
+        backgroundColor: C.card,
+        eyeStyle: const QrEyeStyle(
+          eyeShape: QrEyeShape.square,
+          color: C.ink,
+        ),
+        dataModuleStyle: const QrDataModuleStyle(
+          dataModuleShape: QrDataModuleShape.square,
+          color: C.ink,
+        ),
+      );
 }

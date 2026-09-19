@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import 'config/env.dart';
+import 'data/qr_token_service.dart';
 import 'data/chat_history.dart';
 import 'data/chat_service.dart';
 import 'data/voice_service.dart';
@@ -344,6 +345,15 @@ final supabaseClientProvider = Provider<sb.SupabaseClient?>((ref) {
 });
 
 /// Rebuilds the repository the moment a Supabase session appears or expires.
+/// Her QR code. Minted by the server for whoever holds the session, so it can
+/// never be produced for someone else's record.
+final qrTokenServiceProvider = Provider<QrTokenService>(
+  (ref) => QrTokenService(
+    ref.watch(supabaseClientProvider),
+    ref.watch(prefsProvider),
+  ),
+);
+
 final supabaseSessionProvider = StreamProvider<sb.Session?>((ref) {
   final client = ref.watch(supabaseClientProvider);
   if (client == null) return Stream.value(null);

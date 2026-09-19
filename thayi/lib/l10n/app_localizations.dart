@@ -1022,10 +1022,40 @@ abstract class AppLocalizations {
   /// **'Show this code at the hospital'**
   String get qrCaption;
 
+  /// No description provided for @qrRefreshing.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting a fresh code…'**
+  String get qrRefreshing;
+
+  /// No description provided for @qrExpiresIn.
+  ///
+  /// In en, this message translates to:
+  /// **'This code changes in {seconds}s'**
+  String qrExpiresIn(String seconds);
+
+  /// No description provided for @qrNeedsSignal.
+  ///
+  /// In en, this message translates to:
+  /// **'Your code needs a moment of internet to refresh. Move to where you have signal and try again.'**
+  String get qrNeedsSignal;
+
+  /// No description provided for @qrRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get qrRetry;
+
+  /// No description provided for @qrWhyItChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'The code changes so a photograph of it cannot be used later.'**
+  String get qrWhyItChanges;
+
   /// No description provided for @worksOffline.
   ///
   /// In en, this message translates to:
-  /// **'Works without internet'**
+  /// **'A new code every few minutes'**
   String get worksOffline;
 
   /// No description provided for @fieldName.

@@ -521,7 +521,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get qrCaption => 'Show this code at the hospital';
 
   @override
-  String get worksOffline => 'Works without internet';
+  String get qrRefreshing => 'Getting a fresh code…';
+
+  @override
+  String qrExpiresIn(String seconds) {
+    return 'This code changes in ${seconds}s';
+  }
+
+  @override
+  String get qrNeedsSignal =>
+      'Your code needs a moment of internet to refresh. Move to where you have signal and try again.';
+
+  @override
+  String get qrRetry => 'Try again';
+
+  @override
+  String get qrWhyItChanges =>
+      'The code changes so a photograph of it cannot be used later.';
+
+  @override
+  String get worksOffline => 'A new code every few minutes';
 
   @override
   String get fieldName => 'Name';

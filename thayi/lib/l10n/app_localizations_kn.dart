@@ -519,7 +519,26 @@ class AppLocalizationsKn extends AppLocalizations {
   String get qrCaption => 'ಆಸ್ಪತ್ರೆಯಲ್ಲಿ ಈ ಕೋಡ್ ತೋರಿಸಿ';
 
   @override
-  String get worksOffline => 'ಇಂಟರ್ನೆಟ್ ಇಲ್ಲದೆಯೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ';
+  String get qrRefreshing => 'ಹೊಸ ಕೋಡ್ ತರುತ್ತಿದ್ದೇವೆ…';
+
+  @override
+  String qrExpiresIn(String seconds) {
+    return 'ಈ ಕೋಡ್ $seconds ಸೆಕೆಂಡ್ನಲ್ಲಿ ಬದಲಾಗುತ್ತದೆ';
+  }
+
+  @override
+  String get qrNeedsSignal =>
+      'ಕೋಡ್ ಹೊಸದಾಗಲು ಸ್ವಲ್ಪ ಇಂಟರ್ನೆಟ್ ಬೇಕು. ಸಿಗ್ನಲ್ ಇರುವಲ್ಲಿ ಹೋಗಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get qrRetry => 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
+
+  @override
+  String get qrWhyItChanges =>
+      'ಫೋಟೋ ತೆಗೆದರೂ ನಂತರ ಬಳಸಲು ಆಗದಂತೆ ಕೋಡ್ ಬದಲಾಗುತ್ತದೆ.';
+
+  @override
+  String get worksOffline => 'ಪ್ರತಿ ಕೆಲವು ನಿಮಿಷಕ್ಕೆ ಹೊಸ ಕೋಡ್';
 
   @override
   String get fieldName => 'ಹೆಸರು';
