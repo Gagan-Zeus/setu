@@ -21,11 +21,17 @@ class PrescriptionCapture {
 
   /// Camera by default: the paper is on the desk right now. Gallery is there
   /// for a photo already taken.
+  ///
+  /// There is deliberately no doctorName parameter. It had one, and the only
+  /// caller filled it with MockData.doctorName — so every prescription
+  /// photographed on a real handset was filed in the real database as
+  /// prescribed by an invented doctor. Her name is resolved here, from the same
+  /// provider every other writer uses, where no caller can substitute a
+  /// constant.
   static Future<void> show(
     BuildContext context,
     WidgetRef ref, {
     required String motherId,
-    required String doctorName,
   }) async {
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
@@ -80,7 +86,6 @@ class PrescriptionCapture {
       await _upload(
         ref,
         motherId: motherId,
-        doctorName: doctorName,
         file: File(picked.path),
         note: note,
       );
@@ -88,13 +93,42 @@ class PrescriptionCapture {
       messenger.showSnackBar(
         const SnackBar(content: Text('Prescription saved to her record')),
       );
-    } catch (_) {
+    } catch (error) {
+      // 42501 is Row Level Security refusing the write, and for a doctor that
+      // means one thing: she has no access to this mother. Reporting it as a
+      // connection problem sends her to look in the wrong place — the same
+      // misdirection the assign-task sheet already corrects.
+      //
+      // The image goes to Storage before the row goes to the table, so when
+      // she has no access it is Storage that refuses first — a
+      // StorageException carrying a 403, not a PostgrestException carrying
+      // 42501. Recognising only the second one leaves the misdirection exactly
+      // where it was, because the insert is never reached.
+      final refused = _isRefusal(error);
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Could not save it. Check the connection and retry.'),
+        SnackBar(
+          content: Text(refused
+              ? 'She has not given you access yet, so it was not saved. Ask '
+                  'her, or scan her Thayi Card if she is with you.'
+              : 'Could not save it. Check the connection and retry.'),
         ),
       );
     }
+  }
+
+  /// True when the backend refused the write for want of access, whichever
+  /// leg refused it: Storage answers 403, PostgREST answers 42501.
+  static bool _isRefusal(Object error) {
+    if (error is PostgrestException) {
+      return error.code == '42501' ||
+          error.message.contains('row-level security');
+    }
+    if (error is StorageException) {
+      return error.statusCode == '403' ||
+          error.statusCode == '42501' ||
+          error.message.contains('row-level security');
+    }
+    return false;
   }
 
   static Future<String?> _askForNote(BuildContext context) {
@@ -135,7 +169,6 @@ class PrescriptionCapture {
   static Future<void> _upload(
     WidgetRef ref, {
     required String motherId,
-    required String doctorName,
     required File file,
     String? note,
   }) async {
@@ -143,6 +176,11 @@ class PrescriptionCapture {
     if (client == null) {
       throw StateError('No connection');
     }
+
+    // Null when her staff row could not be read. prescribed_by is nullable and
+    // the timeline simply omits the byline, which is honest; a stand-in would
+    // put a name on a prescription that nobody wrote.
+    final prescribedBy = await ref.read(authorNameProvider.future);
 
     // Filed under her id, because the storage policy reads the folder name and
     // applies the same access rule as the rest of her record.
@@ -159,7 +197,7 @@ class PrescriptionCapture {
       'mother_id': motherId,
       'storage_path': path,
       'note': (note == null || note.isEmpty) ? null : note,
-      'prescribed_by': doctorName,
+      'prescribed_by': prescribedBy,
     });
   }
 }
