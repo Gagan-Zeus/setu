@@ -21,15 +21,26 @@ npm run dev                    # http://localhost:5174
 **No service-role key.** The portal authenticates as the signed-in
 administrator and nothing else. Anything shipped to a browser is readable by
 whoever opens it, and the service role bypasses RLS entirely — so key
-generation, staff invites and the partner API live in the Node service, which
-is the only thing that holds that key.
+generation and staff invites live in Edge Functions, which are the only things
+that hold that key. Both verify the caller's own JWT before they do anything,
+and both refuse a `viewer`; issuing a key refuses anyone but a `super_admin`.
 
-Two screens call that service and say so plainly when `VITE_ADMIN_API` is
-unset, rather than failing in a way that looks like a bug:
+Two screens call them, at the same host as everything else — the functions
+live under the Supabase URL, so there is no second address to configure and
+none to get wrong:
 
-- registering a medical officer or ASHA (creates the auth user *and* the staff
-  row, which has to happen together)
-- issuing a partner API key (CSPRNG, hashed before storage, shown once)
+- registering a medical officer or ASHA — `admin-api/staff`, which creates the
+  auth user *and* the staff row, which has to happen together
+- issuing a partner API key — `partner-api/admin/issue-key` (CSPRNG, hashed
+  before storage)
+
+**A partner key is never shown in this portal.** It is emailed to the address
+the medical council holds for the doctor behind the request, not to one typed
+into a form, and only its SHA-256 hash is kept. The screen shows where it went
+and the last four characters — enough to tell two keys apart, and no use to
+anyone who photographs it. If the mailer fails, the screen says the key exists
+and did not arrive, because the fix for that is to revoke and reissue rather
+than to try again.
 
 **No column-hiding in the client.** `api_keys.key_hash` is never granted to
 `authenticated`, so `select('*')` on that table is refused by Postgres. The

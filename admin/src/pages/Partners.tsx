@@ -1,17 +1,30 @@
 import { useState } from 'react'
-import { useApiKeys, usePartners } from '../lib/queries'
+import { useApiKeys, useKmcRecord, usePartners } from '../lib/queries'
+import { edgePost } from '../lib/adminApi'
 import { supabase } from '../lib/supabase'
 import { rejectionSchema } from '../lib/schemas'
 import { ErrorNote, Loading, Page, StatusChip, Table } from '../components/ui'
 import type { AdminUser, PartnerOrg } from '../lib/types'
 
-const ADMIN_API = import.meta.env.VITE_ADMIN_API ?? ''
+/// What the partner-api answers when a key is issued. Deliberately not the
+/// key: that travels to the address the council holds and exists in exactly
+/// one place. This screen used to expect `body.key` and render it, which is a
+/// credential in a browser, in a screenshot, and in whatever the tab restores.
+interface IssuedKey {
+  issued: boolean
+  key_id: string
+  key_prefix: string
+  key_last_four: string
+  emailed_to: string
+  email_sent: boolean
+}
 
 export default function Partners({ me }: { me: AdminUser }) {
   const partners = usePartners(), apiKeys = useApiKeys()
   const [open, setOpen] = useState<PartnerOrg | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [issued, setIssued] = useState<string | null>(null)
+  const [issued, setIssued] = useState<IssuedKey | null>(null)
+  const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
 
   if (partners.isLoading) return <Loading />
@@ -22,7 +35,6 @@ export default function Partners({ me }: { me: AdminUser }) {
 
   async function review(org: PartnerOrg, status: 'approved' | 'rejected', reason?: string) {
     setError(null)
-    const { data: session } = await supabase.auth.getUser()
     const { error } = await supabase.from('partner_orgs').update({
       status,
       reviewed_at: new Date().toISOString(),
@@ -30,29 +42,43 @@ export default function Partners({ me }: { me: AdminUser }) {
       rejection_reason: reason ?? null,
     }).eq('id', org.id)
     if (error) return setError(error.message)
-    void session
     partners.refetch(); setOpen(null)
   }
 
+  /// Confirming live access is its own decision, recorded before any live key
+  /// exists. Both the partner-api and a trigger on api_keys refuse a live key
+  /// while `live_access_granted_at` is null, and nothing in this portal ever
+  /// set it — so the live button could not have worked even once the endpoint
+  /// behind it was right.
+  async function grantLiveAccess(org: PartnerOrg) {
+    const { error } = await supabase.from('partner_orgs').update({
+      live_access_granted_at: new Date().toISOString(),
+      live_access_granted_by: me.id,
+    }).eq('id', org.id)
+    if (error) throw new Error(error.message)
+    partners.refetch()
+  }
+
   async function issueKey(org: PartnerOrg, environment: 'sandbox' | 'live') {
-    setError(null); setIssued(null)
-    if (!ADMIN_API) {
-      setError(
-        'VITE_ADMIN_API is not set. Keys are generated with a CSPRNG in the Node service and ' +
-        'hashed before storage — that never runs in a browser.',
-      )
-      return
+    setError(null); setIssued(null); setBusy(true)
+    try {
+      if (environment === 'live' && !org.live_access_granted_at) {
+        await grantLiveAccess(org)
+      }
+      // partner-api verifies this administrator's own JWT and refuses anyone
+      // but a super_admin. The key is generated there with a CSPRNG, hashed
+      // before storage, and emailed to the address on the register.
+      setIssued(await edgePost<IssuedKey>('partner-api', '/admin/issue-key', {
+        partner_org_id: org.id,
+        environment,
+      }))
+      setOpen(null)
+      apiKeys.refetch()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(false)
     }
-    const res = await fetch(`${ADMIN_API}/admin/partners/${org.id}/keys`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ environment, scopes: ['mother.read_by_qr'] }),
-    })
-    const body = await res.json().catch(() => ({}))
-    if (!res.ok) return setError(body.message ?? `HTTP ${res.status}`)
-    // Shown exactly once. Only a SHA-256 hash is stored; there is no way to
-    // retrieve it later, by us or by them.
-    setIssued(body.key)
-    apiKeys.refetch()
   }
 
   const formUrl = `${window.location.origin}/partner-access`
@@ -77,16 +103,24 @@ export default function Partners({ me }: { me: AdminUser }) {
       <ErrorNote error={error} />
 
       {issued && (
-        <div className="card border-good/40 bg-good-soft p-3 mb-4">
-          <div className="font-semibold text-good mb-1">
-            Copy this key now — it is shown once and never again
+        <div className={`card p-3 mb-4 ${issued.email_sent
+          ? 'border-good/40 bg-good-soft' : 'border-warn/40 bg-warn-soft'}`}>
+          <div className={`font-semibold mb-1 ${issued.email_sent ? 'text-good' : 'text-warn'}`}>
+            {issued.email_sent
+              ? `Key issued and emailed to ${issued.emailed_to}`
+              : 'Key issued — but the email did not send'}
           </div>
-          <code className="block bg-white border border-divider rounded p-2 font-mono break-all">
-            {issued}
-          </code>
-          <div className="text-good/80 mt-1">
-            Only a SHA-256 hash is stored. If they lose it, they rotate — we cannot retrieve it.
+          <div className="font-mono mb-1">
+            {issued.key_prefix}…{issued.key_last_four}
           </div>
+          <p className={issued.email_sent ? 'text-good/80' : 'text-warn/90'}>
+            {issued.email_sent
+              ? 'It went to the address the medical council holds, not one typed into the form. ' +
+                'Only a SHA-256 hash is stored here — nobody, including us, can read it back.'
+              : `The key exists and is live, but ${issued.emailed_to} never received it. Revoke ` +
+                'it and issue another once the mailer is working: there is no way to resend ' +
+                'this one, because only its hash was kept.'}
+          </p>
           <button className="btn-ghost mt-2" onClick={() => setIssued(null)}>Done</button>
         </div>
       )}
@@ -128,8 +162,23 @@ export default function Partners({ me }: { me: AdminUser }) {
               </td>
               <td className="td">{p.type.replace('_', ' ')}</td>
               <td className="td">
-                <div>{p.contact_name}</div>
-                <div className="text-[11px] text-soft">{p.contact_email}</div>
+                {/* Either the contact typed on an older request, or the
+                    registration the newer ones carry instead. Never both
+                    blank, because the table would then show nothing at all
+                    for a row that does have somebody accountable for it. */}
+                {p.contact_name || p.contact_email ? (
+                  <>
+                    <div>{p.contact_name ?? '—'}</div>
+                    <div className="text-[11px] text-soft">{p.contact_email ?? ''}</div>
+                  </>
+                ) : p.kmc_registration_number ? (
+                  <>
+                    <div className="font-mono text-[11px]">{p.kmc_registration_number}</div>
+                    <div className="text-[11px] text-soft">from the KMC register</div>
+                  </>
+                ) : (
+                  <span className="text-soft">—</span>
+                )}
               </td>
               <td className="td tabular-nums">{new Date(p.requested_at).toLocaleDateString()}</td>
               <td className="td"><StatusChip status={p.status} /></td>
@@ -151,7 +200,7 @@ export default function Partners({ me }: { me: AdminUser }) {
 
       {open && (
         <ReviewDialog
-          org={open} canReview={canReview} onClose={() => setOpen(null)}
+          org={open} canReview={canReview} busy={busy} onClose={() => setOpen(null)}
           onApprove={() => review(open, 'approved')}
           onReject={(reason) => review(open, 'rejected', reason)}
           onIssue={(env) => issueKey(open, env)}
@@ -161,14 +210,23 @@ export default function Partners({ me }: { me: AdminUser }) {
   )
 }
 
-function ReviewDialog({ org, canReview, onApprove, onReject, onIssue, onClose }: {
-  org: PartnerOrg; canReview: boolean
+function ReviewDialog({ org, canReview, busy, onApprove, onReject, onIssue, onClose }: {
+  org: PartnerOrg; canReview: boolean; busy: boolean
   onApprove: () => void; onReject: (reason: string) => void
   onIssue: (env: 'sandbox' | 'live') => void; onClose: () => void
 }) {
   const [reason, setReason] = useState('')
   const [reasonError, setReasonError] = useState<string | null>(null)
   const [confirmLive, setConfirmLive] = useState(false)
+  // Who is actually accountable for this request. Since 0009 that is a KMC
+  // registration rather than three text fields, and reading the register is
+  // the only way to put a name to it.
+  const kmc = useKmcRecord(org.kmc_registration_number)
+  const doctor = kmc.data?.doctor
+
+  const contact = org.contact_name || org.contact_email || org.contact_phone
+    ? [org.contact_name, org.contact_email, org.contact_phone].filter(Boolean).join(' · ')
+    : null
 
   return (
     <div className="fixed inset-0 bg-ink/40 grid place-items-center p-4 overflow-y-auto" onClick={onClose}>
@@ -178,7 +236,6 @@ function ReviewDialog({ org, canReview, onApprove, onReject, onIssue, onClose }:
           {[
             ['Type', org.type.replace('_', ' ')],
             ['Registration', org.registration_number],
-            ['Contact', `${org.contact_name} · ${org.contact_email} · ${org.contact_phone}`],
             ['Address', org.address],
             ['Intended use', org.intended_use],
             ['Status', org.status],
@@ -189,6 +246,56 @@ function ReviewDialog({ org, canReview, onApprove, onReject, onIssue, onClose }:
             </div>
           ))}
         </dl>
+
+        {/* The doctor behind the request, read from the register rather than
+            from the form. Three nulls joined with a middle dot is what this
+            showed before, on every request made since the form started asking
+            for a KMC number instead of a name, an email and a phone. */}
+        <div className="card bg-paper p-3 mb-4">
+          <div className="text-[11px] uppercase tracking-wide text-soft font-semibold mb-1">
+            Accountable doctor
+          </div>
+          {org.kmc_registration_number ? (
+            kmc.isLoading ? (
+              <div className="text-soft">Reading the register…</div>
+            ) : doctor ? (
+              <>
+                <div className="font-semibold">{doctor.full_name}</div>
+                <div className="text-soft">{doctor.qualification}</div>
+                <div className="font-mono text-[11px] mt-1">{doctor.registration_number}</div>
+                <div className="text-[11px] text-soft">
+                  {doctor.email ?? 'no address on the register'}
+                  {doctor.phone ? ` · ${doctor.phone}` : ''}
+                </div>
+                {/* What the register says NOW, beside what it said then. A
+                    doctor may have lapsed since the request was made, and
+                    issuing a key is the moment that matters. */}
+                {kmc.data?.in_good_standing === false && (
+                  <div className="text-danger mt-1.5">
+                    This registration is {doctor.status} today. The key issue will be refused
+                    until it is in good standing again.
+                  </div>
+                )}
+                {org.kmc_status_at_request &&
+                  org.kmc_status_at_request !== doctor.status && (
+                    <div className="text-warn mt-1">
+                      It was “{org.kmc_status_at_request}” when the request was made.
+                    </div>
+                  )}
+              </>
+            ) : (
+              <div className="text-danger">
+                {org.kmc_registration_number} is not in the register.
+              </div>
+            )
+          ) : contact ? (
+            <div>{contact}</div>
+          ) : (
+            <div className="text-soft">
+              No contact and no registration — this request predates both.
+            </div>
+          )}
+        </div>
 
         {!canReview && (
           <p className="card bg-paper p-2.5 text-soft mb-3">
@@ -217,14 +324,16 @@ function ReviewDialog({ org, canReview, onApprove, onReject, onIssue, onClose }:
 
         {canReview && org.status === 'approved' && (
           <div className="space-y-2">
-            <button className="btn-ghost w-full justify-center" onClick={() => onIssue('sandbox')}>
-              Issue a sandbox key
+            <button className="btn-ghost w-full justify-center" disabled={busy}
+              onClick={() => onIssue('sandbox')}>
+              {busy ? 'Issuing…' : 'Issue a sandbox key'}
             </button>
             <p className="text-soft">
               A sandbox key resolves only the seeded test mothers and can never reach a real record.
             </p>
             {!confirmLive ? (
-              <button className="btn-ghost w-full justify-center" onClick={() => setConfirmLive(true)}>
+              <button className="btn-ghost w-full justify-center" disabled={busy}
+                onClick={() => setConfirmLive(true)}>
                 Issue a live key…
               </button>
             ) : (
@@ -234,10 +343,12 @@ function ReviewDialog({ org, canReview, onApprove, onReject, onIssue, onClose }:
                 </div>
                 <p className="text-warn/90 mb-2">
                   It resolves real mothers on every scan. Issue it only once you have checked the
-                  registration number against the register.
+                  registration number against the register. The key is emailed to the address the
+                  council holds — it is never shown here, and cannot be recovered afterwards.
                 </p>
-                <button className="btn-primary w-full justify-center" onClick={() => onIssue('live')}>
-                  I have verified this organisation — issue the live key
+                <button className="btn-primary w-full justify-center" disabled={busy}
+                  onClick={() => onIssue('live')}>
+                  {busy ? 'Issuing…' : 'I have verified this organisation — issue the live key'}
                 </button>
               </div>
             )}
