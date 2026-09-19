@@ -59,7 +59,7 @@ asha/     Flutter — the field app (Kannada default, local-first Drift + outbox
 care/     Flutter — the doctor console (English)
 core/     the shared backend: schema, SQL, Edge Functions, ops scripts
 brand/    logos for the three apps, plus 128px cuts for email
-admin/    placeholder for a future web console — nothing real in it yet
+admin/    React — the admin portal: PHCs, staff, assignments, partner API, audit
 ```
 
 Inside `core/`:
@@ -72,12 +72,14 @@ Inside `core/`:
 | `pregnancy_faqs*.sql` | the clinician-approved answers Ask Setu is grounded on |
 | `functions/ask-setu/` | the assistant behind Ask Setu (Gemini, grounded) |
 | `functions/speak/`, `functions/transcribe/` | Kannada speech out and in (ElevenLabs) |
+| `functions/admin-api/` | staff and key creation, the only holder of the service-role key |
+| `functions/partner-api/` | KMC-backed partner keys and the QR lookup |
 | `bootstrap_new_project.sh`, `run_sql.py` | stand up a fresh Supabase project |
-| `deploy_functions.sh`, `enable_email_hook.sh` | deploy the four Edge Functions |
+| `deploy_functions.sh`, `enable_email_hook.sh` | deploy the six Edge Functions |
 | `point_apps_at_project.sh` | write the root `.env` all three apps build against |
 | `MIGRATE_PROJECT.md` | the full walkthrough for standing up your own project |
 
-The fourth Edge Function, `send-email`, lives in
+The sixth Edge Function, `send-email`, lives in
 [`thayi/supabase/functions/send-email/`](thayi/supabase/functions/send-email/)
 because that is where `supabase/` was initialised. It is not the mother app's
 function — it sends the OTP for all three, wearing the right app's logo, chosen
@@ -131,9 +133,16 @@ Edge Functions instead of on the handset.
    hard-coded Kannada/English keyword matcher. Neither is a model call, which
    is why both still fire in a village in airplane mode.
 
-2. **No personal data in the QR code.** The Thayi Card payload is
-   `setu://m/<uuid>?t=<token>` and nothing else — no name, no phone number, no
-   clinical data. The token is what proves the card was physically shown.
+2. **No personal data in the QR code, and no permanent credential.** What the
+   Thayi Card renders is a server-signed token that lapses after five minutes,
+   minted only for whoever holds the mother's own session — never her record
+   id, which would be a credential a photograph could copy forever. No name, no
+   phone number, no clinical data, either way. Her holding the phone out is
+   what makes reading her file consent, so nobody — not her ASHA, not an
+   administrator — can mint one on her behalf. The offline demo build keeps the
+   old static `setu://m/<uuid>?t=<token>` payload, and Setu Care still accepts
+   it, because a handset that has not updated yet is not hers to solve at a
+   counter.
 
 3. **Kannada first.** Thayi Setu and ASHA Setu default to Kannada, with English
    as the toggle, never the other way round. Display strings live in ARB files,
