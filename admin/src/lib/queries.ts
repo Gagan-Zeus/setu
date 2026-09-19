@@ -200,3 +200,32 @@ export function useKmcLookup() {
     },
   })
 }
+
+export interface KmcPublicCheck {
+  valid: boolean
+  reason?: 'empty' | 'not_in_registry' | 'not_in_good_standing'
+  status?: string
+  is_demo?: boolean
+  registration_number?: string
+  full_name?: string
+  qualification?: string
+  state_medical_council?: string
+  email?: string
+  phone?: string
+}
+
+/// The anonymous half of the registry. It answers only whether a registration
+/// is real and in good standing, and gives back the name and contact — never
+/// the date of birth, the address or the father's name. A public endpoint
+/// returning those would be a directory of doctors' personal details.
+export function useKmcVerifyPublic() {
+  return useMutation({
+    mutationFn: async (registrationNumber: string): Promise<KmcPublicCheck> => {
+      const { data, error } = await supabase.rpc('kmc_verify_public', {
+        p_registration_number: registrationNumber,
+      })
+      if (error) throw new Error(error.message)
+      return data as KmcPublicCheck
+    },
+  })
+}
