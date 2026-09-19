@@ -9,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/env.dart';
-import 'data/seed_data.dart';
 import 'data/sync_service.dart';
 import 'db/database.dart';
 import 'l10n/app_localizations.dart';
@@ -49,7 +48,11 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
   final db = AppDatabase();
   // A real caseload, seeded once. Everything the UI reads comes from here.
-  await SeedData.seedIfEmpty(db);
+  // No caseload is seeded any more. It used to write twenty invented women
+  // into every handset here, which is why the app and the website never
+  // agreed: those twenty were only ever on the phone. The caseload comes down
+  // from Supabase now, in SyncWorker.pull.
+  await db.purgePracticeCaseload();
 
   runApp(
     ProviderScope(
@@ -118,7 +121,17 @@ class _SetuAshaAppState extends ConsumerState<SetuAshaApp> {
     if (!service.isOnline) return;
 
     await _repairOnce();
-    await ref.read(syncWorkerProvider).drain();
+    final worker = ref.read(syncWorkerProvider);
+    // Push first. What she entered at a doorstep is the newer fact, and
+    // sending it before reading means the pull never sees a stale server copy
+    // of a row she has just changed.
+    await worker.drain();
+    try {
+      await worker.pull();
+    } on SyncFailure {
+      // Already surfaced against the queued rows on the Sync Status screen;
+      // there is nothing useful to do with it on a background timer.
+    }
   }
 
   @override

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,6 +22,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     super.initState();
     // Warm the rules asset so the first visit screen never waits on it.
     ref.read(riskEngineProvider);
+    // Her name and sub-centre, as the server has them. Deliberately not
+    // awaited: _go reads neither, and a phone with no signal must not be held
+    // on a splash screen.
+    unawaited(ref.read(authControllerProvider.notifier).refreshStaffProfile());
     Future.delayed(const Duration(milliseconds: 1200), _go);
   }
 

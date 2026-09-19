@@ -200,6 +200,58 @@ class AuthController extends StateNotifier<AshaSession> {
     await _signInAsStaff(client, email.trim());
   }
 
+  /// Re-reads her name and posting from the server.
+  ///
+  /// _signInAsStaff only runs at OTP verification, so a worker who is already
+  /// signed in never picks up what her staff row says — which is why a handset
+  /// went on greeting her by a name out of the practice caseload long after
+  /// she had been registered properly. This runs on every open.
+  ///
+  /// It only ever writes on success. Offline, or with the staff row missing,
+  /// it leaves what is already stored alone: showing her nothing, or her email
+  /// local part, would be a worse answer than a slightly stale name, and
+  /// _signInAsStaff's own fallbacks would actively clear her sub-centre —
+  /// which is the field the registration form fills itself from.
+  Future<void> refreshStaffProfile() async {
+    final client = _client;
+    final email = state.email;
+    if (client == null || email == null) return;
+    final id = client.auth.currentUser?.id;
+    if (id == null) return;
+
+    final Map<String, dynamic>? staff;
+    try {
+      staff = await client
+          .from('staff')
+          .select('name, sub_centre')
+          .eq('auth_user_id', id)
+          .maybeSingle();
+    } catch (_) {
+      return;
+    }
+    if (staff == null) return;
+
+    final name = (staff['name'] as String?)?.trim();
+    final subCentre = (staff['sub_centre'] as String?)?.trim();
+    if (name == null || name.isEmpty) return;
+    if (name == state.name && subCentre == state.subCentre) return;
+
+    await _prefs.setString(_nameKey, name);
+    if (subCentre != null && subCentre.isNotEmpty) {
+      await _prefs.setString(_subCentreKey, subCentre);
+    }
+
+    // Built directly rather than with copyWith, whose `?? this.x` can never
+    // put a field back to null.
+    state = AshaSession(
+      email: email,
+      name: name,
+      subCentre: subCentre ?? state.subCentre,
+      pin: state.pin,
+      unlocked: state.unlocked,
+    );
+  }
+
   /// Records who she is from her own staff row.
   ///
   /// This used to stamp SeedData.ashaName — a worker out of the practice
@@ -567,6 +619,7 @@ class VisitRepository {
               prevComplications: Value(jsonEncode(prevComplications)),
               riskLevel: Value(riskLevel),
               createdAt: now,
+              workerCreated: const Value(true),
             ),
           );
       await _db.enqueue(
@@ -596,6 +649,7 @@ class VisitRepository {
           'height_cm': heightCm,
           'is_bpl': isBpl,
           'risk_level': riskLevel,
+          'prev_complications': prevComplications,
           'created_at': now,
         }),
       );

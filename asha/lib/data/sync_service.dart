@@ -27,6 +27,13 @@ abstract class SyncService {
 
   /// Pushes one outbox row. Throws to signal a retryable failure.
   Future<void> push(OutboxData item);
+
+  /// Reads the caseload down into [db]. Returns how many mothers it wrote.
+  ///
+  /// Without this the app is push-only: what a worker sees is whatever this
+  /// handset happens to hold, which is not what the website shows and not what
+  /// another phone would show.
+  Future<int> pull(AppDatabase db);
 }
 
 class MockSyncService implements SyncService {
@@ -71,6 +78,10 @@ class MockSyncService implements SyncService {
     }
     debugPrint('synced ${item.entityTable}/${item.recordId}');
   }
+
+  /// Nothing to read down: the mock has no server behind it.
+  @override
+  Future<int> pull(AppDatabase db) async => 0;
 }
 
 class SyncFailure implements Exception {
@@ -90,6 +101,21 @@ class SyncWorker {
   bool _running = false;
 
   bool get isRunning => _running;
+
+  /// Reads the server's copy of the caseload down.
+  ///
+  /// Shares [_running] with [drain] so a pull can never overwrite a row the
+  /// drain is in the middle of pushing, or read a half-written one.
+  Future<int> pull() async {
+    if (_running) return 0;
+    if (!_service.isOnline) return 0;
+    _running = true;
+    try {
+      return await _service.pull(_db);
+    } finally {
+      _running = false;
+    }
+  }
 
   /// Returns the number of rows successfully pushed.
   Future<int> drain() async {

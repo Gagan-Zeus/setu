@@ -223,8 +223,35 @@ async function createStaff(req: Request): Promise<Response> {
       },
       body: JSON.stringify({ email, email_confirm: true }),
     });
-    authCreated = res.ok;
-    if (!res.ok) console.error("auth user create failed", res.status, await res.text());
+
+    let authUserId: string | null = res.ok ? (await res.json()).id : null;
+
+    // An address can already have a login: someone registered before, was
+    // removed, and is being registered again. The trigger that ties a staff row
+    // to its auth user fires on auth.users INSERT, so nothing would attach this
+    // one — she would sign in successfully, have no role, and see an empty app,
+    // which reads as a broken app rather than an unfinished registration.
+    if (!res.ok) {
+      console.error("auth user create failed", res.status);
+      const existing = await fetch(
+        `${SUPABASE_URL}/auth/v1/admin/users?filter=${encodeURIComponent(email)}`,
+        { headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` } },
+      );
+      if (existing.ok) {
+        const found = (await existing.json()).users?.find(
+          (u: { email?: string }) => u.email?.toLowerCase() === email,
+        );
+        authUserId = found?.id ?? null;
+      }
+    }
+
+    if (authUserId) {
+      await db(`staff?id=eq.${staff.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ auth_user_id: authUserId }),
+      });
+      authCreated = true;
+    }
   } catch (error) {
     console.error("auth user create threw", error);
   }

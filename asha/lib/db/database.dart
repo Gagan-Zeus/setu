@@ -55,6 +55,16 @@ class Mothers extends Table {
   DateTimeColumn get createdAt => dateTime()();
   BoolColumn get synced => boolean().withDefault(const Constant(false))();
 
+  /// True when a worker entered her on this handset, false when she arrived in
+  /// a pull from the server.
+  ///
+  /// This used to be inferred from the shape of the id by _isWorkerCreated,
+  /// which reads the last '-' group and is wrong in both directions once
+  /// pulled rows exist: a server uuid ending in twelve digits reads as
+  /// worker-made, and every mother pulled down would be pushed straight back
+  /// up, overwriting her name and posting with this phone's copy.
+  BoolColumn get workerCreated => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -89,6 +99,9 @@ class AncVisits extends Table {
   DateTimeColumn get clientCreatedAt => dateTime()();
   TextColumn get correctsId => text().nullable()();
   BoolColumn get synced => boolean().withDefault(const Constant(false))();
+
+  /// Recorded on this handset rather than pulled down. See Mothers.
+  BoolColumn get workerCreated => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -183,7 +196,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   /// Without this, every phone that already has the database would crash on
   /// "no such column: email" — a fresh install would look fine and every real
@@ -200,6 +213,14 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 4) {
             await m.addColumn(mothers, mothers.emailVerified);
+          }
+          if (from < 5) {
+            await m.addColumn(mothers, mothers.workerCreated);
+            await m.addColumn(ancVisits, ancVisits.workerCreated);
+            // Backfilled by purgePracticeCaseload, which runs at startup: once
+            // the invented caseload is gone, everything still here was entered
+            // on this phone. Doing it that way round means the flag never
+            // depends on the id-shape guess it exists to replace.
           }
         },
       );
@@ -329,12 +350,16 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<int> requeueEverything() async {
-    final allMothers = (await select(mothers).get())
-        .where((m) => _isWorkerCreated(m.id))
-        .toList();
-    final allVisits = (await select(ancVisits).get())
-        .where((v) => _isWorkerCreated(v.id) || _isWorkerCreated(v.motherId))
-        .toList();
+    // Re-sending is for rows this handset owns. It used to ask
+    // _isWorkerCreated, which reads the last '-' group of an id: that is right
+    // for 'm-001' versus 'm-1755400000000000' and wrong for everything else —
+    // roughly one server uuid in 300 ends in twelve digits and would be pushed
+    // back over the server's own copy, and a visit against practice mother
+    // m-003 ('v-m-003-<micros>') read as worker-made and was re-sent.
+    final allMothers =
+        (await select(mothers).get()).where((m) => m.workerCreated).toList();
+    final allVisits =
+        (await select(ancVisits).get()).where((v) => v.workerCreated).toList();
 
     for (final m in allMothers) {
       await requeue(
@@ -361,6 +386,7 @@ class AppDatabase extends _$AppDatabase {
           'height_cm': m.heightCm,
           'is_bpl': m.isBpl,
           'risk_level': m.riskLevel,
+          'prev_complications': _decodeIds(m.prevComplications),
           'created_at': m.createdAt.toIso8601String(),
         },
       );
@@ -398,6 +424,126 @@ class AppDatabase extends _$AppDatabase {
     }
 
     return allMothers.length + allVisits.length;
+  }
+
+  /// prevComplications is stored as a JSON string locally and is a text[] on
+  /// the server, so the queued payload has to carry a real list.
+  static List<String> _decodeIds(String raw) {
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is List) return decoded.map((e) => e.toString()).toList();
+    } catch (_) {
+      // A row written before the column held JSON. Nothing to send.
+    }
+    return const [];
+  }
+
+  /// Record ids with something still queued for them.
+  ///
+  /// A pull must leave these alone: what is queued here has by definition not
+  /// reached the server, so the server's copy is the older one and writing it
+  /// over the local row would silently discard what the worker just entered.
+  Future<Set<String>> unsentRecordIds() async {
+    final rows = await (select(outbox)
+          ..where((o) => o.status.equals('synced').not()))
+        .get();
+    return rows.map((o) => o.recordId).toSet();
+  }
+
+  /// A row from the invented practice caseload this app used to write into
+  /// every handset the first time it ran.
+  ///
+  /// The seed mints exactly three id shapes: mothers `m-001`..`m-020`, visits
+  /// `m-001-v1`, and tasks `task-001`..`task-007`. It never wrote alerts,
+  /// referrals or outbox rows — those only ever appear when a worker does
+  /// something, including doing it to a practice mother.
+  static final _seededMother = RegExp(r'^m-\d{3}$');
+  static final _seededTask = RegExp(r'^task-\d{3}$');
+
+  /// Deletes the practice caseload, and only it.
+  ///
+  /// Every predicate here keys on the MOTHER a row belongs to, never on the
+  /// row's own id. _isWorkerCreated reads the last '-' group and is wrong in
+  /// both directions for the child tables: an alert id ends in its index
+  /// (`a-<mother>-<micros>-0`), so a real red alert reads as seeded and would
+  /// be thrown away; and a visit recorded against practice mother m-003 is
+  /// `v-m-003-<micros>`, which reads as worker-made and would be pushed —
+  /// landing four flat practice readings in the middle of whichever real woman
+  /// holds that id on the server. That has already happened to this project
+  /// once, to Lakshmi's blood pressure trend.
+  ///
+  /// Anything the worker entered against a real mother survives untouched.
+  Future<int> purgePracticeCaseload() async {
+    return transaction(() async {
+      final seededMothers = (await select(mothers).get())
+          .map((m) => m.id)
+          .where(_seededMother.hasMatch)
+          .toSet();
+      final seededTasks = (await select(tasks).get())
+          .where((t) => _seededTask.hasMatch(t.id))
+          .map((t) => t.id)
+          .toSet();
+      if (seededMothers.isEmpty && seededTasks.isEmpty) return 0;
+
+      final deadVisits = (await select(ancVisits).get())
+          .where((v) => seededMothers.contains(v.motherId))
+          .map((v) => v.id)
+          .toSet();
+      final deadAlerts = (await select(alerts).get())
+          .where((a) => seededMothers.contains(a.motherId))
+          .map((a) => a.id)
+          .toSet();
+      final deadReferrals = (await select(referrals).get())
+          .where((r) => seededMothers.contains(r.motherId))
+          .map((r) => r.id)
+          .toSet();
+      final deadTasks = (await select(tasks).get())
+          .where((t) =>
+              _seededTask.hasMatch(t.id) || seededMothers.contains(t.motherId))
+          .map((t) => t.id)
+          .toSet();
+
+      // Children first: the foreign keys point at mothers, and a handset that
+      // later turns enforcement on would otherwise be holding orphans.
+      await (delete(ancVisits)..where((v) => v.id.isIn(deadVisits.toList())))
+          .go();
+      await (delete(alerts)..where((a) => a.id.isIn(deadAlerts.toList()))).go();
+      await (delete(referrals)
+            ..where((r) => r.id.isIn(deadReferrals.toList())))
+          .go();
+      await (delete(tasks)..where((t) => t.id.isIn(deadTasks.toList()))).go();
+      await (delete(mothers)
+            ..where((m) => m.id.isIn(seededMothers.toList())))
+          .go();
+
+      // Anything queued for a row that no longer exists would be pushed to the
+      // server on the next drain, which is the whole thing this is preventing.
+      final orphaned = <String>{
+        ...seededMothers,
+        ...deadVisits,
+        ...deadAlerts,
+        ...deadReferrals,
+        ...deadTasks,
+      };
+      await (delete(outbox)..where((o) => o.recordId.isIn(orphaned.toList())))
+          .go();
+
+      // Backfill the provenance flag for rows that predate it.
+      //
+      // Scoped to ids that are not server uuids, and NOT written blanket over
+      // the table: this runs on every start, and a blanket write would relabel
+      // every mother pulled down from the server as this handset's own the
+      // next morning — and requeueEverything would then push all of them back
+      // over the server's copies. Only three id shapes reach this point:
+      // 'm-001' (just deleted), 'm-<microseconds>' (entered here), and a uuid
+      // (pulled). A uuid is the only one with four hyphens.
+      await (update(mothers)..where((m) => m.id.like('%-%-%-%-%').not()))
+          .write(const MothersCompanion(workerCreated: Value(true)));
+      await (update(ancVisits)..where((v) => v.motherId.like('%-%-%-%-%').not()))
+          .write(const AncVisitsCompanion(workerCreated: Value(true)));
+
+      return seededMothers.length;
+    });
   }
 
   /// Queues a record again without leaving a second entry for it behind.

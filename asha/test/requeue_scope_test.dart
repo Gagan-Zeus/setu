@@ -43,6 +43,7 @@ void main() {
             lmp: DateTime(2026, 1, 1),
             createdAt: DateTime(2026, 1, 1),
             subCentre: const Value('Benagalore'),
+            workerCreated: const Value(true),
           ),
         );
 
@@ -90,6 +91,31 @@ void main() {
       final queued = await db.pendingOutbox();
       expect(queued.length, 1);
       expect(queued.single.status, 'pending');
+    });
+
+    test('a mother pulled from the server is never re-sent', () async {
+      // She was registered on another handset and arrived in a pull. Pushing
+      // her back would write this phone's copy over the server's — including
+      // her name, sub-centre and the ASHA she is assigned to. The old rule
+      // asked _isWorkerCreated, which reads the last '-' group of the id, and
+      // roughly one server uuid in three hundred ends in twelve digits.
+      await db.into(db.mothers).insert(
+            MothersCompanion.insert(
+              id: '69bb75c4-553a-5797-817a-352198664659',
+              name: 'Pulled',
+              age: 27,
+              village: 'V',
+              lmp: DateTime(2026, 1, 1),
+              createdAt: DateTime(2026, 1, 1),
+              workerCreated: const Value(false),
+            ),
+          );
+      await addMother('m-1755400000000000');
+
+      await db.requeueEverything();
+
+      final queued = await db.pendingOutbox();
+      expect(queued.map((o) => o.recordId), ['m-1755400000000000']);
     });
 
     test('a failed row goes back to pending rather than gaining a twin',

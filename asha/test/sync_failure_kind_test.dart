@@ -29,6 +29,9 @@ class _Throwing implements SyncService {
 
   @override
   Future<void> push(OutboxData item) async => throw error;
+
+  @override
+  Future<int> pull(AppDatabase db) async => 0;
 }
 
 void main() {
@@ -45,6 +48,7 @@ void main() {
             lmp: DateTime(2026, 1, 1),
             createdAt: DateTime(2026, 1, 1),
             subCentre: const Value('Benagalore'),
+            workerCreated: const Value(true),
           ),
         );
     await db.requeueEverything();

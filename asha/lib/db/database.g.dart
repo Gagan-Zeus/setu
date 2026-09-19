@@ -162,6 +162,16 @@ class $MothersTable extends Mothers with TableInfo<$MothersTable, Mother> {
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("synced" IN (0, 1))'),
       defaultValue: const Constant(false));
+  static const VerificationMeta _workerCreatedMeta =
+      const VerificationMeta('workerCreated');
+  @override
+  late final GeneratedColumn<bool> workerCreated = GeneratedColumn<bool>(
+      'worker_created', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("worker_created" IN (0, 1))'),
+      defaultValue: const Constant(false));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -187,7 +197,8 @@ class $MothersTable extends Mothers with TableInfo<$MothersTable, Mother> {
         prevComplications,
         riskLevel,
         createdAt,
-        synced
+        synced,
+        workerCreated
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -316,6 +327,12 @@ class $MothersTable extends Mothers with TableInfo<$MothersTable, Mother> {
       context.handle(_syncedMeta,
           synced.isAcceptableOrUnknown(data['synced']!, _syncedMeta));
     }
+    if (data.containsKey('worker_created')) {
+      context.handle(
+          _workerCreatedMeta,
+          workerCreated.isAcceptableOrUnknown(
+              data['worker_created']!, _workerCreatedMeta));
+    }
     return context;
   }
 
@@ -373,6 +390,8 @@ class $MothersTable extends Mothers with TableInfo<$MothersTable, Mother> {
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       synced: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}synced'])!,
+      workerCreated: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}worker_created'])!,
     );
   }
 
@@ -421,6 +440,16 @@ class Mother extends DataClass implements Insertable<Mother> {
   final String riskLevel;
   final DateTime createdAt;
   final bool synced;
+
+  /// True when a worker entered her on this handset, false when she arrived in
+  /// a pull from the server.
+  ///
+  /// This used to be inferred from the shape of the id by _isWorkerCreated,
+  /// which reads the last '-' group and is wrong in both directions once
+  /// pulled rows exist: a server uuid ending in twelve digits reads as
+  /// worker-made, and every mother pulled down would be pushed straight back
+  /// up, overwriting her name and posting with this phone's copy.
+  final bool workerCreated;
   const Mother(
       {required this.id,
       required this.name,
@@ -445,7 +474,8 @@ class Mother extends DataClass implements Insertable<Mother> {
       required this.prevComplications,
       required this.riskLevel,
       required this.createdAt,
-      required this.synced});
+      required this.synced,
+      required this.workerCreated});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -495,6 +525,7 @@ class Mother extends DataClass implements Insertable<Mother> {
     map['risk_level'] = Variable<String>(riskLevel);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['synced'] = Variable<bool>(synced);
+    map['worker_created'] = Variable<bool>(workerCreated);
     return map;
   }
 
@@ -543,6 +574,7 @@ class Mother extends DataClass implements Insertable<Mother> {
       riskLevel: Value(riskLevel),
       createdAt: Value(createdAt),
       synced: Value(synced),
+      workerCreated: Value(workerCreated),
     );
   }
 
@@ -574,6 +606,7 @@ class Mother extends DataClass implements Insertable<Mother> {
       riskLevel: serializer.fromJson<String>(json['riskLevel']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       synced: serializer.fromJson<bool>(json['synced']),
+      workerCreated: serializer.fromJson<bool>(json['workerCreated']),
     );
   }
   @override
@@ -604,6 +637,7 @@ class Mother extends DataClass implements Insertable<Mother> {
       'riskLevel': serializer.toJson<String>(riskLevel),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'synced': serializer.toJson<bool>(synced),
+      'workerCreated': serializer.toJson<bool>(workerCreated),
     };
   }
 
@@ -631,7 +665,8 @@ class Mother extends DataClass implements Insertable<Mother> {
           String? prevComplications,
           String? riskLevel,
           DateTime? createdAt,
-          bool? synced}) =>
+          bool? synced,
+          bool? workerCreated}) =>
       Mother(
         id: id ?? this.id,
         name: name ?? this.name,
@@ -658,6 +693,7 @@ class Mother extends DataClass implements Insertable<Mother> {
         riskLevel: riskLevel ?? this.riskLevel,
         createdAt: createdAt ?? this.createdAt,
         synced: synced ?? this.synced,
+        workerCreated: workerCreated ?? this.workerCreated,
       );
   Mother copyWithCompanion(MothersCompanion data) {
     return Mother(
@@ -693,6 +729,9 @@ class Mother extends DataClass implements Insertable<Mother> {
       riskLevel: data.riskLevel.present ? data.riskLevel.value : this.riskLevel,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       synced: data.synced.present ? data.synced.value : this.synced,
+      workerCreated: data.workerCreated.present
+          ? data.workerCreated.value
+          : this.workerCreated,
     );
   }
 
@@ -722,7 +761,8 @@ class Mother extends DataClass implements Insertable<Mother> {
           ..write('prevComplications: $prevComplications, ')
           ..write('riskLevel: $riskLevel, ')
           ..write('createdAt: $createdAt, ')
-          ..write('synced: $synced')
+          ..write('synced: $synced, ')
+          ..write('workerCreated: $workerCreated')
           ..write(')'))
         .toString();
   }
@@ -752,7 +792,8 @@ class Mother extends DataClass implements Insertable<Mother> {
         prevComplications,
         riskLevel,
         createdAt,
-        synced
+        synced,
+        workerCreated
       ]);
   @override
   bool operator ==(Object other) =>
@@ -781,7 +822,8 @@ class Mother extends DataClass implements Insertable<Mother> {
           other.prevComplications == this.prevComplications &&
           other.riskLevel == this.riskLevel &&
           other.createdAt == this.createdAt &&
-          other.synced == this.synced);
+          other.synced == this.synced &&
+          other.workerCreated == this.workerCreated);
 }
 
 class MothersCompanion extends UpdateCompanion<Mother> {
@@ -809,6 +851,7 @@ class MothersCompanion extends UpdateCompanion<Mother> {
   final Value<String> riskLevel;
   final Value<DateTime> createdAt;
   final Value<bool> synced;
+  final Value<bool> workerCreated;
   final Value<int> rowid;
   const MothersCompanion({
     this.id = const Value.absent(),
@@ -835,6 +878,7 @@ class MothersCompanion extends UpdateCompanion<Mother> {
     this.riskLevel = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.synced = const Value.absent(),
+    this.workerCreated = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   MothersCompanion.insert({
@@ -862,6 +906,7 @@ class MothersCompanion extends UpdateCompanion<Mother> {
     this.riskLevel = const Value.absent(),
     required DateTime createdAt,
     this.synced = const Value.absent(),
+    this.workerCreated = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         name = Value(name),
@@ -894,6 +939,7 @@ class MothersCompanion extends UpdateCompanion<Mother> {
     Expression<String>? riskLevel,
     Expression<DateTime>? createdAt,
     Expression<bool>? synced,
+    Expression<bool>? workerCreated,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -921,6 +967,7 @@ class MothersCompanion extends UpdateCompanion<Mother> {
       if (riskLevel != null) 'risk_level': riskLevel,
       if (createdAt != null) 'created_at': createdAt,
       if (synced != null) 'synced': synced,
+      if (workerCreated != null) 'worker_created': workerCreated,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -950,6 +997,7 @@ class MothersCompanion extends UpdateCompanion<Mother> {
       Value<String>? riskLevel,
       Value<DateTime>? createdAt,
       Value<bool>? synced,
+      Value<bool>? workerCreated,
       Value<int>? rowid}) {
     return MothersCompanion(
       id: id ?? this.id,
@@ -976,6 +1024,7 @@ class MothersCompanion extends UpdateCompanion<Mother> {
       riskLevel: riskLevel ?? this.riskLevel,
       createdAt: createdAt ?? this.createdAt,
       synced: synced ?? this.synced,
+      workerCreated: workerCreated ?? this.workerCreated,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1055,6 +1104,9 @@ class MothersCompanion extends UpdateCompanion<Mother> {
     if (synced.present) {
       map['synced'] = Variable<bool>(synced.value);
     }
+    if (workerCreated.present) {
+      map['worker_created'] = Variable<bool>(workerCreated.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1088,6 +1140,7 @@ class MothersCompanion extends UpdateCompanion<Mother> {
           ..write('riskLevel: $riskLevel, ')
           ..write('createdAt: $createdAt, ')
           ..write('synced: $synced, ')
+          ..write('workerCreated: $workerCreated, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1258,6 +1311,16 @@ class $AncVisitsTable extends AncVisits
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("synced" IN (0, 1))'),
       defaultValue: const Constant(false));
+  static const VerificationMeta _workerCreatedMeta =
+      const VerificationMeta('workerCreated');
+  @override
+  late final GeneratedColumn<bool> workerCreated = GeneratedColumn<bool>(
+      'worker_created', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("worker_created" IN (0, 1))'),
+      defaultValue: const Constant(false));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -1283,7 +1346,8 @@ class $AncVisitsTable extends AncVisits
         recordedBy,
         clientCreatedAt,
         correctsId,
-        synced
+        synced,
+        workerCreated
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1421,6 +1485,12 @@ class $AncVisitsTable extends AncVisits
       context.handle(_syncedMeta,
           synced.isAcceptableOrUnknown(data['synced']!, _syncedMeta));
     }
+    if (data.containsKey('worker_created')) {
+      context.handle(
+          _workerCreatedMeta,
+          workerCreated.isAcceptableOrUnknown(
+              data['worker_created']!, _workerCreatedMeta));
+    }
     return context;
   }
 
@@ -1478,6 +1548,8 @@ class $AncVisitsTable extends AncVisits
           .read(DriftSqlType.string, data['${effectivePrefix}corrects_id']),
       synced: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}synced'])!,
+      workerCreated: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}worker_created'])!,
     );
   }
 
@@ -1514,6 +1586,9 @@ class AncVisit extends DataClass implements Insertable<AncVisit> {
   final DateTime clientCreatedAt;
   final String? correctsId;
   final bool synced;
+
+  /// Recorded on this handset rather than pulled down. See Mothers.
+  final bool workerCreated;
   const AncVisit(
       {required this.id,
       required this.motherId,
@@ -1538,7 +1613,8 @@ class AncVisit extends DataClass implements Insertable<AncVisit> {
       required this.recordedBy,
       required this.clientCreatedAt,
       this.correctsId,
-      required this.synced});
+      required this.synced,
+      required this.workerCreated});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1592,6 +1668,7 @@ class AncVisit extends DataClass implements Insertable<AncVisit> {
       map['corrects_id'] = Variable<String>(correctsId);
     }
     map['synced'] = Variable<bool>(synced);
+    map['worker_created'] = Variable<bool>(workerCreated);
     return map;
   }
 
@@ -1640,6 +1717,7 @@ class AncVisit extends DataClass implements Insertable<AncVisit> {
           ? const Value.absent()
           : Value(correctsId),
       synced: Value(synced),
+      workerCreated: Value(workerCreated),
     );
   }
 
@@ -1671,6 +1749,7 @@ class AncVisit extends DataClass implements Insertable<AncVisit> {
       clientCreatedAt: serializer.fromJson<DateTime>(json['clientCreatedAt']),
       correctsId: serializer.fromJson<String?>(json['correctsId']),
       synced: serializer.fromJson<bool>(json['synced']),
+      workerCreated: serializer.fromJson<bool>(json['workerCreated']),
     );
   }
   @override
@@ -1701,6 +1780,7 @@ class AncVisit extends DataClass implements Insertable<AncVisit> {
       'clientCreatedAt': serializer.toJson<DateTime>(clientCreatedAt),
       'correctsId': serializer.toJson<String?>(correctsId),
       'synced': serializer.toJson<bool>(synced),
+      'workerCreated': serializer.toJson<bool>(workerCreated),
     };
   }
 
@@ -1728,7 +1808,8 @@ class AncVisit extends DataClass implements Insertable<AncVisit> {
           String? recordedBy,
           DateTime? clientCreatedAt,
           Value<String?> correctsId = const Value.absent(),
-          bool? synced}) =>
+          bool? synced,
+          bool? workerCreated}) =>
       AncVisit(
         id: id ?? this.id,
         motherId: motherId ?? this.motherId,
@@ -1757,6 +1838,7 @@ class AncVisit extends DataClass implements Insertable<AncVisit> {
         clientCreatedAt: clientCreatedAt ?? this.clientCreatedAt,
         correctsId: correctsId.present ? correctsId.value : this.correctsId,
         synced: synced ?? this.synced,
+        workerCreated: workerCreated ?? this.workerCreated,
       );
   AncVisit copyWithCompanion(AncVisitsCompanion data) {
     return AncVisit(
@@ -1799,6 +1881,9 @@ class AncVisit extends DataClass implements Insertable<AncVisit> {
       correctsId:
           data.correctsId.present ? data.correctsId.value : this.correctsId,
       synced: data.synced.present ? data.synced.value : this.synced,
+      workerCreated: data.workerCreated.present
+          ? data.workerCreated.value
+          : this.workerCreated,
     );
   }
 
@@ -1828,7 +1913,8 @@ class AncVisit extends DataClass implements Insertable<AncVisit> {
           ..write('recordedBy: $recordedBy, ')
           ..write('clientCreatedAt: $clientCreatedAt, ')
           ..write('correctsId: $correctsId, ')
-          ..write('synced: $synced')
+          ..write('synced: $synced, ')
+          ..write('workerCreated: $workerCreated')
           ..write(')'))
         .toString();
   }
@@ -1858,7 +1944,8 @@ class AncVisit extends DataClass implements Insertable<AncVisit> {
         recordedBy,
         clientCreatedAt,
         correctsId,
-        synced
+        synced,
+        workerCreated
       ]);
   @override
   bool operator ==(Object other) =>
@@ -1887,7 +1974,8 @@ class AncVisit extends DataClass implements Insertable<AncVisit> {
           other.recordedBy == this.recordedBy &&
           other.clientCreatedAt == this.clientCreatedAt &&
           other.correctsId == this.correctsId &&
-          other.synced == this.synced);
+          other.synced == this.synced &&
+          other.workerCreated == this.workerCreated);
 }
 
 class AncVisitsCompanion extends UpdateCompanion<AncVisit> {
@@ -1915,6 +2003,7 @@ class AncVisitsCompanion extends UpdateCompanion<AncVisit> {
   final Value<DateTime> clientCreatedAt;
   final Value<String?> correctsId;
   final Value<bool> synced;
+  final Value<bool> workerCreated;
   final Value<int> rowid;
   const AncVisitsCompanion({
     this.id = const Value.absent(),
@@ -1941,6 +2030,7 @@ class AncVisitsCompanion extends UpdateCompanion<AncVisit> {
     this.clientCreatedAt = const Value.absent(),
     this.correctsId = const Value.absent(),
     this.synced = const Value.absent(),
+    this.workerCreated = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   AncVisitsCompanion.insert({
@@ -1968,6 +2058,7 @@ class AncVisitsCompanion extends UpdateCompanion<AncVisit> {
     required DateTime clientCreatedAt,
     this.correctsId = const Value.absent(),
     this.synced = const Value.absent(),
+    this.workerCreated = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         motherId = Value(motherId),
@@ -2000,6 +2091,7 @@ class AncVisitsCompanion extends UpdateCompanion<AncVisit> {
     Expression<DateTime>? clientCreatedAt,
     Expression<String>? correctsId,
     Expression<bool>? synced,
+    Expression<bool>? workerCreated,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2027,6 +2119,7 @@ class AncVisitsCompanion extends UpdateCompanion<AncVisit> {
       if (clientCreatedAt != null) 'client_created_at': clientCreatedAt,
       if (correctsId != null) 'corrects_id': correctsId,
       if (synced != null) 'synced': synced,
+      if (workerCreated != null) 'worker_created': workerCreated,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2056,6 +2149,7 @@ class AncVisitsCompanion extends UpdateCompanion<AncVisit> {
       Value<DateTime>? clientCreatedAt,
       Value<String?>? correctsId,
       Value<bool>? synced,
+      Value<bool>? workerCreated,
       Value<int>? rowid}) {
     return AncVisitsCompanion(
       id: id ?? this.id,
@@ -2082,6 +2176,7 @@ class AncVisitsCompanion extends UpdateCompanion<AncVisit> {
       clientCreatedAt: clientCreatedAt ?? this.clientCreatedAt,
       correctsId: correctsId ?? this.correctsId,
       synced: synced ?? this.synced,
+      workerCreated: workerCreated ?? this.workerCreated,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2161,6 +2256,9 @@ class AncVisitsCompanion extends UpdateCompanion<AncVisit> {
     if (synced.present) {
       map['synced'] = Variable<bool>(synced.value);
     }
+    if (workerCreated.present) {
+      map['worker_created'] = Variable<bool>(workerCreated.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2194,6 +2292,7 @@ class AncVisitsCompanion extends UpdateCompanion<AncVisit> {
           ..write('clientCreatedAt: $clientCreatedAt, ')
           ..write('correctsId: $correctsId, ')
           ..write('synced: $synced, ')
+          ..write('workerCreated: $workerCreated, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4283,6 +4382,7 @@ typedef $$MothersTableCreateCompanionBuilder = MothersCompanion Function({
   Value<String> riskLevel,
   required DateTime createdAt,
   Value<bool> synced,
+  Value<bool> workerCreated,
   Value<int> rowid,
 });
 typedef $$MothersTableUpdateCompanionBuilder = MothersCompanion Function({
@@ -4310,6 +4410,7 @@ typedef $$MothersTableUpdateCompanionBuilder = MothersCompanion Function({
   Value<String> riskLevel,
   Value<DateTime> createdAt,
   Value<bool> synced,
+  Value<bool> workerCreated,
   Value<int> rowid,
 });
 
@@ -4455,6 +4556,9 @@ class $$MothersTableFilterComposer
 
   ColumnFilters<bool> get synced => $composableBuilder(
       column: $table.synced, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get workerCreated => $composableBuilder(
+      column: $table.workerCreated, builder: (column) => ColumnFilters(column));
 
   Expression<bool> ancVisitsRefs(
       Expression<bool> Function($$AncVisitsTableFilterComposer f) f) {
@@ -4624,6 +4728,10 @@ class $$MothersTableOrderingComposer
 
   ColumnOrderings<bool> get synced => $composableBuilder(
       column: $table.synced, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get workerCreated => $composableBuilder(
+      column: $table.workerCreated,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$MothersTableAnnotationComposer
@@ -4706,6 +4814,9 @@ class $$MothersTableAnnotationComposer
 
   GeneratedColumn<bool> get synced =>
       $composableBuilder(column: $table.synced, builder: (column) => column);
+
+  GeneratedColumn<bool> get workerCreated => $composableBuilder(
+      column: $table.workerCreated, builder: (column) => column);
 
   Expression<T> ancVisitsRefs<T extends Object>(
       Expression<T> Function($$AncVisitsTableAnnotationComposer a) f) {
@@ -4843,6 +4954,7 @@ class $$MothersTableTableManager extends RootTableManager<
             Value<String> riskLevel = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<bool> synced = const Value.absent(),
+            Value<bool> workerCreated = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               MothersCompanion(
@@ -4870,6 +4982,7 @@ class $$MothersTableTableManager extends RootTableManager<
             riskLevel: riskLevel,
             createdAt: createdAt,
             synced: synced,
+            workerCreated: workerCreated,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -4897,6 +5010,7 @@ class $$MothersTableTableManager extends RootTableManager<
             Value<String> riskLevel = const Value.absent(),
             required DateTime createdAt,
             Value<bool> synced = const Value.absent(),
+            Value<bool> workerCreated = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               MothersCompanion.insert(
@@ -4924,6 +5038,7 @@ class $$MothersTableTableManager extends RootTableManager<
             riskLevel: riskLevel,
             createdAt: createdAt,
             synced: synced,
+            workerCreated: workerCreated,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
@@ -5040,6 +5155,7 @@ typedef $$AncVisitsTableCreateCompanionBuilder = AncVisitsCompanion Function({
   required DateTime clientCreatedAt,
   Value<String?> correctsId,
   Value<bool> synced,
+  Value<bool> workerCreated,
   Value<int> rowid,
 });
 typedef $$AncVisitsTableUpdateCompanionBuilder = AncVisitsCompanion Function({
@@ -5067,6 +5183,7 @@ typedef $$AncVisitsTableUpdateCompanionBuilder = AncVisitsCompanion Function({
   Value<DateTime> clientCreatedAt,
   Value<String?> correctsId,
   Value<bool> synced,
+  Value<bool> workerCreated,
   Value<int> rowid,
 });
 
@@ -5168,6 +5285,9 @@ class $$AncVisitsTableFilterComposer
 
   ColumnFilters<bool> get synced => $composableBuilder(
       column: $table.synced, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get workerCreated => $composableBuilder(
+      column: $table.workerCreated, builder: (column) => ColumnFilters(column));
 
   $$MothersTableFilterComposer get motherId {
     final $$MothersTableFilterComposer composer = $composerBuilder(
@@ -5273,6 +5393,10 @@ class $$AncVisitsTableOrderingComposer
   ColumnOrderings<bool> get synced => $composableBuilder(
       column: $table.synced, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<bool> get workerCreated => $composableBuilder(
+      column: $table.workerCreated,
+      builder: (column) => ColumnOrderings(column));
+
   $$MothersTableOrderingComposer get motherId {
     final $$MothersTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -5372,6 +5496,9 @@ class $$AncVisitsTableAnnotationComposer
   GeneratedColumn<bool> get synced =>
       $composableBuilder(column: $table.synced, builder: (column) => column);
 
+  GeneratedColumn<bool> get workerCreated => $composableBuilder(
+      column: $table.workerCreated, builder: (column) => column);
+
   $$MothersTableAnnotationComposer get motherId {
     final $$MothersTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -5440,6 +5567,7 @@ class $$AncVisitsTableTableManager extends RootTableManager<
             Value<DateTime> clientCreatedAt = const Value.absent(),
             Value<String?> correctsId = const Value.absent(),
             Value<bool> synced = const Value.absent(),
+            Value<bool> workerCreated = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               AncVisitsCompanion(
@@ -5467,6 +5595,7 @@ class $$AncVisitsTableTableManager extends RootTableManager<
             clientCreatedAt: clientCreatedAt,
             correctsId: correctsId,
             synced: synced,
+            workerCreated: workerCreated,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -5494,6 +5623,7 @@ class $$AncVisitsTableTableManager extends RootTableManager<
             required DateTime clientCreatedAt,
             Value<String?> correctsId = const Value.absent(),
             Value<bool> synced = const Value.absent(),
+            Value<bool> workerCreated = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               AncVisitsCompanion.insert(
@@ -5521,6 +5651,7 @@ class $$AncVisitsTableTableManager extends RootTableManager<
             clientCreatedAt: clientCreatedAt,
             correctsId: correctsId,
             synced: synced,
+            workerCreated: workerCreated,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0

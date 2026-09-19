@@ -152,7 +152,12 @@ class MotherCard extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Text(
-              mother.name.characters.first,
+              // A record can reach the phone with no name at all now that
+              // rows come down from the server; Characters.first throws on an
+              // empty string and takes the card down with it.
+              mother.name.characters.isEmpty
+                  ? '?'
+                  : mother.name.characters.first,
               style: T.h2.copyWith(color: C.teal),
             ),
           ),
