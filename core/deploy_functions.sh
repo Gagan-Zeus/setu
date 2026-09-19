@@ -33,8 +33,15 @@ trap 'rm -rf "$STAGE"' EXIT
 
 mkdir -p "$STAGE/supabase/functions"
 cp -R "$ROOT/thayi/supabase/functions/send-email" "$STAGE/supabase/functions/"
-for f in ask-setu speak transcribe; do
-  cp -R "$ROOT/core/functions/$f" "$STAGE/supabase/functions/"
+# Enumerated, not listed. A hardcoded list silently omits a function added
+# later, and the failure is a deploy that reports success for the ones it knew
+# about while the new one is simply absent.
+for d in "$ROOT"/core/functions/*/; do
+  [ -f "$d/index.ts" ] || continue
+  # ${d%/} strips the trailing slash. With it, cp -R copies the directory's
+  # CONTENTS into functions/ rather than the directory itself, and the deploy
+  # fails looking for an entrypoint that is sitting one level too high.
+  cp -R "${d%/}" "$STAGE/supabase/functions/"
 done
 # A .env copied in by accident would be uploaded with the function.
 find "$STAGE/supabase/functions" -name '.env' -delete
@@ -45,7 +52,17 @@ find "$STAGE/supabase/functions" -name '.env' -delete
 cat > "$STAGE/supabase/config.toml" <<TOML
 project_id = "$REF"
 
+# send-email is called by Auth, which signs the body itself - Supabase's own
+# JWT gate would reject it before it ever ran.
 [functions.send-email]
+verify_jwt = false
+
+# partner-api authenticates callers itself, three different ways depending on
+# the route: a partner presents an API key, an administrator presents their
+# session JWT. The gateway only understands the second, so it would reject
+# every partner request with "Invalid JWT" before the function saw it. The
+# function checks all of them, and refuses by default.
+[functions.partner-api]
 verify_jwt = false
 TOML
 
