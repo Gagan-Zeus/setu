@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -120,13 +121,25 @@ class _AssignTaskSheetState extends ConsumerState<AssignTaskSheet> {
           ),
         ),
       );
-    } catch (_) {
+    } catch (error) {
       // Roll the optimistic entry back rather than leave a task that never was.
       ref.read(optimisticTasksProvider.notifier).update(
             (l) => l.where((t) => t.id != pending.id).toList(),
           );
+      // 42501 is Row Level Security refusing the insert, and for a doctor it
+      // means one thing: she has no consent for this mother yet. It was being
+      // reported as "Could not assign the task", which reads as a network
+      // problem and sends her to look in the wrong place.
+      final refused = error is PostgrestException &&
+          (error.code == '42501' ||
+              error.message.contains('row-level security'));
       messenger.showSnackBar(
-        const SnackBar(content: Text('Could not assign the task')),
+        SnackBar(
+          content: Text(refused
+              ? 'She has not given you access yet. Ask her, or scan her '
+                  'Thayi Card if she is with you.'
+              : 'Could not assign the task'),
+        ),
       );
     }
   }

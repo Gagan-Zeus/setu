@@ -16,8 +16,19 @@ import 'models.dart';
 class SupabaseCareApi implements CareApi {
   SupabaseCareApi(this._client, {required this.doctorName});
 
+  /// Her name as the database has it, resolved on first use and kept.
+  ///
+  /// It is a callback rather than a string because apiProvider is synchronous
+  /// and the staff row is not: the alternative was passing a constant, which
+  /// is how an invented doctor's name came to be written into the record as
+  /// the author of real clinical notes and the origin of real tasks.
+  String? _authorName;
+
+  Future<String> _author() async =>
+      _authorName ??= await doctorName();
+
   final SupabaseClient _client;
-  final String doctorName;
+  final Future<String> Function() doctorName;
 
   /// Cached so row lists and the dashboard do not each re-fetch.
   final Map<String, Mother> _cache = {};
@@ -122,7 +133,7 @@ class SupabaseCareApi implements CareApi {
         .from('clinical_notes')
         .insert({
           'mother_id': motherId,
-          'author_name': doctorName,
+          'author_name': await _author(),
           'body': body,
         })
         .select()
@@ -130,7 +141,7 @@ class SupabaseCareApi implements CareApi {
     return ClinicalNote(
       id: row['id'] as String,
       motherId: motherId,
-      authorName: row['author_name'] as String? ?? doctorName,
+      authorName: row['author_name'] as String? ?? '',
       body: row['body'] as String? ?? body,
       createdAt: _date(row['created_at']) ?? DateTime.now(),
     );
@@ -214,7 +225,7 @@ class SupabaseCareApi implements CareApi {
         .from('tasks')
         .insert({
           'mother_id': motherId,
-          'created_by': doctorName,
+          'created_by': await _author(),
           'assigned_to_asha_id': mother.ashaId.isEmpty ? null : mother.ashaId,
           'assigned_to_asha_name': mother.ashaName,
           'type': type.name,

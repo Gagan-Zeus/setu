@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/mock_data.dart';
 import '../providers.dart';
 import '../features/scan_thayi_card.dart';
 import 'mother_record_screen.dart';
@@ -55,7 +54,7 @@ class _ShellState extends ConsumerState<Shell> {
           children: [
             Text(_titles[_index], style: T.h2),
             Text(
-              ref.watch(facilityProvider).valueOrNull ?? MockData.facility,
+              ref.watch(facilityProvider).valueOrNull ?? '—',
               style: T.small,
             ),
           ],
@@ -135,7 +134,7 @@ class _UserMenu extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return PopupMenuButton<String>(
-      tooltip: MockData.doctorName,
+      tooltip: ref.watch(staffProvider).valueOrNull?.name ?? '—',
       offset: const Offset(0, 44),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(S.radius),
@@ -159,8 +158,10 @@ class _UserMenu extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(MockData.doctorName, style: T.body),
-              Text(MockData.doctorDesignation, style: T.small),
+              Text(ref.watch(staffProvider).valueOrNull?.name ?? '—',
+                  style: T.body),
+              Text(designationOf(ref.watch(staffProvider).valueOrNull?.role),
+                  style: T.small),
             ],
           ),
         ),

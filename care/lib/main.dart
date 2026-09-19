@@ -23,6 +23,15 @@ Future<void> main() async {
         url: Env.supabaseUrl,
         publishableKey: Env.supabaseAnonKey,
       );
+      // Supabase.initialize does not await session recovery — it fires
+      // recoverSession off into a CancelableOperation and returns. So on a
+      // cold start currentSession is usually still null when the first widget
+      // builds, and apiProvider decided real-versus-demo from exactly that.
+      // The console came up on demo data every morning, with the doctor's own
+      // caseload sitting in the database untouched, and nothing re-decided for
+      // the rest of the run. Waiting briefly for the restore closes the race;
+      // authStateProvider handles the case where it is slower than this.
+      await _awaitRestoredSession();
     } catch (error) {
       debugPrint('Supabase init failed, continuing locally: $error');
     }
@@ -36,6 +45,24 @@ Future<void> main() async {
       child: const SetuCareApp(),
     ),
   );
+}
+
+/// Gives a stored session a moment to come back before the first frame.
+///
+/// Bounded, because a doctor opening the app on a hospital corridor's signal
+/// must not be held on a blank screen: if it has not arrived by then the app
+/// starts anyway and switches over when it does.
+Future<void> _awaitRestoredSession() async {
+  final auth = Supabase.instance.client.auth;
+  if (auth.currentSession != null) return;
+  try {
+    await auth.onAuthStateChange
+        .firstWhere((event) => event.session != null)
+        .timeout(const Duration(seconds: 3));
+  } catch (_) {
+    // No stored session, or it could not be refreshed. Either way the login
+    // screen is the right next thing.
+  }
 }
 
 class SetuCareApp extends ConsumerWidget {
