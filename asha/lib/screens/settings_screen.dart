@@ -150,6 +150,9 @@ class SettingsScreen extends ConsumerWidget {
     );
     if (confirmed != true) return;
 
+    // Off duty first. Leaving the row behind would keep advertising her to
+    // mothers as available on a phone that is no longer signed in.
+    await ref.read(dutyControllerProvider.notifier).clear();
     await ref.read(authControllerProvider.notifier).signOut();
     navigator.pushNamedAndRemoveUntil(Routes.login, (_) => false);
   }

@@ -296,6 +296,36 @@ abstract class AppLocalizations {
   /// **'Skip this'**
   String get locationSkip;
 
+  /// No description provided for @ashaNoneYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No ASHA worker has been listed for your area yet'**
+  String get ashaNoneYet;
+
+  /// No description provided for @ashaNoneYetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When one is registered she will appear here with her phone number. If you are pregnant and need help now, go to your nearest health centre.'**
+  String get ashaNoneYetBody;
+
+  /// No description provided for @ashaOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not load the list'**
+  String get ashaOffline;
+
+  /// No description provided for @ashaOfflineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This needs internet. Move to where you have signal and try again — we will not show you a number that might not reach anyone.'**
+  String get ashaOfflineBody;
+
+  /// No description provided for @ashaRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get ashaRetry;
+
   /// No description provided for @ashaNearbyTitle.
   ///
   /// In en, this message translates to:
@@ -1003,6 +1033,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{km} km away'**
   String distanceKm(String km);
+
+  /// No description provided for @distanceKmApprox.
+  ///
+  /// In en, this message translates to:
+  /// **'about {km} km away'**
+  String distanceKmApprox(String km);
+
+  /// No description provided for @ashaOnDutyNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Available now'**
+  String get ashaOnDutyNow;
+
+  /// No description provided for @ashaBandUnder1km.
+  ///
+  /// In en, this message translates to:
+  /// **'Less than 1 km from you'**
+  String get ashaBandUnder1km;
+
+  /// No description provided for @ashaBand1to2km.
+  ///
+  /// In en, this message translates to:
+  /// **'1–2 km from you'**
+  String get ashaBand1to2km;
 
   /// No description provided for @callFailed.
   ///

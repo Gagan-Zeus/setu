@@ -64,6 +64,12 @@ verify_jwt = false
 # function checks all of them, and refuses by default.
 [functions.partner-api]
 verify_jwt = false
+
+# admin-api answers only an administrator's own session, which it verifies
+# itself before touching anything. The gateway check is left on: nothing here
+# should ever be reachable without a Supabase JWT, unlike the partner endpoint.
+[functions.admin-api]
+verify_jwt = true
 TOML
 
 echo "staged: $(ls "$STAGE/supabase/functions" | tr '\n' ' ')"

@@ -17,8 +17,23 @@ abstract class SyncService {
   set forceOffline(bool value);
   bool get forceOffline;
 
+  /// Real device connectivity, folded in by whoever drains the queue.
+  ///
+  /// Only the mock used to have this, so with a real backend the app pushed
+  /// into an aeroplane-moded handset, the socket failed, and every row was
+  /// marked red and failed — a queue that was merely waiting for signal looked
+  /// like a queue that had been rejected.
+  set networkUp(bool value);
+
   /// Pushes one outbox row. Throws to signal a retryable failure.
   Future<void> push(OutboxData item);
+
+  /// Reads the caseload down into [db]. Returns how many mothers it wrote.
+  ///
+  /// Without this the app is push-only: what a worker sees is whatever this
+  /// handset happens to hold, which is not what the website shows and not what
+  /// another phone would show.
+  Future<int> pull(AppDatabase db);
 }
 
 class MockSyncService implements SyncService {
@@ -44,7 +59,7 @@ class MockSyncService implements SyncService {
   @override
   set forceOffline(bool value) => _forceOffline = value;
 
-  /// Real connectivity is folded in by the worker; this models the server.
+  @override
   set networkUp(bool value) => _networkUp = value;
 
   @override
@@ -63,6 +78,10 @@ class MockSyncService implements SyncService {
     }
     debugPrint('synced ${item.entityTable}/${item.recordId}');
   }
+
+  /// Nothing to read down: the mock has no server behind it.
+  @override
+  Future<int> pull(AppDatabase db) async => 0;
 }
 
 class SyncFailure implements Exception {
@@ -83,6 +102,21 @@ class SyncWorker {
 
   bool get isRunning => _running;
 
+  /// Reads the server's copy of the caseload down.
+  ///
+  /// Shares [_running] with [drain] so a pull can never overwrite a row the
+  /// drain is in the middle of pushing, or read a half-written one.
+  Future<int> pull() async {
+    if (_running) return 0;
+    if (!_service.isOnline) return 0;
+    _running = true;
+    try {
+      return await _service.pull(_db);
+    } finally {
+      _running = false;
+    }
+  }
+
   /// Returns the number of rows successfully pushed.
   Future<int> drain() async {
     if (_running) return 0;
@@ -99,6 +133,15 @@ class SyncWorker {
           await _markRecordSynced(item);
           sent++;
         } catch (error) {
+          // A row the server actively refused is worth showing in red: only
+          // she can fix it, and the message says how. A row that never
+          // reached the server is not a failure — it is a row still waiting
+          // for signal, and marking it failed spent a retry and told her
+          // something untrue.
+          if (_isTransport(error)) {
+            await _db.markOutbox(item.id, 'pending', error: error.toString());
+            break;
+          }
           await _db.bumpRetry(item.id, error.toString());
         }
       }
@@ -106,6 +149,19 @@ class SyncWorker {
       _running = false;
     }
     return sent;
+  }
+
+  static bool _isTransport(Object error) {
+    final text = error.toString().toLowerCase();
+    return text.contains('socketexception') ||
+        text.contains('clientexception') ||
+        text.contains('failed host lookup') ||
+        text.contains('connection closed') ||
+        text.contains('connection refused') ||
+        text.contains('connection reset') ||
+        text.contains('network is unreachable') ||
+        text.contains('timed out') ||
+        text.contains('offline');
   }
 
   Future<void> _markRecordSynced(OutboxData item) async {

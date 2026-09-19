@@ -75,6 +75,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logout => 'Sign out';
 
   @override
+  String get dutyTitle => 'On duty';
+
+  @override
+  String get dutyOnBody =>
+      'Mothers within 2 km can see that you are available now.';
+
+  @override
+  String get dutyOffBody =>
+      'Turn this on while you are working, so mothers nearby can find you.';
+
+  @override
+  String get dutyNoLocation => 'No GPS — could not go on duty';
+
+  @override
+  String get dutyOffline => 'No signal — could not go on duty';
+
+  @override
+  String get dutyUnavailable =>
+      'The server has not been set up for on-duty yet';
+
+  @override
+  String get dutyNoPosting => 'This login has no ASHA posting yet';
+
+  @override
   String get accountSection => 'ACCOUNT';
 
   @override

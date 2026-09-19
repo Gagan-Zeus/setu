@@ -230,6 +230,48 @@ abstract class AppLocalizations {
   /// **'Sign out'**
   String get logout;
 
+  /// No description provided for @dutyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'On duty'**
+  String get dutyTitle;
+
+  /// No description provided for @dutyOnBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Mothers within 2 km can see that you are available now.'**
+  String get dutyOnBody;
+
+  /// No description provided for @dutyOffBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn this on while you are working, so mothers nearby can find you.'**
+  String get dutyOffBody;
+
+  /// No description provided for @dutyNoLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'No GPS — could not go on duty'**
+  String get dutyNoLocation;
+
+  /// No description provided for @dutyOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'No signal — could not go on duty'**
+  String get dutyOffline;
+
+  /// No description provided for @dutyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The server has not been set up for on-duty yet'**
+  String get dutyUnavailable;
+
+  /// No description provided for @dutyNoPosting.
+  ///
+  /// In en, this message translates to:
+  /// **'This login has no ASHA posting yet'**
+  String get dutyNoPosting;
+
   /// No description provided for @accountSection.
   ///
   /// In en, this message translates to:

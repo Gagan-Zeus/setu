@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../data/duty_service.dart';
 import '../db/database.dart';
 import '../l10n/app_localizations.dart';
 import '../providers.dart';
@@ -81,6 +82,8 @@ class HomeScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: S.md),
+          const _DutyCard(),
+          const SizedBox(height: S.md),
           Row(
             children: [
               Expanded(
@@ -158,6 +161,102 @@ class HomeScreen extends ConsumerWidget {
       if (m.id == id) return m;
     }
     return null;
+  }
+}
+
+/// "I am working now", and the mothers around her can see it.
+///
+/// It sits on the home screen rather than in settings on purpose. She flips it
+/// twice a day, and — more to the point — while it is on, her phone is saying
+/// where she is. That is not something to leave buried behind a menu where she
+/// cannot see at a glance that it is still running.
+class _DutyCard extends ConsumerStatefulWidget {
+  const _DutyCard();
+
+  @override
+  ConsumerState<_DutyCard> createState() => _DutyCardState();
+}
+
+class _DutyCardState extends ConsumerState<_DutyCard> {
+  @override
+  void initState() {
+    super.initState();
+    // A restart must not silently take her off the list. The server is asked
+    // whether the shift it knows about is still running.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(dutyControllerProvider.notifier).restore();
+    });
+  }
+
+  String? _problem(AppLocalizations l, DutyProblem? p) => switch (p) {
+        DutyProblem.noLocation => l.dutyNoLocation,
+        DutyProblem.offline => l.dutyOffline,
+        DutyProblem.unavailable => l.dutyUnavailable,
+        DutyProblem.noPosting => l.dutyNoPosting,
+        null => null,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final duty = ref.watch(dutyControllerProvider);
+    final problem = _problem(l, duty.problem);
+
+    return SetuCard(
+      padding: const EdgeInsets.all(S.md),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: duty.onDuty ? C.greenSoft : C.tealSoft,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              duty.onDuty ? Icons.my_location : Icons.location_off_outlined,
+              size: 24,
+              color: duty.onDuty ? C.green : C.teal,
+            ),
+          ),
+          const SizedBox(width: S.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.dutyTitle, style: T.h2),
+                const SizedBox(height: S.xs),
+                Text(
+                  problem ?? (duty.onDuty ? l.dutyOnBody : l.dutyOffBody),
+                  style: T.bodySoft.copyWith(
+                    fontSize: 15,
+                    color: problem != null ? C.red : C.textSoft,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: S.sm),
+          if (duty.busy)
+            const SizedBox(
+              width: 32,
+              height: 32,
+              child: Padding(
+                padding: EdgeInsets.all(6),
+                child: CircularProgressIndicator(strokeWidth: 2.5),
+              ),
+            )
+          else
+            Switch(
+              value: duty.onDuty,
+              activeThumbColor: C.green,
+              onChanged: (v) =>
+                  ref.read(dutyControllerProvider.notifier).set(v),
+            ),
+        ],
+      ),
+    );
   }
 }
 

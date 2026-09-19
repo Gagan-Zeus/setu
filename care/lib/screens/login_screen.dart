@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/mock_data.dart';
 import '../providers.dart';
 import '../theme/tokens.dart';
 import '../widgets/care_logo.dart';
@@ -20,7 +19,11 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _email = TextEditingController(text: 'sridevi@phc.kar.gov.in');
+  // Shipped pre-filled with an invented address that is in neither staff nor
+  // auth.users. Sending a code to it minted a real auth user with no staff
+  // row: a genuine session, so no demo banner, and a caseload of nothing,
+  // because is_doctor() is false without a staff row.
+  final _email = TextEditingController();
   final _otp = TextEditingController();
   final _otpFocus = FocusNode();
   static final _emailPattern = RegExp(r'^[\w.+-]+@[\w-]+\.[\w.-]+$');
@@ -147,8 +150,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Text(_error!, style: T.small.copyWith(color: C.red)),
                     ],
                     const SizedBox(height: S.md),
-                    Text(MockData.facility,
-                        style: T.small, textAlign: TextAlign.center),
+                    Text(
+                      'Sign in with the address your administrator registered '
+                      'for you.',
+                      style: T.small,
+                      textAlign: TextAlign.center,
+                    ),
                   ],
                 ),
               ),

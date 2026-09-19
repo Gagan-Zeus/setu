@@ -113,6 +113,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get locationSkip => 'Skip this';
 
   @override
+  String get ashaNoneYet => 'No ASHA worker has been listed for your area yet';
+
+  @override
+  String get ashaNoneYetBody =>
+      'When one is registered she will appear here with her phone number. If you are pregnant and need help now, go to your nearest health centre.';
+
+  @override
+  String get ashaOffline => 'We could not load the list';
+
+  @override
+  String get ashaOfflineBody =>
+      'This needs internet. Move to where you have signal and try again — we will not show you a number that might not reach anyone.';
+
+  @override
+  String get ashaRetry => 'Try again';
+
+  @override
   String get ashaNearbyTitle => 'ASHA workers near you';
 
   @override
@@ -510,6 +527,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String distanceKm(String km) {
     return '$km km away';
   }
+
+  @override
+  String distanceKmApprox(String km) {
+    return 'about $km km away';
+  }
+
+  @override
+  String get ashaOnDutyNow => 'Available now';
+
+  @override
+  String get ashaBandUnder1km => 'Less than 1 km from you';
+
+  @override
+  String get ashaBand1to2km => '1–2 km from you';
 
   @override
   String get callFailed => 'Could not open the dialler';

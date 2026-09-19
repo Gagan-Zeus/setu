@@ -9,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/env.dart';
-import 'data/seed_data.dart';
 import 'data/sync_service.dart';
 import 'db/database.dart';
 import 'l10n/app_localizations.dart';
@@ -49,7 +48,11 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
   final db = AppDatabase();
   // A real caseload, seeded once. Everything the UI reads comes from here.
-  await SeedData.seedIfEmpty(db);
+  // No caseload is seeded any more. It used to write twenty invented women
+  // into every handset here, which is why the app and the website never
+  // agreed: those twenty were only ever on the phone. The caseload comes down
+  // from Supabase now, in SyncWorker.pull.
+  await db.purgePracticeCaseload();
 
   runApp(
     ProviderScope(
@@ -94,7 +97,11 @@ class _SetuAshaAppState extends ConsumerState<SetuAshaApp> {
   /// pushes are upserts, so anything already up there is written again to the
   /// same row rather than duplicated.
   // v2: the first pass also uploaded the handset's practice caseload.
-  static const _repairKey = 'outbox_repaired_v2';
+  // v3: re-queueing appended a new outbox row per record per run, so phones
+  //     that have already repaired are carrying several identical entries for
+  //     every mother. Running once more now collapses them, because requeue()
+  //     reuses the row that is already there.
+  static const _repairKey = 'outbox_repaired_v3';
 
   Future<void> _repairOnce() async {
     final prefs = ref.read(prefsProvider);
@@ -110,11 +117,21 @@ class _SetuAshaAppState extends ConsumerState<SetuAshaApp> {
     final forced = ref.read(offlineModeProvider);
 
     service.forceOffline = forced;
-    if (service is MockSyncService) service.networkUp = connected;
+    service.networkUp = connected;
     if (!service.isOnline) return;
 
     await _repairOnce();
-    await ref.read(syncWorkerProvider).drain();
+    final worker = ref.read(syncWorkerProvider);
+    // Push first. What she entered at a doorstep is the newer fact, and
+    // sending it before reading means the pull never sees a stale server copy
+    // of a row she has just changed.
+    await worker.drain();
+    try {
+      await worker.pull();
+    } on SyncFailure {
+      // Already surfaced against the queued rows on the Sync Status screen;
+      // there is nothing useful to do with it on a background timer.
+    }
   }
 
   @override

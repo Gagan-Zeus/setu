@@ -9,6 +9,13 @@
          a visit is never blocked because GPS failed. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!-- Telling mothers nearby that she is on duty. The service itself is
+         declared by geolocator_android; only the permissions belong here.
+         ACCESS_BACKGROUND_LOCATION is deliberately absent — she reports while
+         she is on duty with the app running, never behind her back. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- CALL_PHONE is deliberately absent: ACTION_DIAL needs no permission. -->
 
     <application

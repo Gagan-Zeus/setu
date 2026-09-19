@@ -9,8 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import 'config/env.dart';
+import 'data/duty_service.dart';
 import 'data/ocr_service.dart';
-import 'data/seed_data.dart';
 import 'data/supabase_sync_service.dart';
 import 'data/sync_service.dart';
 import 'db/database.dart';
@@ -54,11 +54,22 @@ final localeControllerProvider =
 
 @immutable
 class AshaSession {
-  const AshaSession({this.email, this.name, this.pin, this.unlocked = false});
+  const AshaSession({
+    this.email,
+    this.name,
+    this.pin,
+    this.subCentre,
+    this.unlocked = false,
+  });
 
   final String? email;
   final String? name;
   final String? pin;
+
+  /// The sub-centre she is posted to, read from her staff row rather than
+  /// typed. Row Level Security scopes her to it, so a mother registered into
+  /// any other one is a mother she cannot open afterwards.
+  final String? subCentre;
 
   /// PIN entered this run. The phone is shared, so this resets on every open.
   final bool unlocked;
@@ -70,12 +81,14 @@ class AshaSession {
     String? email,
     String? name,
     String? pin,
+    String? subCentre,
     bool? unlocked,
   }) =>
       AshaSession(
         email: email ?? this.email,
         name: name ?? this.name,
         pin: pin ?? this.pin,
+        subCentre: subCentre ?? this.subCentre,
         unlocked: unlocked ?? this.unlocked,
       );
 }
@@ -86,6 +99,7 @@ class AuthController extends StateNotifier<AshaSession> {
   static const _emailKey = 'asha_email';
   static const _nameKey = 'asha_name';
   static const _pinKey = 'asha_pin';
+  static const _subCentreKey = 'asha_sub_centre';
   final SharedPreferences _prefs;
 
   /// Null when Supabase is switched off or failed to initialise.
@@ -95,6 +109,7 @@ class AuthController extends StateNotifier<AshaSession> {
         email: prefs.getString(_emailKey),
         name: prefs.getString(_nameKey),
         pin: prefs.getString(_pinKey),
+        subCentre: prefs.getString(_subCentreKey),
       );
 
   /// Set when the backend could not send a code — no signal, or no email
@@ -130,6 +145,26 @@ class AuthController extends StateNotifier<AshaSession> {
       _otpUnavailable = true;
       return;
     }
+    // Whatever session this handset is already carrying is what authorises
+    // every write, no matter which address the screen shows. The two were
+    // never reconciled: the app read "signed in" out of SharedPreferences
+    // while the server read it out of the Supabase session, so a phone could
+    // display one worker and write as another — or as nobody at all, if the
+    // account behind the session was never registered as staff. Row Level
+    // Security then refused the mother, and that refusal surfaced as a flat
+    // "failed to sync". Dropping a session that belongs to someone else here
+    // is what makes the screen and the server agree once this code is used.
+    final leftover = client.auth.currentUser?.email;
+    if (leftover != null &&
+        leftover.toLowerCase() != email.trim().toLowerCase()) {
+      try {
+        await client.auth.signOut();
+      } catch (_) {
+        // The point is that the stale session stops being used from here on;
+        // whether the server managed to revoke it does not change that.
+      }
+    }
+
     try {
       await client.auth.signInWithOtp(email: email.trim());
       _otpUnavailable = false;
@@ -163,17 +198,118 @@ class AuthController extends StateNotifier<AshaSession> {
     if (response.session == null) {
       throw const sb.AuthException('Verification did not return a session');
     }
-    await _signInLocally(email.trim());
+    await _signInAsStaff(client, email.trim());
   }
 
-  Future<void> _signInLocally(String email) async {
-    await _prefs.setString(_emailKey, email);
-    await _prefs.setString(_nameKey, SeedData.ashaName);
-    state = state.copyWith(
+  /// Re-reads her name and posting from the server.
+  ///
+  /// _signInAsStaff only runs at OTP verification, so a worker who is already
+  /// signed in never picks up what her staff row says — which is why a handset
+  /// went on greeting her by a name out of the practice caseload long after
+  /// she had been registered properly. This runs on every open.
+  ///
+  /// It only ever writes on success. Offline, or with the staff row missing,
+  /// it leaves what is already stored alone: showing her nothing, or her email
+  /// local part, would be a worse answer than a slightly stale name, and
+  /// _signInAsStaff's own fallbacks would actively clear her sub-centre —
+  /// which is the field the registration form fills itself from.
+  Future<void> refreshStaffProfile() async {
+    final client = _client;
+    final email = state.email;
+    if (client == null || email == null) return;
+    final id = client.auth.currentUser?.id;
+    if (id == null) return;
+
+    final Map<String, dynamic>? staff;
+    try {
+      staff = await client
+          .from('staff')
+          .select('name, sub_centre')
+          .eq('auth_user_id', id)
+          .maybeSingle();
+    } catch (_) {
+      return;
+    }
+    if (staff == null) return;
+
+    final name = (staff['name'] as String?)?.trim();
+    final subCentre = (staff['sub_centre'] as String?)?.trim();
+    if (name == null || name.isEmpty) return;
+    if (name == state.name && subCentre == state.subCentre) return;
+
+    await _prefs.setString(_nameKey, name);
+    if (subCentre != null && subCentre.isNotEmpty) {
+      await _prefs.setString(_subCentreKey, subCentre);
+    }
+
+    // Built directly rather than with copyWith, whose `?? this.x` can never
+    // put a field back to null.
+    state = AshaSession(
       email: email,
-      name: SeedData.ashaName,
+      name: name,
+      subCentre: subCentre ?? state.subCentre,
+      pin: state.pin,
+      unlocked: state.unlocked,
+    );
+  }
+
+  /// Records who she is from her own staff row.
+  ///
+  /// This used to stamp SeedData.ashaName — a worker out of the practice
+  /// caseload — so every handset greeted the same person and wrote that name
+  /// onto every visit it recorded, whoever had actually signed in.
+  Future<void> _signInAsStaff(sb.SupabaseClient client, String email) async {
+    String? name;
+    String? subCentre;
+    final id = client.auth.currentUser?.id;
+    if (id != null) {
+      try {
+        final staff = await client
+            .from('staff')
+            .select('name, sub_centre')
+            .eq('auth_user_id', id)
+            .maybeSingle();
+        name = (staff?['name'] as String?)?.trim();
+        subCentre = (staff?['sub_centre'] as String?)?.trim();
+      } catch (_) {
+        // She is signed in either way. If there is no staff row behind the
+        // login, the sync layer is where that gets said, in the one place it
+        // actually matters and with the words for what to do about it.
+      }
+    }
+
+    await _prefs.setString(_emailKey, email);
+    await _prefs.setString(_nameKey, name ?? _nameFrom(email));
+    if (subCentre != null && subCentre.isNotEmpty) {
+      await _prefs.setString(_subCentreKey, subCentre);
+    } else {
+      await _prefs.remove(_subCentreKey);
+    }
+
+    state = AshaSession(
+      email: email,
+      name: name ?? _nameFrom(email),
+      subCentre: subCentre,
+      pin: state.pin,
       unlocked: true,
     );
+  }
+
+  /// Signed in with no backend to ask. Her own address is a truer label than
+  /// somebody else's name out of the demo data.
+  Future<void> _signInLocally(String email) async {
+    await _prefs.setString(_emailKey, email);
+    await _prefs.setString(_nameKey, _nameFrom(email));
+    state = state.copyWith(
+      email: email,
+      name: _nameFrom(email),
+      unlocked: true,
+    );
+  }
+
+  static String _nameFrom(String email) {
+    final at = email.indexOf('@');
+    return at > 0 ? email.substring(0, at) : email;
   }
 
   Future<void> setPin(String pin) async {
@@ -188,7 +324,9 @@ class AuthController extends StateNotifier<AshaSession> {
   Future<void> signOut() async {
     await _client?.auth.signOut();
     await _prefs.remove(_emailKey);
+    await _prefs.remove(_nameKey);
     await _prefs.remove(_pinKey);
+    await _prefs.remove(_subCentreKey);
     state = const AshaSession();
   }
 }
@@ -209,6 +347,68 @@ final authControllerProvider =
     ref.watch(prefsProvider),
     ref.watch(supabaseClientProvider),
   ),
+);
+
+/// Whether she is telling the mothers around her that she is working now.
+///
+/// The server is the authority on this, not the handset: [restore] asks it at
+/// every open, so a phone that was restarted, or whose clock is wrong, cannot
+/// leave her advertised as on duty when she is not — or drop her off the list
+/// when she is.
+class DutyController extends StateNotifier<DutyState> {
+  DutyController(this._duty) : super(const DutyState());
+
+  final DutyService _duty;
+
+  /// Picks a running shift back up after a restart.
+  Future<void> restore() async {
+    final until = await _duty.serverDutyUntil();
+    if (until == null) return;
+    await _duty.resume();
+    if (!mounted) return;
+    state = DutyState(onDuty: true, until: until);
+  }
+
+  Future<void> set(bool on) async {
+    if (state.busy) return;
+    state = state.copyWith(busy: true, clearProblem: true);
+
+    if (!on) {
+      await _duty.stop();
+      if (!mounted) return;
+      state = const DutyState();
+      return;
+    }
+
+    final r = await _duty.start();
+    if (!mounted) return;
+    state = r.problem != null
+        ? DutyState(problem: r.problem)
+        : DutyState(onDuty: true, until: r.until);
+  }
+
+  /// Signing out must take her off the list. Leaving a stale row behind would
+  /// advertise a worker who is not there to answer.
+  Future<void> clear() async {
+    await _duty.stop();
+    if (!mounted) return;
+    state = const DutyState();
+  }
+
+  @override
+  void dispose() {
+    _duty.dispose();
+    super.dispose();
+  }
+}
+
+final dutyServiceProvider = Provider<DutyService>(
+  (ref) => DutyService(ref.watch(supabaseClientProvider)),
+);
+
+final dutyControllerProvider =
+    StateNotifierProvider<DutyController, DutyState>(
+  (ref) => DutyController(ref.watch(dutyServiceProvider)),
 );
 
 // -------------------------------------------------------------------- risk
@@ -482,6 +682,7 @@ class VisitRepository {
               prevComplications: Value(jsonEncode(prevComplications)),
               riskLevel: Value(riskLevel),
               createdAt: now,
+              workerCreated: const Value(true),
             ),
           );
       await _db.enqueue(
@@ -511,6 +712,7 @@ class VisitRepository {
           'height_cm': heightCm,
           'is_bpl': isBpl,
           'risk_level': riskLevel,
+          'prev_complications': prevComplications,
           'created_at': now,
         }),
       );

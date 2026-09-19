@@ -5,7 +5,6 @@ import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import 'config/env.dart';
 import 'data/care_api.dart';
-import 'data/mock_data.dart';
 import 'data/models.dart';
 import 'data/supabase_care_api.dart';
 
@@ -19,10 +18,37 @@ final prefsProvider = Provider<SharedPreferences>(
 final apiProvider = Provider<CareApi>((ref) {
   final client = ref.watch(supabaseClientProvider);
   final signedIn = ref.watch(authProvider) != null;
+  // Watched, not read once. This used to sample currentSession at first build
+  // and never look again, so a session that arrived a moment later — the
+  // normal case on a cold start, because Supabase.initialize does not await
+  // its own session recovery — left the console on demo data until the doctor
+  // signed out and in again.
+  ref.watch(authStateProvider);
   if (client != null && signedIn && client.auth.currentSession != null) {
-    return SupabaseCareApi(client, doctorName: MockData.doctorName);
+    return SupabaseCareApi(
+      client,
+      // Resolved from her staff row when a write actually happens. It was the
+      // literal MockData.doctorName, which meant an invented doctor's name was
+      // written into clinical_notes.author_name and tasks.created_by in the
+      // real database — and the ASHA receiving the task read that name as the
+      // person who had asked her for the work.
+      doctorName: () async => ref.read(staffProvider.future).then(
+            (staff) =>
+                staff?.name ?? client.auth.currentUser?.email ?? 'Medical officer',
+          ),
+    );
   }
   return MockCareApi();
+});
+
+/// Supabase's own view of whether anyone is signed in.
+///
+/// Nothing in this app listened to it before, so the console could not notice
+/// a session arriving late or expiring mid-shift.
+final authStateProvider = StreamProvider<sb.AuthState?>((ref) {
+  final client = ref.watch(supabaseClientProvider);
+  if (client == null) return const Stream<sb.AuthState?>.empty();
+  return client.auth.onAuthStateChange;
 });
 
 /// True when the console is serving demo data rather than the real caseload.
@@ -35,24 +61,63 @@ final apiProvider = Provider<CareApi>((ref) {
 final isDemoDataProvider =
     Provider<bool>((ref) => ref.watch(apiProvider) is! SupabaseCareApi);
 
-/// The signed-in medical officer's own facility, rather than a hard-coded one.
-final facilityProvider = FutureProvider<String>((ref) async {
+/// The signed-in medical officer, as the database has her.
+///
+/// Her name, facility and phone used to be constants out of the demo data —
+/// shown on her own profile screen, and worse, written into the record as the
+/// author of every note and the origin of every task she assigned.
+class StaffProfile {
+  const StaffProfile({
+    required this.name,
+    required this.role,
+    this.facility,
+    this.phone,
+  });
+
+  final String name;
+  final String role;
+  final String? facility;
+  final String? phone;
+}
+
+/// public.staff records a role, not a designation, so this says what the role
+/// means rather than inventing a title she may not hold.
+String designationOf(String? role) => switch (role) {
+      'doctor' => 'Medical Officer',
+      'asha' => 'ASHA worker',
+      _ => '—',
+    };
+
+final staffProvider = FutureProvider<StaffProfile?>((ref) async {
   final client = ref.watch(supabaseClientProvider);
+  ref.watch(authStateProvider);
   final user = client?.auth.currentUser;
-  if (client == null || user == null) return MockData.facility;
+  if (client == null || user == null) return null;
   try {
     final row = await client
         .from('staff')
-        .select('facility, name')
+        .select('name, role, facility, phone')
         .eq('auth_user_id', user.id)
         .maybeSingle();
-    final facility = row?['facility'] as String?;
-    return (facility == null || facility.isEmpty)
-        ? MockData.facility
-        : facility;
+    if (row == null) return null;
+    final name = (row['name'] as String?)?.trim();
+    if (name == null || name.isEmpty) return null;
+    return StaffProfile(
+      name: name,
+      role: (row['role'] as String?) ?? 'doctor',
+      facility: (row['facility'] as String?)?.trim(),
+      phone: (row['phone'] as String?)?.trim(),
+    );
   } catch (_) {
-    return MockData.facility;
+    // Offline. Nothing invented is better than somebody else's name.
+    return null;
   }
+});
+
+/// Her facility. Null rather than a stand-in, so a screen shows a dash.
+final facilityProvider = FutureProvider<String?>((ref) async {
+  final staff = await ref.watch(staffProvider.future);
+  return staff?.facility;
 });
 
 // -------------------------------------------------------------------- auth
@@ -118,7 +183,13 @@ class AuthController extends StateNotifier<Session?> {
       return;
     }
     try {
-      await client.auth.signInWithOtp(email: email.trim());
+      await client.auth.signInWithOtp(
+        email: email.trim(),
+        // Never mint an account from this screen. Thayi and the admin portal
+        // both pass this; Care did not, so any address typed here became a
+        // signed-in user who could see nothing and was told nothing.
+        shouldCreateUser: false,
+      );
       _otpUnavailable = false;
     } catch (error) {
       if (_cannotSend(error)) {

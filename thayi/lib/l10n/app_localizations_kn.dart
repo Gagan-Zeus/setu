@@ -113,6 +113,23 @@ class AppLocalizationsKn extends AppLocalizations {
   String get locationSkip => 'ಇದನ್ನು ಬಿಟ್ಟುಬಿಡಿ';
 
   @override
+  String get ashaNoneYet => 'ನಿಮ್ಮ ಪ್ರದೇಶಕ್ಕೆ ಇನ್ನೂ ಆಶಾ ಕಾರ್ಯಕರ್ತೆ ಸೇರಿಸಿಲ್ಲ';
+
+  @override
+  String get ashaNoneYetBody =>
+      'ಸೇರಿಸಿದ ತಕ್ಷಣ ಅವರ ಫೋನ್ ನಂಬರ್ ಸಹಿತ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ. ನೀವು ಗರ್ಭಿಣಿಯಾಗಿದ್ದು ಈಗಲೇ ಸಹಾಯ ಬೇಕಿದ್ದರೆ ಹತ್ತಿರದ ಆರೋಗ್ಯ ಕೇಂದ್ರಕ್ಕೆ ಹೋಗಿ.';
+
+  @override
+  String get ashaOffline => 'ಪಟ್ಟಿ ಲೋಡ್ ಆಗಲಿಲ್ಲ';
+
+  @override
+  String get ashaOfflineBody =>
+      'ಇದಕ್ಕೆ ಇಂಟರ್ನೆಟ್ ಬೇಕು. ಸಿಗ್ನಲ್ ಇರುವಲ್ಲಿ ಹೋಗಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ — ಯಾರಿಗೂ ತಲುಪದ ನಂಬರ್ ಅನ್ನು ನಾವು ತೋರಿಸುವುದಿಲ್ಲ.';
+
+  @override
+  String get ashaRetry => 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
+
+  @override
   String get ashaNearbyTitle => 'ನಿಮ್ಮ ಹತ್ತಿರದ ಆಶಾ ಕಾರ್ಯಕರ್ತೆಯರು';
 
   @override
@@ -508,6 +525,20 @@ class AppLocalizationsKn extends AppLocalizations {
   String distanceKm(String km) {
     return '$km ಕಿ.ಮೀ ದೂರ';
   }
+
+  @override
+  String distanceKmApprox(String km) {
+    return 'ಸುಮಾರು $km ಕಿ.ಮೀ ದೂರ';
+  }
+
+  @override
+  String get ashaOnDutyNow => 'ಈಗ ಲಭ್ಯ';
+
+  @override
+  String get ashaBandUnder1km => 'ನಿಮ್ಮಿಂದ 1 ಕಿ.ಮೀ ದಾಟಿಲ್ಲ';
+
+  @override
+  String get ashaBand1to2km => 'ನಿಮ್ಮಿಂದ 1–2 ಕಿ.ಮೀ ದೂರ';
 
   @override
   String get callFailed => 'ಕರೆ ಮಾಡಲು ಆಗಲಿಲ್ಲ';

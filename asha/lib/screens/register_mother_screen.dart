@@ -31,7 +31,12 @@ class _RegisterMotherScreenState extends ConsumerState<RegisterMotherScreen> {
   final _phone = TextEditingController();
   final _email = TextEditingController();
   final _village = TextEditingController();
-  final _subCentre = TextEditingController(text: 'ಹೊಸಳ್ಳಿ ಉಪ ಕೇಂದ್ರ');
+  // Her posting, filled in from her staff row in initState. It used to open
+  // pre-filled with a sub-centre out of the practice caseload, which every
+  // worker then registered every mother into — and since Row Level Security
+  // scopes an ASHA to her own sub-centre, those were mothers she could not
+  // open again once the form closed.
+  final _subCentre = TextEditingController();
   final _abha = TextEditingController();
   final _gravida = TextEditingController(text: '1');
   final _para = TextEditingController(text: '0');
@@ -61,6 +66,7 @@ class _RegisterMotherScreenState extends ConsumerState<RegisterMotherScreen> {
   @override
   void initState() {
     super.initState();
+    _subCentre.text = ref.read(authControllerProvider).subCentre ?? '';
     // She is at the house right now, so take the fix immediately rather than
     // making her remember to press something at the end.
     _pinHouse();
@@ -119,7 +125,9 @@ class _RegisterMotherScreenState extends ConsumerState<RegisterMotherScreen> {
       _husband.text = result.husbandName ?? '';
       _phone.text = result.phone ?? '';
       _village.text = result.village ?? '';
-      _subCentre.text = result.subCentre ?? _subCentre.text;
+      // Deliberately not taken from the scan: which sub-centre a mother
+      // belongs to is the worker's posting, not something read off a card.
+      // _subCentre is left as it is.
       _abha.text = result.abhaId ?? '';
       _gravida.text = result.gravida?.toString() ?? '1';
       _para.text = result.para?.toString() ?? '0';
@@ -257,13 +265,20 @@ class _RegisterMotherScreenState extends ConsumerState<RegisterMotherScreen> {
           motherServerId: serverId,
         );
         if (!mounted) return;
-        if (result == VerifyOutcome.verified) {
+        if (result == VerifyOutcome.verified ||
+            result == VerifyOutcome.notSyncedYet) {
+          // Both outcomes mean she read the code back, which is the whole
+          // proof; they differ only in whether her row has reached the server
+          // yet. The local flag used to be withheld on notSyncedYet, and
+          // nothing ever set it afterwards — so the screen said "it will be
+          // saved when her record syncs" and it never was. She was then
+          // refused by Thayi Setu with "ask your ASHA worker", having already
+          // done the one thing her ASHA could do. The profile screen has
+          // always handled this correctly; only registration did not.
           await ref.read(visitRepositoryProvider).markEmailVerified(motherId);
-          _say(l.emailVerifiedOk);
-        } else if (result == VerifyOutcome.notSyncedYet) {
-          // The login OTP was received, but retain an honest local pending
-          // state until the next sync can write the verification flag.
-          _say(l.emailVerifiedPending);
+          _say(result == VerifyOutcome.verified
+              ? l.emailVerifiedOk
+              : l.emailVerifiedPending);
         } else if (result == VerifyOutcome.wrongCode) {
           _say(l.emailVerifyWrongCode);
         } else {

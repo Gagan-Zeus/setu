@@ -1,24 +1,25 @@
 import { useState } from 'react'
-import { usePhcs, useStaff } from '../lib/queries'
+import { usePhcs, useStaff, useVillages } from '../lib/queries'
+import { adminPost } from '../lib/adminApi'
 import { CanWrite } from '../components/Shell'
 import { KmcLookupStep } from '../components/KmcLookup'
 import { ErrorNote, Field, Loading, Page, Table } from '../components/ui'
 import { staffSchema } from '../lib/schemas'
 import type { AdminUser, KmcDoctor } from '../lib/types'
 
-/// Registering staff creates a Supabase auth user AND a staff row, which has to
-/// happen together and cannot happen from a browser: it needs the service role
-/// key. The form posts to the Node service, which does both and sends the
-/// invite through Resend. VITE_ADMIN_API is where that service lives.
-const ADMIN_API = import.meta.env.VITE_ADMIN_API ?? ''
+/// Registering staff creates a Supabase auth user AND a staff row — and for an
+/// ASHA a directory entry a mother can find her by — which has to happen
+/// together and cannot happen from a browser: it needs the service-role key.
+/// The admin-api Edge Function does all of it and sends the invite.
 
 export default function StaffPage({ me }: { me: AdminUser }) {
-  const staff = useStaff(), phcs = usePhcs()
+  const staff = useStaff(), phcs = usePhcs(), villages = useVillages()
   const [role, setRole] = useState<'doctor' | 'asha' | null>(null)
   const [kmcDoctor, setKmcDoctor] = useState<KmcDoctor | null>(null)
   const [filter, setFilter] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
 
   if (staff.isLoading) return <Loading />
 
@@ -28,22 +29,28 @@ export default function StaffPage({ me }: { me: AdminUser }) {
   })
 
   async function register(values: Record<string, unknown>) {
-    setError(null); setNotice(null)
-    if (!ADMIN_API) {
-      setError(
-        'VITE_ADMIN_API is not set. Creating a login needs the service role key, which only the ' +
-        'Node service holds — it is never shipped to this bundle. Start that service and set the URL.',
-      )
-      return
+    setError(null); setNotice(null); setBusy(true)
+    try {
+      const r = await adminPost<{
+        login_created: boolean; invite_sent: boolean; asha_worker_id: string | null
+      }>('/staff', values)
+
+      // Say what actually happened rather than a cheerful blanket message. A
+      // record with no login, or no invite, is recoverable — but only by
+      // someone who knows it happened.
+      const parts = ['Registered.']
+      parts.push(r.login_created
+        ? 'They can sign in with that address.'
+        : 'The login could not be created — tell them to contact support before trying.')
+      if (r.invite_sent) parts.push('An invite is on its way.')
+      if (r.asha_worker_id) parts.push('She is now listed for mothers to call.')
+      setNotice(parts.join(' '))
+      setRole(null); setKmcDoctor(null); staff.refetch()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(false)
     }
-    const res = await fetch(`${ADMIN_API}/admin/staff`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(values),
-    })
-    if (!res.ok) { setError((await res.json().catch(() => ({}))).message ?? `HTTP ${res.status}`); return }
-    setNotice('Registered. An invite is on its way; they set their own password.')
-    setRole(null); setKmcDoctor(null); staff.refetch()
   }
 
   return (
@@ -53,8 +60,12 @@ export default function StaffPage({ me }: { me: AdminUser }) {
           <input className="input w-56" placeholder="Search name, email, code"
             value={filter} onChange={(e) => setFilter(e.target.value)} />
           <CanWrite me={me}>
-            <button className="btn-ghost" onClick={() => setRole('doctor')}>Register MO</button>
-            <button className="btn-primary" onClick={() => setRole('asha')}>Register ASHA</button>
+            <button className="btn-ghost" disabled={busy}
+              onClick={() => setRole('doctor')}>Register MO</button>
+            <button className="btn-primary" disabled={busy}
+              onClick={() => setRole('asha')}>
+              {busy ? 'Registering…' : 'Register ASHA'}
+            </button>
           </CanWrite>
         </>
       }>
@@ -68,6 +79,7 @@ export default function StaffPage({ me }: { me: AdminUser }) {
       {((role === 'doctor' && kmcDoctor) || role === 'asha') && (
         <StaffForm role={role!} doctor={kmcDoctor}
           phcs={(phcs.data ?? []).filter((p) => p.active)}
+          villages={(villages.data ?? []).filter((v) => v.active)}
           onCancel={() => { setRole(null); setKmcDoctor(null) }}
           onSubmit={register} />
       )}
@@ -113,14 +125,19 @@ export default function StaffPage({ me }: { me: AdminUser }) {
   )
 }
 
-function StaffForm({ role, doctor, phcs, onSubmit, onCancel }: {
+function StaffForm({ role, doctor, phcs, villages, onSubmit, onCancel }: {
   role: 'doctor' | 'asha'
   doctor: KmcDoctor | null
   phcs: { id: string; name_en: string }[]
+  villages: { id: string; name: string; phc_id: string | null }[]
   onSubmit: (v: Record<string, unknown>) => void
   onCancel: () => void
 }) {
   const [errors, setErrors] = useState<Record<string, string>>({})
+  // The village list is the chosen PHC's catchment, so the PHC has to be known
+  // before it can be offered — which means tracking it rather than reading it
+  // out of the form at submit time.
+  const [phcId, setPhcId] = useState('')
 
   function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -132,7 +149,9 @@ function StaffForm({ role, doctor, phcs, onSubmit, onCancel }: {
       // form: a disabled input submits nothing, and re-typing them would be a
       // way to register someone under a number that is not theirs.
       ...(doctor ? { name: doctor.full_name, kmc_registration_number: doctor.registration_number } : {}),
-      villages: [],
+      // Was hardcoded empty, so asha_workers.village was never written and a
+      // worker had no village against her name in the directory a mother reads.
+      villages: raw.village_id ? [String(raw.village_id)] : [],
     })
     if (!parsed.success) {
       const next: Record<string, string> = {}
@@ -172,12 +191,36 @@ function StaffForm({ role, doctor, phcs, onSubmit, onCancel }: {
           <input name="employee_code" className="input" />
         </Field>
         <Field label="PHC" error={errors.phc_id}>
-          <select name="phc_id" className="input">
+          <select name="phc_id" className="input" value={phcId}
+            onChange={(e) => setPhcId(e.target.value)}>
             <option value="">Choose…</option>
             {phcs.map((p) => <option key={p.id} value={p.id}>{p.name_en}</option>)}
           </select>
         </Field>
+        {role === 'asha' && (
+          <>
+            <Field label="Name in Kannada" error={errors.name_kn}>
+              <input name="name_kn" className="input" placeholder="ಅಖಿಲಾ ಎಂ ಎನ್" />
+            </Field>
+            <Field label="Sub-centre" error={errors.sub_centre}>
+              <input name="sub_centre" className="input" placeholder="Halebeedu Sub-Centre" />
+            </Field>
+            <Field label="Village" error={errors.villages}>
+              <select name="village_id" className="input" disabled={!phcId}>
+                <option value="">{phcId ? 'Choose…' : 'Choose a PHC first'}</option>
+                {villages.filter((v) => v.phc_id === phcId)
+                  .map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
+              </select>
+            </Field>
+          </>
+        )}
       </div>
+      {role === 'asha' && (
+        <p className="text-soft mt-2">
+          The Kannada name is what a mother sees when she looks for someone to call. Left blank it
+          falls back to the English one, which she may not be able to read.
+        </p>
+      )}
       <p className="text-soft mt-3">
         {role === 'doctor'
           ? 'They receive an invite and set their own password — you never see it.'
