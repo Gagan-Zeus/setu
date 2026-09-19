@@ -211,6 +211,12 @@ class SupabaseSyncService implements SyncService {
     if (error.code == '23505') {
       return 'A record with these details is already on the server.';
     }
+    if (error.code == '23514') {
+      // A check constraint. The one that actually fires is age, which the
+      // server holds between 10 and 60.
+      return 'The server would not accept one of these values. Check her age '
+          'and date of last period, then send again.';
+    }
     return error.message;
   }
 
@@ -262,9 +268,11 @@ class SupabaseSyncService implements SyncService {
       'district_kn': posting['district_kn'],
       'phc_id': posting['phc_id'],
       'lmp': p['lmp'],
-      'email': (p['email'] as String?)?.trim().isEmpty ?? true
-          ? null
-          : (p['email'] as String).trim(),
+      // Only ever sent when this handset has one. An insert is a full upsert,
+      // so a null here would blank an address the server already holds — and
+      // her address is the only way she can reach her own record.
+      if ((p['email'] as String?)?.trim().isNotEmpty ?? false)
+        'email': (p['email'] as String).trim(),
       'phone': p['phone'],
       // Never sent before, so these three existed only on the handset that
       // typed them — and a pull would have read the server's nulls back over
@@ -282,7 +290,13 @@ class SupabaseSyncService implements SyncService {
       'blood_group': p['blood_group'],
       'risk_level': p['risk_level'] ?? 'green',
       'abha_id': p['abha_id'],
-      'email_verified': p['email_verified'] ?? false,
+      // Sent only when true. This is a full upsert and it re-runs on every
+      // re-send, so a local false would write over the server's true and
+      // un-verify her — after which Thayi Setu refuses her sign-in with "this
+      // email is not registered", and nothing on either screen explains why.
+      // Nothing in this app has the authority to un-verify an address: only
+      // mark_email_verified sets the flag, and only she can prove it.
+      if (p['email_verified'] == true) 'email_verified': true,
       // Without these she is registered into nobody's caseload. The worker's
       // own posting wins over whatever the form held: an ASHA may only
       // register into the sub-centre she is posted to, and that field was

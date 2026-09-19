@@ -265,13 +265,20 @@ class _RegisterMotherScreenState extends ConsumerState<RegisterMotherScreen> {
           motherServerId: serverId,
         );
         if (!mounted) return;
-        if (result == VerifyOutcome.verified) {
+        if (result == VerifyOutcome.verified ||
+            result == VerifyOutcome.notSyncedYet) {
+          // Both outcomes mean she read the code back, which is the whole
+          // proof; they differ only in whether her row has reached the server
+          // yet. The local flag used to be withheld on notSyncedYet, and
+          // nothing ever set it afterwards — so the screen said "it will be
+          // saved when her record syncs" and it never was. She was then
+          // refused by Thayi Setu with "ask your ASHA worker", having already
+          // done the one thing her ASHA could do. The profile screen has
+          // always handled this correctly; only registration did not.
           await ref.read(visitRepositoryProvider).markEmailVerified(motherId);
-          _say(l.emailVerifiedOk);
-        } else if (result == VerifyOutcome.notSyncedYet) {
-          // The login OTP was received, but retain an honest local pending
-          // state until the next sync can write the verification flag.
-          _say(l.emailVerifiedPending);
+          _say(result == VerifyOutcome.verified
+              ? l.emailVerifiedOk
+              : l.emailVerifiedPending);
         } else if (result == VerifyOutcome.wrongCode) {
           _say(l.emailVerifyWrongCode);
         } else {
