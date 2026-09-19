@@ -565,6 +565,10 @@ class AppLocalizationsKn extends AppLocalizations {
   String get qrRetry => 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
 
   @override
+  String get qrNoCard =>
+      'ಈ ಖಾತೆಗೆ ತಾಯಿ ಕಾರ್ಡ್ ದಾಖಲೆ ಇಲ್ಲ, ಆದ್ದರಿಂದ ತೋರಿಸಲು ಕೋಡ್ ಇಲ್ಲ. ನಿಮ್ಮ ಆಶಾ ಕಾರ್ಯಕರ್ತೆ ಕಾರ್ಡ್ ನೋಂದಾಯಿಸುತ್ತಾರೆ — ಅವರನ್ನು ಕೇಳಿ.';
+
+  @override
   String get qrWhyItChanges =>
       'ಫೋಟೋ ತೆಗೆದರೂ ನಂತರ ಬಳಸಲು ಆಗದಂತೆ ಕೋಡ್ ಬದಲಾಗುತ್ತದೆ.';
 
