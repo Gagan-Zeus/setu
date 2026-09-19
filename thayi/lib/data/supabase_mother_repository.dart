@@ -14,15 +14,18 @@ class SupabaseMotherRepository implements MotherRepository {
   final SupabaseClient _client;
 
   /// Cached for the lifetime of the repository so the child queries do not
-  /// each re-fetch the parent row.
-  String? _motherId;
+  /// each re-fetch the parent row. The whole record is kept, not just the id,
+  /// because the visit queries need her LMP to place a visit in a week of
+  /// pregnancy.
+  Mother? _cached;
 
-  Future<String> _requireMotherId() async {
-    final cached = _motherId;
+  Future<Mother> _requireMother() async {
+    final cached = _cached;
     if (cached != null) return cached;
-    final mother = await getMother();
-    return _motherId = mother.id;
+    return _cached = await getMother();
   }
+
+  Future<String> _requireMotherId() async => (await _requireMother()).id;
 
   @override
   Future<Mother> getMother() async {
@@ -52,23 +55,92 @@ class SupabaseMotherRepository implements MotherRepository {
       );
     }
 
-    _motherId = row['id'] as String;
-    return _mother(row);
+    return _cached = _mother(row);
+  }
+
+  /// The visits her ASHA actually recorded.
+  ///
+  /// `anc_visits` is the canonical clinical table: it is what the ASHA app
+  /// pushes and what Setu Care reads. The `checkups`, `weight_entries`,
+  /// `bp_entries` and `tt_doses` tables this app was built on are written by
+  /// nothing in the platform — only by the demo seed — so until this was read,
+  /// every visit an ASHA recorded at her door was invisible to the woman it was
+  /// about. Her weight chart stopped at whatever was seeded and her completed
+  /// checkups list stayed empty however many times she had been seen.
+  ///
+  /// She may read her own rows: the `read anc_visits` policy is
+  /// `can_access_mother(mother_id)`, which is true for `auth_user_id =
+  /// auth.uid()`.
+  ///
+  /// The table is append-only and a correction is a new row pointing at the one
+  /// it fixes, so any row that has since been corrected is dropped here rather
+  /// than shown alongside its replacement.
+  Future<List<Map<String, dynamic>>> _visits(String motherId) async {
+    final rows = await _client
+        .from('anc_visits')
+        .select('id, corrects_id, visit_no, visit_date, weight_kg, bp_sys, '
+            'bp_dia, tt_dose_given, recorded_by')
+        .eq('mother_id', motherId)
+        .order('visit_date');
+
+    final superseded = <String>{
+      for (final r in rows)
+        if (r['corrects_id'] != null) r['corrects_id'] as String,
+    };
+    return [
+      for (final r in rows)
+        if (!superseded.contains(r['id'] as String)) r,
+    ];
   }
 
   @override
   Future<List<Checkup>> getCheckups() async {
+    final motherId = await _requireMotherId();
     final rows = await _client
         .from('checkups')
         .select()
-        .eq('mother_id', await _requireMotherId())
+        .eq('mother_id', motherId)
         .order('visit_number');
-    return rows.map(_checkup).toList();
+
+    final byNumber = <int, Checkup>{
+      for (final r in rows) r['visit_number'] as int: _checkup(r),
+    };
+
+    // A visit her ASHA recorded IS a completed checkup, and on a live database
+    // it is the only record that one happened. It supersedes the scheduled row
+    // of the same number, keeping that row's place and planned activities.
+    var next = byNumber.isEmpty
+        ? 1
+        : byNumber.keys.reduce((a, b) => a > b ? a : b) + 1;
+    for (final v in await _visits(motherId)) {
+      final number = v['visit_no'] as int? ?? next++;
+      final scheduled = byNumber[number];
+      byNumber[number] = Checkup(
+        visitNumber: number,
+        date: _toDate(v['visit_date']) ?? scheduled?.date ?? DateTime.now(),
+        // Never invented. A visit carries no location of its own, so the only
+        // honest answer is the one the schedule held, or nothing.
+        locationKn: scheduled?.locationKn ?? '',
+        locationEn: scheduled?.locationEn ?? '',
+        activityIds: scheduled?.activityIds ?? const <String>[],
+        completed: true,
+        weightKg: v['weight_kg'] == null ? null : _toDouble(v['weight_kg']),
+        systolic: v['bp_sys'] as int?,
+        diastolic: v['bp_dia'] as int?,
+        // One name, in whichever script it was entered in.
+        recordedByKn: v['recorded_by'] as String?,
+        recordedByEn: v['recorded_by'] as String?,
+      );
+    }
+
+    return byNumber.values.toList()
+      ..sort((a, b) => a.visitNumber.compareTo(b.visitNumber));
   }
 
   @override
   Future<HealthRecord> getHealthRecord() async {
-    final motherId = await _requireMotherId();
+    final mother = await _requireMother();
+    final motherId = mother.id;
     final weights = await _client
         .from('weight_entries')
         .select()
@@ -85,27 +157,67 @@ class SupabaseMotherRepository implements MotherRepository {
         .eq('mother_id', motherId)
         .order('dose_number');
 
+    final byWeek = <int, WeightEntry>{
+      for (final r in weights)
+        r['week'] as int: WeightEntry(
+          week: r['week'] as int,
+          kg: _toDouble(r['kg']),
+        ),
+    };
+    final bpByWeek = <int, BpEntry>{
+      for (final r in bp)
+        r['week'] as int: BpEntry(
+          week: r['week'] as int,
+          systolic: r['systolic'] as int,
+          diastolic: r['diastolic'] as int,
+        ),
+    };
+    final doses = <int, TtDose>{
+      for (final r in tt)
+        r['dose_number'] as int: TtDose(
+          number: r['dose_number'] as int,
+          given: r['given'] as bool? ?? false,
+          givenOn: _toDate(r['given_on']),
+        ),
+    };
+
+    // Everything her ASHA measured, on the same week axis the charts already
+    // use. A visit wins over a row with the same week: it is the newer reading
+    // and the only one anything in the platform still writes.
+    for (final v in await _visits(motherId)) {
+      final at = _toDate(v['visit_date']);
+      if (at == null) continue;
+      // `greatest(0, (visit_date - lmp) / 7)`, to the day. Deliberately the
+      // same arithmetic the server-side views use, so a database where those
+      // exist and one where they do not put the same visit in the same week —
+      // otherwise one weighing would plot as two points on her chart.
+      final days = at.difference(mother.lmp).inDays;
+      final week = days < 0 ? 0 : (days / 7).floor();
+
+      if (v['weight_kg'] != null) {
+        byWeek[week] = WeightEntry(week: week, kg: _toDouble(v['weight_kg']));
+      }
+      final sys = v['bp_sys'] as int?;
+      final dia = v['bp_dia'] as int?;
+      if (sys != null && dia != null) {
+        bpByWeek[week] = BpEntry(week: week, systolic: sys, diastolic: dia);
+      }
+      // Recorded only when a dose was actually given at that visit, so this
+      // can turn a dose on and never off.
+      final dose = v['tt_dose_given'] as int?;
+      if (dose != null) {
+        doses[dose] = TtDose(number: dose, given: true, givenOn: at);
+      }
+    }
+
+    int byKey(int a, int b) => a.compareTo(b);
     return HealthRecord(
-      weights: weights
-          .map((r) => WeightEntry(
-                week: r['week'] as int,
-                kg: _toDouble(r['kg']),
-              ))
-          .toList(),
-      bloodPressure: bp
-          .map((r) => BpEntry(
-                week: r['week'] as int,
-                systolic: r['systolic'] as int,
-                diastolic: r['diastolic'] as int,
-              ))
-          .toList(),
-      ttDoses: tt
-          .map((r) => TtDose(
-                number: r['dose_number'] as int,
-                given: r['given'] as bool? ?? false,
-                givenOn: _toDate(r['given_on']),
-              ))
-          .toList(),
+      weights: byWeek.values.toList()
+        ..sort((a, b) => byKey(a.week, b.week)),
+      bloodPressure: bpByWeek.values.toList()
+        ..sort((a, b) => byKey(a.week, b.week)),
+      ttDoses: doses.values.toList()
+        ..sort((a, b) => byKey(a.number, b.number)),
     );
   }
 

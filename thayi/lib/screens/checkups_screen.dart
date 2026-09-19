@@ -141,7 +141,11 @@ class _CheckupCard extends StatelessWidget {
           const SizedBox(height: S.sm),
           _Line(
               icon: Icons.calendar_today_outlined, text: l.formatDate(c.date)),
-          _Line(icon: Icons.place_outlined, text: l.checkupLocation(c)),
+          // A visit recorded by her ASHA carries no place of its own, and a
+          // pin beside an empty line reads as missing data rather than as
+          // "this was a home visit".
+          if (l.checkupLocation(c).isNotEmpty)
+            _Line(icon: Icons.place_outlined, text: l.checkupLocation(c)),
           if (!c.completed && c.activityIds.isNotEmpty) ...[
             const SizedBox(height: S.sm),
             Text(l.whatHappensLabel, style: T.label),
