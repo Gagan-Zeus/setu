@@ -79,10 +79,17 @@ void main() {
       facility: 'Government PHC, Hosahalli',
       reasonKn: alerts.first.messageKn,
       reasonEn: alerts.first.messageEn,
+      referredBy: SeedData.ashaName,
       visitId: visitId,
     );
     final referrals = await db.select(db.referrals).get();
     expect(referrals, hasLength(1));
+    // from_user is NOT NULL on the server with no default. Queued without it,
+    // every referral was refused with 23502 and the facility never heard she
+    // was coming, while this screen told her it had been sent.
+    expect(referrals.single.fromUser, SeedData.ashaName);
+    expect(referrals.single.status, 'open',
+        reason: "the server's check constraint allows only open/arrived/closed");
 
     // 4. Everything is queued, and the home banner count reflects it.
     final pendingBefore = await db.watchPendingCount().first;

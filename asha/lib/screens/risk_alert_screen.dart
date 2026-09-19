@@ -55,11 +55,15 @@ class _RiskAlertScreenState extends ConsumerState<RiskAlertScreen> {
   Future<void> _refer(AppLocalizations l) async {
     setState(() => _busy = true);
     final worst = widget.alerts.first;
+    // The worker who is sending her, from her own signed-in session — not a
+    // constant, and not left empty: the facility has to know who referred.
+    final session = ref.read(authControllerProvider);
     await ref.read(visitRepositoryProvider).createReferral(
           motherId: widget.motherId,
           facility: l.phcName,
           reasonKn: worst.messageKn,
           reasonEn: worst.messageEn,
+          referredBy: session.name ?? session.email ?? 'ASHA worker',
           visitId: widget.visitId,
         );
     if (!mounted) return;
