@@ -59,20 +59,32 @@ class SupabaseAshaDirectory implements AshaDirectory {
 
   final SupabaseClient? _client;
 
+  /// Throws [AshaDirectoryUnavailable] when the list could not be fetched.
+  ///
+  /// It used to fall back to a bundled list of four workers with invented phone
+  /// numbers. On a screen whose entire purpose is a pregnant woman calling
+  /// someone, that is the worst possible failure mode: +919845012345 belongs to
+  /// nobody, or to a stranger, and she would dial it in an emergency believing
+  /// it was her ASHA. Showing nothing and saying why is safe; showing a number
+  /// that does not answer is not.
+  ///
+  /// An empty result is also returned as empty rather than papered over. Before
+  /// any worker has been registered the honest answer is "none yet", not four
+  /// people who do not exist.
   @override
   Future<List<DirectoryAsha>> nearby({double? lat, double? lng}) async {
-    var list = _fallback;
     final client = _client;
-    if (client != null) {
-      try {
-        final rows = await client
-            .from('asha_directory')
-            .select()
-            .timeout(const Duration(seconds: 6));
-        if (rows.isNotEmpty) list = rows.map(_map).toList();
-      } catch (_) {
-        // Keep the bundled list rather than showing nothing.
-      }
+    if (client == null) throw const AshaDirectoryUnavailable();
+
+    List<DirectoryAsha> list;
+    try {
+      final rows = await client
+          .from('asha_directory')
+          .select()
+          .timeout(const Duration(seconds: 6));
+      list = rows.map(_map).toList();
+    } catch (_) {
+      throw const AshaDirectoryUnavailable();
     }
 
     if (lat == null || lng == null) return list;
@@ -120,51 +132,12 @@ class SupabaseAshaDirectory implements AshaDirectory {
 
   static double _rad(double deg) => deg * math.pi / 180;
 
-  /// Bundled so the screen works with no signal at all.
-  static const _fallback = <DirectoryAsha>[
-    DirectoryAsha(
-      id: 'local-1',
-      nameKn: 'ಸರೋಜಮ್ಮ',
-      nameEn: 'Sarojamma',
-      phone: '+919845012345',
-      subCentreKn: 'ಹೊಸಳ್ಳಿ ಉಪ ಕೇಂದ್ರ',
-      subCentreEn: 'Hosahalli Sub-centre',
-      village: 'Hosahalli',
-      latitude: 12.2958,
-      longitude: 76.6394,
-    ),
-    DirectoryAsha(
-      id: 'local-2',
-      nameKn: 'ಗೀತಮ್ಮ',
-      nameEn: 'Geethamma',
-      phone: '+919845067123',
-      subCentreKn: 'ಕೆಂಪನಹಳ್ಳಿ ಉಪ ಕೇಂದ್ರ',
-      subCentreEn: 'Kempanahalli Sub-centre',
-      village: 'Kempanahalli',
-      latitude: 12.2731,
-      longitude: 76.6802,
-    ),
-    DirectoryAsha(
-      id: 'local-3',
-      nameKn: 'ಶಾರದಮ್ಮ',
-      nameEn: 'Sharadamma',
-      phone: '+919845098456',
-      subCentreKn: 'ಮಾದಾಪುರ ಉಪ ಕೇಂದ್ರ',
-      subCentreEn: 'Madapura Sub-centre',
-      village: 'Madapura',
-      latitude: 12.1904,
-      longitude: 76.6115,
-    ),
-    DirectoryAsha(
-      id: 'local-4',
-      nameKn: 'ನಾಗರತ್ನ',
-      nameEn: 'Nagarathna',
-      phone: '+919845033210',
-      subCentreKn: 'ಬೀಡನಹಳ್ಳಿ ಉಪ ಕೇಂದ್ರ',
-      subCentreEn: 'Beedanahalli Sub-centre',
-      village: 'Beedanahalli',
-      latitude: 12.2405,
-      longitude: 76.7218,
-    ),
-  ];
+}
+
+/// The list could not be fetched. The screen says so and offers a retry rather
+/// than inventing someone for her to call.
+class AshaDirectoryUnavailable implements Exception {
+  const AshaDirectoryUnavailable();
+  @override
+  String toString() => 'AshaDirectoryUnavailable';
 }

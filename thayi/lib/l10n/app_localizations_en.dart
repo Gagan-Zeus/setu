@@ -113,6 +113,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get locationSkip => 'Skip this';
 
   @override
+  String get ashaNoneYet => 'No ASHA worker has been listed for your area yet';
+
+  @override
+  String get ashaNoneYetBody =>
+      'When one is registered she will appear here with her phone number. If you are pregnant and need help now, go to your nearest health centre.';
+
+  @override
+  String get ashaOffline => 'We could not load the list';
+
+  @override
+  String get ashaOfflineBody =>
+      'This needs internet. Move to where you have signal and try again — we will not show you a number that might not reach anyone.';
+
+  @override
+  String get ashaRetry => 'Try again';
+
+  @override
   String get ashaNearbyTitle => 'ASHA workers near you';
 
   @override

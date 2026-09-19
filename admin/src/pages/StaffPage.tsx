@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { usePhcs, useStaff } from '../lib/queries'
+import { adminPost } from '../lib/adminApi'
 import { CanWrite } from '../components/Shell'
 import { KmcLookupStep } from '../components/KmcLookup'
 import { ErrorNote, Field, Loading, Page, Table } from '../components/ui'
 import { staffSchema } from '../lib/schemas'
 import type { AdminUser, KmcDoctor } from '../lib/types'
 
-/// Registering staff creates a Supabase auth user AND a staff row, which has to
-/// happen together and cannot happen from a browser: it needs the service role
-/// key. The form posts to the Node service, which does both and sends the
-/// invite through Resend. VITE_ADMIN_API is where that service lives.
-const ADMIN_API = import.meta.env.VITE_ADMIN_API ?? ''
+/// Registering staff creates a Supabase auth user AND a staff row — and for an
+/// ASHA a directory entry a mother can find her by — which has to happen
+/// together and cannot happen from a browser: it needs the service-role key.
+/// The admin-api Edge Function does all of it and sends the invite.
 
 export default function StaffPage({ me }: { me: AdminUser }) {
   const staff = useStaff(), phcs = usePhcs()
@@ -19,6 +19,7 @@ export default function StaffPage({ me }: { me: AdminUser }) {
   const [filter, setFilter] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
 
   if (staff.isLoading) return <Loading />
 
@@ -28,22 +29,28 @@ export default function StaffPage({ me }: { me: AdminUser }) {
   })
 
   async function register(values: Record<string, unknown>) {
-    setError(null); setNotice(null)
-    if (!ADMIN_API) {
-      setError(
-        'VITE_ADMIN_API is not set. Creating a login needs the service role key, which only the ' +
-        'Node service holds — it is never shipped to this bundle. Start that service and set the URL.',
-      )
-      return
+    setError(null); setNotice(null); setBusy(true)
+    try {
+      const r = await adminPost<{
+        login_created: boolean; invite_sent: boolean; asha_worker_id: string | null
+      }>('/staff', values)
+
+      // Say what actually happened rather than a cheerful blanket message. A
+      // record with no login, or no invite, is recoverable — but only by
+      // someone who knows it happened.
+      const parts = ['Registered.']
+      parts.push(r.login_created
+        ? 'They can sign in with that address.'
+        : 'The login could not be created — tell them to contact support before trying.')
+      if (r.invite_sent) parts.push('An invite is on its way.')
+      if (r.asha_worker_id) parts.push('She is now listed for mothers to call.')
+      setNotice(parts.join(' '))
+      setRole(null); setKmcDoctor(null); staff.refetch()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(false)
     }
-    const res = await fetch(`${ADMIN_API}/admin/staff`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(values),
-    })
-    if (!res.ok) { setError((await res.json().catch(() => ({}))).message ?? `HTTP ${res.status}`); return }
-    setNotice('Registered. An invite is on its way; they set their own password.')
-    setRole(null); setKmcDoctor(null); staff.refetch()
   }
 
   return (
@@ -53,8 +60,12 @@ export default function StaffPage({ me }: { me: AdminUser }) {
           <input className="input w-56" placeholder="Search name, email, code"
             value={filter} onChange={(e) => setFilter(e.target.value)} />
           <CanWrite me={me}>
-            <button className="btn-ghost" onClick={() => setRole('doctor')}>Register MO</button>
-            <button className="btn-primary" onClick={() => setRole('asha')}>Register ASHA</button>
+            <button className="btn-ghost" disabled={busy}
+              onClick={() => setRole('doctor')}>Register MO</button>
+            <button className="btn-primary" disabled={busy}
+              onClick={() => setRole('asha')}>
+              {busy ? 'Registering…' : 'Register ASHA'}
+            </button>
           </CanWrite>
         </>
       }>
@@ -177,7 +188,23 @@ function StaffForm({ role, doctor, phcs, onSubmit, onCancel }: {
             {phcs.map((p) => <option key={p.id} value={p.id}>{p.name_en}</option>)}
           </select>
         </Field>
+        {role === 'asha' && (
+          <>
+            <Field label="Name in Kannada" error={errors.name_kn}>
+              <input name="name_kn" className="input" placeholder="ಅಖಿಲಾ ಎಂ ಎನ್" />
+            </Field>
+            <Field label="Sub-centre" error={errors.sub_centre}>
+              <input name="sub_centre" className="input" placeholder="Halebeedu Sub-Centre" />
+            </Field>
+          </>
+        )}
       </div>
+      {role === 'asha' && (
+        <p className="text-soft mt-2">
+          The Kannada name is what a mother sees when she looks for someone to call. Left blank it
+          falls back to the English one, which she may not be able to read.
+        </p>
+      )}
       <p className="text-soft mt-3">
         {role === 'doctor'
           ? 'They receive an invite and set their own password — you never see it.'

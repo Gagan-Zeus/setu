@@ -41,6 +41,10 @@ export const staffSchema = z.object({
   role: z.enum(['doctor', 'asha']),
   // Doctor only. An ASHA worker is not registered with a medical council.
   kmc_registration_number: kmcNumber.optional(),
+  // ASHA only. The mother reads the Kannada name; the sub-centre is how she
+  // knows which worker covers her village.
+  name_kn: z.string().trim().optional().or(z.literal('')),
+  sub_centre: z.string().trim().optional().or(z.literal('')),
   // ASHA only.
   villages: z.array(z.string().uuid()).default([]),
   medical_officer_id: z.string().uuid().optional(),

@@ -296,6 +296,36 @@ abstract class AppLocalizations {
   /// **'Skip this'**
   String get locationSkip;
 
+  /// No description provided for @ashaNoneYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No ASHA worker has been listed for your area yet'**
+  String get ashaNoneYet;
+
+  /// No description provided for @ashaNoneYetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When one is registered she will appear here with her phone number. If you are pregnant and need help now, go to your nearest health centre.'**
+  String get ashaNoneYetBody;
+
+  /// No description provided for @ashaOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not load the list'**
+  String get ashaOffline;
+
+  /// No description provided for @ashaOfflineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This needs internet. Move to where you have signal and try again — we will not show you a number that might not reach anyone.'**
+  String get ashaOfflineBody;
+
+  /// No description provided for @ashaRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get ashaRetry;
+
   /// No description provided for @ashaNearbyTitle.
   ///
   /// In en, this message translates to:

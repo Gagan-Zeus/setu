@@ -9,6 +9,7 @@ import type { AdminUser, Phc } from '../lib/types'
 export default function Phcs({ me }: { me: AdminUser }) {
   const phcs = usePhcs(), districts = useDistricts(), staff = useStaff(), mothers = useMothers()
   const [editing, setEditing] = useState<Partial<Phc> | null>(null)
+  const [addingDistrict, setAddingDistrict] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const upsert = useUpsert<Record<string, unknown>>('health_centres', keys.phcs)
 
@@ -30,11 +31,23 @@ export default function Phcs({ me }: { me: AdminUser }) {
       subtitle="Each PHC has a district, a contact, and a staff roster."
       actions={
         <CanWrite me={me}>
-          <button className="btn-primary" onClick={() => setEditing({})}>New PHC</button>
+          <button className="btn-ghost" onClick={() => setAddingDistrict(true)}>New district</button>
+          <button className="btn-primary" disabled={(districts.data ?? []).length === 0}
+            title={(districts.data ?? []).length === 0
+              ? 'Create a district first — a PHC belongs to one'
+              : undefined}
+            onClick={() => setEditing({})}>New PHC</button>
         </CanWrite>
       }
     >
       <ErrorNote error={error} />
+
+      {addingDistrict && (
+        <NewDistrict
+          onCancel={() => setAddingDistrict(false)}
+          onDone={() => { setAddingDistrict(false); districts.refetch() }}
+        />
+      )}
 
       {editing && (
         <PhcForm
@@ -49,6 +62,17 @@ export default function Phcs({ me }: { me: AdminUser }) {
             } catch (e) { setError(e instanceof Error ? e.message : String(e)) }
           }}
         />
+      )}
+
+      {(districts.data ?? []).length === 0 && (
+        <div className="card p-4 mb-4">
+          <div className="font-semibold mb-1">Start with a district</div>
+          <p className="text-soft max-w-xl">
+            Everything hangs off geography: a PHC belongs to a district, staff belong to a PHC, and
+            an administrator's scope is a set of districts. Create the district you work in and the
+            rest follows.
+          </p>
+        </div>
       )}
 
       <Table head={['PHC', 'District', 'Contact', 'Staff', 'Mothers', 'Status', '']}
@@ -143,6 +167,48 @@ function PhcForm({ initial, districts, onSave, onCancel }: {
       </Field>
       <div className="md:col-span-3 flex gap-2">
         <button className="btn-primary">{initial.id ? 'Save changes' : 'Create PHC'}</button>
+        <button type="button" className="btn-ghost" onClick={onCancel}>Cancel</button>
+      </div>
+    </form>
+  )
+}
+
+/// Districts had no form at all, so an empty system could never make its first
+/// PHC — the dropdown was permanently blank and district_id is required.
+function NewDistrict({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
+  const [name, setName] = useState('')
+  const [nameKn, setNameKn] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    if (name.trim().length < 3) return setError('Enter the district name')
+    setBusy(true); setError(null)
+    const { error } = await supabase.from('districts').insert({
+      name: name.trim(),
+      name_kn: nameKn.trim() || null,
+      state: 'Karnataka',
+    })
+    setBusy(false)
+    if (error) return setError(error.message)
+    onDone()
+  }
+
+  return (
+    <form onSubmit={submit} className="card p-4 mb-4 grid md:grid-cols-3 gap-3 items-end">
+      <Field label="District" error={error ?? undefined}>
+        <input className="input" autoFocus value={name}
+          onChange={(e) => setName(e.target.value)} placeholder="Hassan" />
+      </Field>
+      <Field label="Name in Kannada">
+        <input className="input" value={nameKn}
+          onChange={(e) => setNameKn(e.target.value)} placeholder="ಹಾಸನ" />
+      </Field>
+      <div className="flex gap-2">
+        <button className="btn-primary" disabled={busy}>
+          {busy ? 'Creating…' : 'Create district'}
+        </button>
         <button type="button" className="btn-ghost" onClick={onCancel}>Cancel</button>
       </div>
     </form>

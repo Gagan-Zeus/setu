@@ -32,11 +32,24 @@ class AshaNearbyScreen extends ConsumerWidget {
             Expanded(
               child: async.when(
                 loading: () => const SkeletonList(count: 3),
-                error: (_, __) => EmptyState(
-                  icon: Icons.cloud_off_outlined,
-                  message: l.errorTitle,
+                // Never a fabricated number. She may be about to dial this in an
+                // emergency, and one that does not answer is worse than none.
+                error: (_, __) => _Nothing(
+                  icon: Icons.wifi_off_rounded,
+                  title: l.ashaOffline,
+                  body: l.ashaOfflineBody,
+                  retryLabel: l.ashaRetry,
+                  onRetry: () => ref.invalidate(nearbyAshasProvider),
                 ),
-                data: (list) => ListView(
+                data: (list) => list.isEmpty
+                    ? _Nothing(
+                        icon: Icons.person_search_outlined,
+                        title: l.ashaNoneYet,
+                        body: l.ashaNoneYetBody,
+                        retryLabel: l.ashaRetry,
+                        onRetry: () => ref.invalidate(nearbyAshasProvider),
+                      )
+                    : ListView(
                   padding: const EdgeInsets.all(S.screen),
                   children: [
                     Text(
@@ -151,6 +164,48 @@ class _AshaCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Shown when there is nobody to list, and when we could not find out.
+///
+/// Both say what to do next. The offline one explicitly says we will not show a
+/// number that might not reach anyone, because a woman staring at an empty
+/// screen deserves to know it is deliberate.
+class _Nothing extends StatelessWidget {
+  const _Nothing({
+    required this.icon,
+    required this.title,
+    required this.body,
+    required this.retryLabel,
+    required this.onRetry,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+  final String retryLabel;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(S.screen),
+      children: [
+        const SizedBox(height: S.xl),
+        Icon(icon, size: 64, color: C.textSoft),
+        const SizedBox(height: S.lg),
+        Text(title, style: T.h2, textAlign: TextAlign.center),
+        const SizedBox(height: S.sm),
+        Text(body, style: T.bodySoft, textAlign: TextAlign.center),
+        const SizedBox(height: S.xl),
+        BigActionButton(
+          label: retryLabel,
+          icon: Icons.refresh_rounded,
+          onPressed: onRetry,
+        ),
+      ],
     );
   }
 }
