@@ -130,6 +130,12 @@ Deno.serve(async (req: Request) => {
 
   // Cache write is best-effort: failing to store must not fail the request,
   // she is waiting to hear it.
+  //
+  // The status is read, not just the promise. fetch only rejects on a network
+  // failure, so a Storage refusal — a 403 from the wrong key shape, a missing
+  // bucket — resolved normally and .catch never fired. That is exactly how the
+  // silent cache miss described at the top of this file survived: every request
+  // paid ElevenLabs again and nothing anywhere said why.
   const write = fetch(`${storage}/${BUCKET}/${key}`, {
     method: "POST",
     headers: {
@@ -138,7 +144,17 @@ Deno.serve(async (req: Request) => {
       "x-upsert": "true",
     },
     body: audio,
-  }).catch((e) => console.error("cache write failed", e));
+  })
+    .then(async (res) => {
+      if (!res.ok) {
+        console.error(
+          "cache write failed",
+          res.status,
+          (await res.text()).slice(0, 300),
+        );
+      }
+    })
+    .catch((e) => console.error("cache write failed", e));
 
   // Best-effort is not the same as abandoned. Returning the Response ends the
   // isolate, and anything still in flight is cancelled with it — so the write
