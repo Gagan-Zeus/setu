@@ -165,6 +165,21 @@ function PhcForm({ initial, districts, onSave, onCancel }: {
       <Field label="Address" error={errors.address}>
         <input name="address" className="input" defaultValue={initial.address ?? ''} />
       </Field>
+      <Field label="Latitude" error={errors.latitude}>
+        <input name="latitude" className="input" inputMode="decimal"
+          placeholder="13.2137" defaultValue={initial.latitude ?? ''} />
+      </Field>
+      <Field label="Longitude" error={errors.longitude}>
+        <input name="longitude" className="input" inputMode="decimal"
+          placeholder="75.9946" defaultValue={initial.longitude ?? ''} />
+      </Field>
+      <p className="text-soft md:col-span-3">
+        The coordinate is how a pregnant woman is shown the ASHA worker nearest
+        to her: every worker posted here inherits it until she pins her own
+        sub-centre. Left blank, her workers have no location at all and she
+        cannot be told which of them is closest. Copy it from Google Maps \u2014
+        right-click the PHC and the first entry is the pair.
+      </p>
       <div className="md:col-span-3 flex gap-2">
         <button className="btn-primary">{initial.id ? 'Save changes' : 'Create PHC'}</button>
         <button type="button" className="btn-ghost" onClick={onCancel}>Cancel</button>

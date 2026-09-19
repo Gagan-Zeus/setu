@@ -1034,6 +1034,30 @@ abstract class AppLocalizations {
   /// **'{km} km away'**
   String distanceKm(String km);
 
+  /// No description provided for @distanceKmApprox.
+  ///
+  /// In en, this message translates to:
+  /// **'about {km} km away'**
+  String distanceKmApprox(String km);
+
+  /// No description provided for @ashaOnDutyNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Available now'**
+  String get ashaOnDutyNow;
+
+  /// No description provided for @ashaBandUnder1km.
+  ///
+  /// In en, this message translates to:
+  /// **'Less than 1 km from you'**
+  String get ashaBandUnder1km;
+
+  /// No description provided for @ashaBand1to2km.
+  ///
+  /// In en, this message translates to:
+  /// **'1–2 km from you'**
+  String get ashaBand1to2km;
+
   /// No description provided for @callFailed.
   ///
   /// In en, this message translates to:

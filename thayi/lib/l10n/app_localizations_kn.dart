@@ -527,6 +527,20 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
+  String distanceKmApprox(String km) {
+    return 'ಸುಮಾರು $km ಕಿ.ಮೀ ದೂರ';
+  }
+
+  @override
+  String get ashaOnDutyNow => 'ಈಗ ಲಭ್ಯ';
+
+  @override
+  String get ashaBandUnder1km => 'ನಿಮ್ಮಿಂದ 1 ಕಿ.ಮೀ ದಾಟಿಲ್ಲ';
+
+  @override
+  String get ashaBand1to2km => 'ನಿಮ್ಮಿಂದ 1–2 ಕಿ.ಮೀ ದೂರ';
+
+  @override
   String get callFailed => 'ಕರೆ ಮಾಡಲು ಆಗಲಿಲ್ಲ';
 
   @override

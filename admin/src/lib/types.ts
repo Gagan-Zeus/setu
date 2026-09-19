@@ -19,6 +19,10 @@ export interface Phc {
   district_id: string | null
   contact_name: string | null
   address: string | null
+  // What every ASHA posted here inherits as her location until she pins her
+  // own sub-centre, and so what decides which worker a mother is shown first.
+  latitude: number | null
+  longitude: number | null
   active: boolean
 }
 

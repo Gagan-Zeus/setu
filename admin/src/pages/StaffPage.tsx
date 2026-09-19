@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { usePhcs, useStaff } from '../lib/queries'
+import { usePhcs, useStaff, useVillages } from '../lib/queries'
 import { adminPost } from '../lib/adminApi'
 import { CanWrite } from '../components/Shell'
 import { KmcLookupStep } from '../components/KmcLookup'
@@ -13,7 +13,7 @@ import type { AdminUser, KmcDoctor } from '../lib/types'
 /// The admin-api Edge Function does all of it and sends the invite.
 
 export default function StaffPage({ me }: { me: AdminUser }) {
-  const staff = useStaff(), phcs = usePhcs()
+  const staff = useStaff(), phcs = usePhcs(), villages = useVillages()
   const [role, setRole] = useState<'doctor' | 'asha' | null>(null)
   const [kmcDoctor, setKmcDoctor] = useState<KmcDoctor | null>(null)
   const [filter, setFilter] = useState('')
@@ -79,6 +79,7 @@ export default function StaffPage({ me }: { me: AdminUser }) {
       {((role === 'doctor' && kmcDoctor) || role === 'asha') && (
         <StaffForm role={role!} doctor={kmcDoctor}
           phcs={(phcs.data ?? []).filter((p) => p.active)}
+          villages={(villages.data ?? []).filter((v) => v.active)}
           onCancel={() => { setRole(null); setKmcDoctor(null) }}
           onSubmit={register} />
       )}
@@ -124,14 +125,19 @@ export default function StaffPage({ me }: { me: AdminUser }) {
   )
 }
 
-function StaffForm({ role, doctor, phcs, onSubmit, onCancel }: {
+function StaffForm({ role, doctor, phcs, villages, onSubmit, onCancel }: {
   role: 'doctor' | 'asha'
   doctor: KmcDoctor | null
   phcs: { id: string; name_en: string }[]
+  villages: { id: string; name: string; phc_id: string | null }[]
   onSubmit: (v: Record<string, unknown>) => void
   onCancel: () => void
 }) {
   const [errors, setErrors] = useState<Record<string, string>>({})
+  // The village list is the chosen PHC's catchment, so the PHC has to be known
+  // before it can be offered — which means tracking it rather than reading it
+  // out of the form at submit time.
+  const [phcId, setPhcId] = useState('')
 
   function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -143,7 +149,9 @@ function StaffForm({ role, doctor, phcs, onSubmit, onCancel }: {
       // form: a disabled input submits nothing, and re-typing them would be a
       // way to register someone under a number that is not theirs.
       ...(doctor ? { name: doctor.full_name, kmc_registration_number: doctor.registration_number } : {}),
-      villages: [],
+      // Was hardcoded empty, so asha_workers.village was never written and a
+      // worker had no village against her name in the directory a mother reads.
+      villages: raw.village_id ? [String(raw.village_id)] : [],
     })
     if (!parsed.success) {
       const next: Record<string, string> = {}
@@ -183,7 +191,8 @@ function StaffForm({ role, doctor, phcs, onSubmit, onCancel }: {
           <input name="employee_code" className="input" />
         </Field>
         <Field label="PHC" error={errors.phc_id}>
-          <select name="phc_id" className="input">
+          <select name="phc_id" className="input" value={phcId}
+            onChange={(e) => setPhcId(e.target.value)}>
             <option value="">Choose…</option>
             {phcs.map((p) => <option key={p.id} value={p.id}>{p.name_en}</option>)}
           </select>
@@ -195,6 +204,13 @@ function StaffForm({ role, doctor, phcs, onSubmit, onCancel }: {
             </Field>
             <Field label="Sub-centre" error={errors.sub_centre}>
               <input name="sub_centre" className="input" placeholder="Halebeedu Sub-Centre" />
+            </Field>
+            <Field label="Village" error={errors.villages}>
+              <select name="village_id" className="input" disabled={!phcId}>
+                <option value="">{phcId ? 'Choose…' : 'Choose a PHC first'}</option>
+                {villages.filter((v) => v.phc_id === phcId)
+                  .map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
+              </select>
             </Field>
           </>
         )}

@@ -247,6 +247,17 @@
       }
     }
   },
+  "distanceKmApprox": "about {km} km away",
+  "@distanceKmApprox": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "ashaOnDutyNow": "Available now",
+  "ashaBandUnder1km": "Less than 1 km from you",
+  "ashaBand1to2km": "1\u20132 km from you",
   "callFailed": "Could not open the dialler",
   "thayiCardTitle": "My Thayi Card",
   "qrCaption": "Show this code at the hospital",

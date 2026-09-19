@@ -192,6 +192,20 @@ async function createStaff(req: Request): Promise<Response> {
   // one thing the directory exists for.
   let directoryId: string | null = null;
   if (b.role === "asha") {
+    // The village is what a mother recognises — she knows "the Hosahalli
+    // worker", not a sub-centre's formal name. It is also what the directory
+    // shows beside her name, and it used to be dropped on the floor here: the
+    // form sent an empty array and asha_workers.village stayed null for every
+    // worker ever registered through the portal.
+    //
+    // The form sends the village's id; the directory column is its name.
+    let villageName: string | null = null;
+    const villageId = b.villages?.[0];
+    if (villageId) {
+      const v = await db(`villages?id=eq.${villageId}&select=name`);
+      villageName = v?.[0]?.name ?? null;
+    }
+
     const dir = (await db("asha_workers", {
       method: "POST",
       headers: { Prefer: "return=representation" },
@@ -203,6 +217,10 @@ async function createStaff(req: Request): Promise<Response> {
         phone: b.phone.trim(),
         sub_centre_en: b.sub_centre?.trim() || phc.name_en,
         sub_centre_kn: b.sub_centre?.trim() || phc.name_en,
+        village: villageName,
+        // No latitude here on purpose. A trigger on asha_workers inherits the
+        // PHC's coordinate from staff_id, so she is locatable the instant this
+        // row exists and there is one place that decides where a worker is.
         staff_id: staff.id,
       }),
     }))?.[0];

@@ -75,6 +75,29 @@ class AppLocalizationsKn extends AppLocalizations {
   String get logout => 'ಹೊರಗೆ ಬನ್ನಿ';
 
   @override
+  String get dutyTitle => 'ಕೆಲಸದಲ್ಲಿ';
+
+  @override
+  String get dutyOnBody =>
+      '2 ಕಿ.ಮೀ ಒಳಗಿನ ತಾಯಂದಿರಿಗೆ ನೀವು ಈಗ ಲಭ್ಯ ಎಂದು ಕಾಣುತ್ತದೆ.';
+
+  @override
+  String get dutyOffBody =>
+      'ಕೆಲಸ ಮಾಡುವಾಗ ಇದನ್ನು ಆನ್ ಮಾಡಿ, ನಿಮ್ಮ ಹತ್ತಿರದ ತಾಯಂದಿರಿಗೆ ಸಿಗುವಂತೆ.';
+
+  @override
+  String get dutyNoLocation => 'ಜಿಪಿಎಸ್ ಸಿಗಲಿಲ್ಲ — ಆನ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ';
+
+  @override
+  String get dutyOffline => 'ಸಿಗ್ನಲ್ ಇಲ್ಲ — ಆನ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ';
+
+  @override
+  String get dutyUnavailable => 'ಸರ್ವರ್‌ನಲ್ಲಿ ಇನ್ನೂ ಸಿದ್ಧಗೊಂಡಿಲ್ಲ';
+
+  @override
+  String get dutyNoPosting => 'ಈ ಖಾತೆಗೆ ಇನ್ನೂ ಆಶಾ ನೇಮಕಾತಿ ಇಲ್ಲ';
+
+  @override
   String get accountSection => 'ಖಾತೆ';
 
   @override

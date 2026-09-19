@@ -529,6 +529,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String distanceKmApprox(String km) {
+    return 'about $km km away';
+  }
+
+  @override
+  String get ashaOnDutyNow => 'Available now';
+
+  @override
+  String get ashaBandUnder1km => 'Less than 1 km from you';
+
+  @override
+  String get ashaBand1to2km => '1–2 km from you';
+
+  @override
   String get callFailed => 'Could not open the dialler';
 
   @override

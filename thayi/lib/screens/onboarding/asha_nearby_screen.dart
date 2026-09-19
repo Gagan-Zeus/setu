@@ -143,10 +143,10 @@ class _AshaCard extends StatelessWidget {
                     Text(name, style: T.h2),
                     const SizedBox(height: S.xs),
                     Text(subCentre, style: T.bodySoft.copyWith(fontSize: 16)),
-                    if (asha.distanceKm != null) ...[
+                    if (_proximity(l, asha) != null) ...[
                       const SizedBox(height: S.xs),
                       Text(
-                        l.distanceKm(asha.distanceKm!.toStringAsFixed(1)),
+                        _proximity(l, asha)!,
                         style: T.label.copyWith(color: C.green, fontSize: 15),
                       ),
                     ],
@@ -155,6 +155,32 @@ class _AshaCard extends StatelessWidget {
               ),
             ],
           ),
+          if (asha.onDuty) ...[
+            const SizedBox(height: S.md),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: S.sm, vertical: S.xs),
+                  decoration: BoxDecoration(
+                    color: C.greenSoft,
+                    borderRadius: BorderRadius.circular(S.radius),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.check_circle, size: 18, color: C.green),
+                      const SizedBox(width: S.xs),
+                      Text(
+                        l.ashaOnDutyNow,
+                        style: T.label.copyWith(color: C.green, fontSize: 15),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: S.md),
           CallButton(
             title: l.ashaNearbyCall,
@@ -166,6 +192,29 @@ class _AshaCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// What to say about how far away she is.
+///
+/// An on-duty worker within 2 km is described by band rather than by an exact
+/// figure: her live distance is never given as a number. Everyone else is
+/// measured to their sub-centre, and that is worded as approximate unless she
+/// pinned the spot herself — a PHC centroid is not a surveyed position and
+/// should not read like one.
+String? _proximity(AppLocalizations l, DirectoryAsha asha) {
+  if (asha.nearby) {
+    switch (asha.proximityBand) {
+      case 'under_1km':
+        return l.ashaBandUnder1km;
+      case '1_to_2km':
+        return l.ashaBand1to2km;
+    }
+  }
+  final km = asha.distanceKm;
+  if (km == null) return null;
+  return asha.isApproximate
+      ? l.distanceKmApprox(km.toStringAsFixed(1))
+      : l.distanceKm(km.toStringAsFixed(1));
 }
 
 /// Shown when there is nobody to list, and when we could not find out.

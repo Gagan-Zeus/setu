@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import 'config/env.dart';
+import 'data/duty_service.dart';
 import 'data/ocr_service.dart';
 import 'data/supabase_sync_service.dart';
 import 'data/sync_service.dart';
@@ -346,6 +347,68 @@ final authControllerProvider =
     ref.watch(prefsProvider),
     ref.watch(supabaseClientProvider),
   ),
+);
+
+/// Whether she is telling the mothers around her that she is working now.
+///
+/// The server is the authority on this, not the handset: [restore] asks it at
+/// every open, so a phone that was restarted, or whose clock is wrong, cannot
+/// leave her advertised as on duty when she is not — or drop her off the list
+/// when she is.
+class DutyController extends StateNotifier<DutyState> {
+  DutyController(this._duty) : super(const DutyState());
+
+  final DutyService _duty;
+
+  /// Picks a running shift back up after a restart.
+  Future<void> restore() async {
+    final until = await _duty.serverDutyUntil();
+    if (until == null) return;
+    await _duty.resume();
+    if (!mounted) return;
+    state = DutyState(onDuty: true, until: until);
+  }
+
+  Future<void> set(bool on) async {
+    if (state.busy) return;
+    state = state.copyWith(busy: true, clearProblem: true);
+
+    if (!on) {
+      await _duty.stop();
+      if (!mounted) return;
+      state = const DutyState();
+      return;
+    }
+
+    final r = await _duty.start();
+    if (!mounted) return;
+    state = r.problem != null
+        ? DutyState(problem: r.problem)
+        : DutyState(onDuty: true, until: r.until);
+  }
+
+  /// Signing out must take her off the list. Leaving a stale row behind would
+  /// advertise a worker who is not there to answer.
+  Future<void> clear() async {
+    await _duty.stop();
+    if (!mounted) return;
+    state = const DutyState();
+  }
+
+  @override
+  void dispose() {
+    _duty.dispose();
+    super.dispose();
+  }
+}
+
+final dutyServiceProvider = Provider<DutyService>(
+  (ref) => DutyService(ref.watch(supabaseClientProvider)),
+);
+
+final dutyControllerProvider =
+    StateNotifierProvider<DutyController, DutyState>(
+  (ref) => DutyController(ref.watch(dutyServiceProvider)),
 );
 
 // -------------------------------------------------------------------- risk

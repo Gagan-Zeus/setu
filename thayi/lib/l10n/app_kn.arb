@@ -247,6 +247,17 @@
       }
     }
   },
+  "distanceKmApprox": "ಸುಮಾರು {km} ಕಿ.ಮೀ ದೂರ",
+  "@distanceKmApprox": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "ashaOnDutyNow": "ಈಗ ಲಭ್ಯ",
+  "ashaBandUnder1km": "ನಿಮ್ಮಿಂದ 1 ಕಿ.ಮೀ ದಾಟಿಲ್ಲ",
+  "ashaBand1to2km": "ನಿಮ್ಮಿಂದ 1\u20132 ಕಿ.ಮೀ ದೂರ",
   "callFailed": "ಕರೆ ಮಾಡಲು ಆಗಲಿಲ್ಲ",
   "thayiCardTitle": "ನನ್ನ ತಾಯಿ ಕಾರ್ಡ್",
   "qrCaption": "ಆಸ್ಪತ್ರೆಯಲ್ಲಿ ಈ ಕೋಡ್ ತೋರಿಸಿ",
