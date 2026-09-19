@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../data/models.dart';
 import '../providers.dart';
+import '../features/scan_thayi_card.dart';
 import '../theme/tokens.dart';
 import '../widgets/care_widgets.dart';
 import 'mother_record_screen.dart';
@@ -25,6 +26,15 @@ class _MothersScreenState extends ConsumerState<MothersScreen> {
     super.dispose();
   }
 
+  /// She holds out her phone; her record opens. No name, no searching.
+  Future<void> _scanAndOpen() async {
+    final motherId = await ScanThayiCard.show(context);
+    if (motherId == null || !mounted) return;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => MotherRecordScreen(motherId: motherId)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final loading = ref.watch(mothersProvider).isLoading;
@@ -38,18 +48,56 @@ class _MothersScreenState extends ConsumerState<MothersScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(S.screen, S.md, S.screen, S.sm),
-          child: TextField(
-            controller: _search,
-            style: T.body,
-            onChanged: (v) => ref
-                .read(motherFiltersProvider.notifier)
-                .update((f) => f.copyWith(query: v)),
-            decoration: const InputDecoration(
-              hintText: 'Search name, village or ASHA',
-              prefixIcon: Icon(Icons.search, size: 18, color: C.textSoft),
-              prefixIconConstraints:
-                  BoxConstraints(minWidth: 38, minHeight: 38),
-            ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _search,
+                  style: T.body,
+                  onChanged: (v) => ref
+                      .read(motherFiltersProvider.notifier)
+                      .update((f) => f.copyWith(query: v)),
+                  decoration: const InputDecoration(
+                    hintText: 'Search name, village or ASHA',
+                    prefixIcon: Icon(Icons.search, size: 18, color: C.textSoft),
+                    prefixIconConstraints:
+                        BoxConstraints(minWidth: 38, minHeight: 38),
+                  ),
+                ),
+              ),
+              const SizedBox(width: S.sm),
+              // Beside the search box, because it is the other way of finding
+              // someone and the more certain one.
+              //
+              // The scanner used to live only inside a mother's record, behind
+              // the locked panel — which meant you had to already know who she
+              // was, find her in the list and open her record before you could
+              // scan the thing that identifies her. A woman arriving at the
+              // counter whose name nobody catches had no way in at all. Scanning
+              // answers "who is this", so it belongs where that is asked.
+              Tooltip(
+                message: 'Scan her code',
+                child: SizedBox(
+                  height: 38,
+                  child: OutlinedButton(
+                    onPressed: _scanAndOpen,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: S.md),
+                      side: const BorderSide(color: C.teal),
+                      foregroundColor: C.teal,
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.qr_code_scanner, size: 18),
+                        SizedBox(width: S.xs),
+                        Text('Scan'),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         SizedBox(
