@@ -391,24 +391,80 @@ async function lookup(req: Request): Promise<Response> {
   return json({ mother: summary });
 }
 
-// ------------------------------------------- a QR token, for integration tests
-async function mintQr(req: Request): Promise<Response> {
+/// Who is holding this session?
+async function authUserId(req: Request): Promise<string | null> {
   const jwt = (req.headers.get("authorization") ?? "").replace(/^Bearer /, "");
+  if (!jwt) return null;
   const who = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
     headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${jwt}` },
   });
-  if (!who.ok) return json({ message: "Sign in first" }, 401);
-  const admins = await db(
-    `admin_users?auth_user_id=eq.${(await who.json()).id}&active=is.true&select=id`,
-  );
+  return who.ok ? (await who.json()).id as string : null;
+}
+
+// ------------------------------------------------- the mother mints her own
+/// Thayi Setu calls this and renders the result as her QR.
+///
+/// There is deliberately no mother_id parameter. The token is minted for
+/// whoever holds the session and for nobody else, so the endpoint cannot be
+/// pointed at another woman's record even by someone with a valid login.
+///
+/// This is the consent event. A QR token is a five-minute bearer credential for
+/// a maternal health record, and the only thing that should be able to produce
+/// one is the woman whose record it is, on her own phone, in front of the
+/// person about to read it. Anyone else minting one - an administrator, a
+/// partner, us - is manufacturing her consent without her.
+async function mintQrForSelf(req: Request): Promise<Response> {
+  const uid = await authUserId(req);
+  if (!uid) return json({ message: "Sign in first" }, 401);
+  if (!QR_SECRET) return json({ message: "QR_TOKEN_SECRET is not set" }, 500);
+
+  const mothers = await db(`mothers?auth_user_id=eq.${uid}&active=is.true&select=id`);
+  const mother = mothers?.[0];
+  // Staff and administrators have logins too, and none of them has a record to
+  // present. Only a mother can mint, and only her own.
+  if (!mother) {
+    return json({
+      message: "Only a mother can generate her own code, from her own account.",
+    }, 403);
+  }
+
+  return json({
+    qr_token: await mintQrToken(mother.id, QR_SECRET),
+    expires_in_seconds: 300,
+  });
+}
+
+// ------------------------------------- a sandbox token, for integration tests
+/// Sandbox records only, and the refusal says why.
+///
+/// This existed so a partner had something to test against, and for a while it
+/// would mint a token for ANY mother - handing an administrator the ability to
+/// open any real record to any partner with the woman nowhere near it. The
+/// consent model means nothing if something can manufacture the consent, so
+/// the seeded test records are the only thing it can reach.
+async function mintSandboxQr(req: Request): Promise<Response> {
+  const uid = await authUserId(req);
+  if (!uid) return json({ message: "Sign in first" }, 401);
+  const admins = await db(`admin_users?auth_user_id=eq.${uid}&active=is.true&select=id`);
   if (!admins?.[0]) return json({ message: "Administrators only" }, 403);
 
   const { mother_id } = await req.json();
   if (!mother_id) return json({ message: "mother_id is required" }, 400);
   if (!QR_SECRET) return json({ message: "QR_TOKEN_SECRET is not set" }, 500);
 
+  const mothers = await db(`mothers?id=eq.${mother_id}&select=id,is_sandbox`);
+  const mother = mothers?.[0];
+  if (!mother) return json({ message: "No such record" }, 404);
+  if (!mother.is_sandbox) {
+    return json({
+      message:
+        "This only mints codes for seeded sandbox records. A real mother's code can be " +
+        "generated only by her, in her own app - that is what makes presenting it consent.",
+    }, 403);
+  }
+
   return json({
-    qr_token: await mintQrToken(mother_id, QR_SECRET),
+    qr_token: await mintQrToken(mother.id, QR_SECRET),
     expires_in_seconds: 300,
   });
 }
@@ -420,7 +476,10 @@ Deno.serve(async (req) => {
   const path = new URL(req.url).pathname.replace(/^\/partner-api/, "");
   try {
     if (path === "/admin/issue-key") return await issueKey(req);
-    if (path === "/admin/mint-qr") return await mintQr(req);
+    // Her own app, her own session, her own record.
+    if (path === "/qr/mint") return await mintQrForSelf(req);
+    // Sandbox records only - see the note on mintSandboxQr.
+    if (path === "/admin/mint-sandbox-qr") return await mintSandboxQr(req);
     if (path === "/v1/mothers/lookup") return await lookup(req);
     return json({ message: "Not found" }, 404);
   } catch (error) {
