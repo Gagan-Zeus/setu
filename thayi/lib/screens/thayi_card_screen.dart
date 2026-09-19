@@ -176,6 +176,27 @@ class _LiveQrState extends ConsumerState<_LiveQr> {
       return _qr(widget.fallbackPayload);
     }
 
+    // Not a connection problem, and telling her it is sends her walking to the
+    // top of the village for signal that will not help. Only her ASHA can fix
+    // this one, so say so.
+    if (_failure == QrFailure.notAMother && _token == null) {
+      return SizedBox(
+        width: widget.size,
+        child: Column(
+          children: [
+            SizedBox(
+              height: widget.size,
+              child: const Center(
+                child: Icon(Icons.badge_outlined, size: 56, color: C.textSoft),
+              ),
+            ),
+            const SizedBox(height: S.sm),
+            Text(l.qrNoCard, style: T.body, textAlign: TextAlign.center),
+          ],
+        ),
+      );
+    }
+
     final token = _token;
     if (token != null && !token.isExpired) {
       final seconds = token.remaining.inSeconds;

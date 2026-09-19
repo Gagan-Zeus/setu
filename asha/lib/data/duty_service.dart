@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -179,16 +180,23 @@ class DutyService {
     return (problem: null, until: until);
   }
 
-  Future<void> _arm() async {
-    await _stream?.cancel();
-    _timer?.cancel();
-
-    _stream = Geolocator.getPositionStream(
-      locationSettings: AndroidSettings(
+  /// Per platform, because the two phones do this differently and a setting
+  /// meant for one of them is not merely ignored by the other.
+  ///
+  /// Android runs a foreground service with a notification. The notification is
+  /// not a formality: a woman broadcasting where she is should be able to see
+  /// at a glance that she is doing it, and stop.
+  ///
+  /// iOS gets AppleSettings with background updates explicitly OFF. The default
+  /// is on, and switching it on without the background-location entitlement —
+  /// which this app deliberately does not ask for — throws at runtime the
+  /// moment the stream starts. On iOS she is on duty while the app is open,
+  /// and that is the whole of it.
+  static LocationSettings _streamSettings() {
+    if (Platform.isAndroid) {
+      return AndroidSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: _movedMetres,
-        // The notification is not a formality: a woman broadcasting where she
-        // is should be able to see at a glance that she is doing it, and stop.
         foregroundNotificationConfig: const ForegroundNotificationConfig(
           notificationTitle: 'ASHA Setu',
           notificationText: 'On duty — mothers nearby can see you are available',
@@ -196,7 +204,29 @@ class DutyService {
           enableWakeLock: false,
           setOngoing: true,
         ),
-      ),
+      );
+    }
+    if (Platform.isIOS) {
+      return AppleSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: _movedMetres,
+        allowBackgroundLocationUpdates: false,
+        showBackgroundLocationIndicator: false,
+        pauseLocationUpdatesAutomatically: false,
+      );
+    }
+    return const LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: _movedMetres,
+    );
+  }
+
+  Future<void> _arm() async {
+    await _stream?.cancel();
+    _timer?.cancel();
+
+    _stream = Geolocator.getPositionStream(
+      locationSettings: _streamSettings(),
     ).listen(
       (p) {
         _last = p;

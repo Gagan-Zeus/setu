@@ -24,11 +24,28 @@ class SupabaseCareApi implements CareApi {
   /// the author of real clinical notes and the origin of real tasks.
   String? _authorName;
 
-  Future<String> _author() async =>
-      _authorName ??= await doctorName();
+  /// Resolved once, but only when it actually resolved.
+  ///
+  /// `_authorName ??= await doctorName()` remembered the stand-in too, so a
+  /// single transient failure to read her staff row — a moment offline while
+  /// she saved the first note of the shift — made 'Medical officer' the
+  /// permanent author of every note and the origin of every task for the rest
+  /// of the session, long after the connection came back.
+  Future<String> _author() async {
+    final known = _authorName;
+    if (known != null) return known;
+    final name = await doctorName();
+    if (name != null && name.trim().isNotEmpty) {
+      return _authorName = name.trim();
+    }
+    // Not cached: the next write tries again.
+    return 'Medical officer';
+  }
 
   final SupabaseClient _client;
-  final Future<String> Function() doctorName;
+
+  /// Null when her name could not be read, rather than a stand-in chosen here.
+  final Future<String?> Function() doctorName;
 
   /// Cached so row lists and the dashboard do not each re-fetch.
   final Map<String, Mother> _cache = {};
@@ -359,7 +376,26 @@ class SupabaseCareApi implements CareApi {
   }
 
   /// none | pending | approved | rejected | expired
+  ///
+  /// The server's own rule decides first. A consent grant is not the only way
+  /// in: public.can_access_mother() also admits the medical officer at the PHC
+  /// the mother is registered at, which is the ordinary case and the one the
+  /// "read mothers in scope" policy is written around. Reading only
+  /// access_grants therefore locked the timeline, vitals, labs and notes of
+  /// every woman on her own facility's list behind a consent screen she could
+  /// never satisfy — while the dashboard, which is not gated, was already
+  /// showing that same woman's visits two taps away.
   Future<String> accessState(String motherId) async {
+    try {
+      final allowed =
+          await _client.rpc('can_access_mother', params: {'m_id': motherId});
+      if (allowed == true) return 'approved';
+    } catch (error) {
+      // Fall through to the grant history rather than locking her out because
+      // one call failed.
+      debugPrint('can_access_mother check failed: $error');
+    }
+
     final rows = await _client
         .from('access_grants')
         .select('status, expires_at')

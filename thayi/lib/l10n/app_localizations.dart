@@ -1100,6 +1100,12 @@ abstract class AppLocalizations {
   /// **'Try again'**
   String get qrRetry;
 
+  /// No description provided for @qrNoCard.
+  ///
+  /// In en, this message translates to:
+  /// **'This account has no Thayi Card record, so there is no code to show. Your ASHA worker registers the card — please ask her.'**
+  String get qrNoCard;
+
   /// No description provided for @qrWhyItChanges.
   ///
   /// In en, this message translates to:

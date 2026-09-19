@@ -76,9 +76,21 @@ export interface PartnerOrg {
   legal_name: string
   type: 'private_hospital' | 'lab' | 'ngo'
   registration_number: string
-  contact_name: string
-  contact_email: string
-  contact_phone: string
+  /// Nullable since 0009. A request now carries the KMC registration of the
+  /// doctor behind it and the contact comes from the register, so these three
+  /// are filled only on the rows that predate that. Typed as `string` they
+  /// rendered as the literal "null · null · null" on every newer request.
+  contact_name: string | null
+  contact_email: string | null
+  contact_phone: string | null
+  /// The named, registered doctor accountable for the request. A hospital is
+  /// not a person and cannot be struck off.
+  kmc_registration_number: string | null
+  /// What the register said at the moment access was granted. The register is
+  /// live and a doctor may lapse afterwards; this is the question an audit
+  /// asks.
+  kmc_verified_at: string | null
+  kmc_status_at_request: string | null
   address: string
   district_id: string | null
   intended_use: string

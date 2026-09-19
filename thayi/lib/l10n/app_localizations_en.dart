@@ -567,6 +567,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get qrRetry => 'Try again';
 
   @override
+  String get qrNoCard =>
+      'This account has no Thayi Card record, so there is no code to show. Your ASHA worker registers the card — please ask her.';
+
+  @override
   String get qrWhyItChanges =>
       'The code changes so a photograph of it cannot be used later.';
 

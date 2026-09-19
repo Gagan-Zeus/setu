@@ -266,6 +266,7 @@
   "@qrExpiresIn": { "placeholders": { "seconds": { "type": "String" } } },
   "qrNeedsSignal": "Your code needs a moment of internet to refresh. Move to where you have signal and try again.",
   "qrRetry": "Try again",
+  "qrNoCard": "This account has no Thayi Card record, so there is no code to show. Your ASHA worker registers the card \u2014 please ask her.",
   "qrWhyItChanges": "The code changes so a photograph of it cannot be used later.",
   "worksOffline": "A new code every few minutes",
   "fieldName": "Name",

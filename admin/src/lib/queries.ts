@@ -201,6 +201,25 @@ export function useKmcLookup() {
   })
 }
 
+/// The same registry read, as a query rather than a mutation: the review
+/// dialog needs the doctor behind a request the moment it opens, and it has
+/// only the registration number — since 0009 the contact details live in the
+/// register rather than on the request. Enabled only when there is a number,
+/// so a request that predates that fires nothing.
+export function useKmcRecord(registrationNumber: string | null) {
+  return useQuery({
+    queryKey: ['kmc', registrationNumber] as const,
+    enabled: !!registrationNumber,
+    queryFn: async (): Promise<KmcLookup> => {
+      const { data, error } = await supabase.rpc('kmc_lookup', {
+        p_registration_number: registrationNumber,
+      })
+      if (error) throw new Error(error.message)
+      return data as KmcLookup
+    },
+  })
+}
+
 export interface KmcPublicCheck {
   valid: boolean
   reason?: 'empty' | 'not_in_registry' | 'not_in_good_standing'

@@ -3411,6 +3411,14 @@ class $ReferralsTable extends Referrals
       requiredDuringInsert: true,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('REFERENCES mothers (id)'));
+  static const VerificationMeta _fromUserMeta =
+      const VerificationMeta('fromUser');
+  @override
+  late final GeneratedColumn<String> fromUser = GeneratedColumn<String>(
+      'from_user', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
   static const VerificationMeta _toFacilityMeta =
       const VerificationMeta('toFacility');
   @override
@@ -3435,7 +3443,7 @@ class $ReferralsTable extends Referrals
       'status', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
-      defaultValue: const Constant('pending'));
+      defaultValue: const Constant('open'));
   static const VerificationMeta _visitIdMeta =
       const VerificationMeta('visitId');
   @override
@@ -3452,6 +3460,7 @@ class $ReferralsTable extends Referrals
   List<GeneratedColumn> get $columns => [
         id,
         motherId,
+        fromUser,
         toFacility,
         reasonKn,
         reasonEn,
@@ -3479,6 +3488,10 @@ class $ReferralsTable extends Referrals
           motherId.isAcceptableOrUnknown(data['mother_id']!, _motherIdMeta));
     } else if (isInserting) {
       context.missing(_motherIdMeta);
+    }
+    if (data.containsKey('from_user')) {
+      context.handle(_fromUserMeta,
+          fromUser.isAcceptableOrUnknown(data['from_user']!, _fromUserMeta));
     }
     if (data.containsKey('to_facility')) {
       context.handle(
@@ -3527,6 +3540,8 @@ class $ReferralsTable extends Referrals
           .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
       motherId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}mother_id'])!,
+      fromUser: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}from_user'])!,
       toFacility: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}to_facility'])!,
       reasonKn: attachedDatabase.typeMapping
@@ -3551,17 +3566,25 @@ class $ReferralsTable extends Referrals
 class Referral extends DataClass implements Insertable<Referral> {
   final String id;
   final String motherId;
+
+  /// Who sent her. NOT NULL on the server with no default, and this column did
+  /// not exist at all — so every referral was refused with 23502 and the
+  /// facility never heard that a woman was on her way.
+  final String fromUser;
   final String toFacility;
   final String reasonKn;
   final String reasonEn;
 
-  /// pending | accepted | completed
+  /// open | arrived | closed — the server's own check constraint. It read
+  /// `pending | accepted | completed` here, three values the database would
+  /// have rejected had any of them ever been pushed.
   final String status;
   final String? visitId;
   final DateTime createdAt;
   const Referral(
       {required this.id,
       required this.motherId,
+      required this.fromUser,
       required this.toFacility,
       required this.reasonKn,
       required this.reasonEn,
@@ -3573,6 +3596,7 @@ class Referral extends DataClass implements Insertable<Referral> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['mother_id'] = Variable<String>(motherId);
+    map['from_user'] = Variable<String>(fromUser);
     map['to_facility'] = Variable<String>(toFacility);
     map['reason_kn'] = Variable<String>(reasonKn);
     map['reason_en'] = Variable<String>(reasonEn);
@@ -3588,6 +3612,7 @@ class Referral extends DataClass implements Insertable<Referral> {
     return ReferralsCompanion(
       id: Value(id),
       motherId: Value(motherId),
+      fromUser: Value(fromUser),
       toFacility: Value(toFacility),
       reasonKn: Value(reasonKn),
       reasonEn: Value(reasonEn),
@@ -3605,6 +3630,7 @@ class Referral extends DataClass implements Insertable<Referral> {
     return Referral(
       id: serializer.fromJson<String>(json['id']),
       motherId: serializer.fromJson<String>(json['motherId']),
+      fromUser: serializer.fromJson<String>(json['fromUser']),
       toFacility: serializer.fromJson<String>(json['toFacility']),
       reasonKn: serializer.fromJson<String>(json['reasonKn']),
       reasonEn: serializer.fromJson<String>(json['reasonEn']),
@@ -3619,6 +3645,7 @@ class Referral extends DataClass implements Insertable<Referral> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'motherId': serializer.toJson<String>(motherId),
+      'fromUser': serializer.toJson<String>(fromUser),
       'toFacility': serializer.toJson<String>(toFacility),
       'reasonKn': serializer.toJson<String>(reasonKn),
       'reasonEn': serializer.toJson<String>(reasonEn),
@@ -3631,6 +3658,7 @@ class Referral extends DataClass implements Insertable<Referral> {
   Referral copyWith(
           {String? id,
           String? motherId,
+          String? fromUser,
           String? toFacility,
           String? reasonKn,
           String? reasonEn,
@@ -3640,6 +3668,7 @@ class Referral extends DataClass implements Insertable<Referral> {
       Referral(
         id: id ?? this.id,
         motherId: motherId ?? this.motherId,
+        fromUser: fromUser ?? this.fromUser,
         toFacility: toFacility ?? this.toFacility,
         reasonKn: reasonKn ?? this.reasonKn,
         reasonEn: reasonEn ?? this.reasonEn,
@@ -3651,6 +3680,7 @@ class Referral extends DataClass implements Insertable<Referral> {
     return Referral(
       id: data.id.present ? data.id.value : this.id,
       motherId: data.motherId.present ? data.motherId.value : this.motherId,
+      fromUser: data.fromUser.present ? data.fromUser.value : this.fromUser,
       toFacility:
           data.toFacility.present ? data.toFacility.value : this.toFacility,
       reasonKn: data.reasonKn.present ? data.reasonKn.value : this.reasonKn,
@@ -3666,6 +3696,7 @@ class Referral extends DataClass implements Insertable<Referral> {
     return (StringBuffer('Referral(')
           ..write('id: $id, ')
           ..write('motherId: $motherId, ')
+          ..write('fromUser: $fromUser, ')
           ..write('toFacility: $toFacility, ')
           ..write('reasonKn: $reasonKn, ')
           ..write('reasonEn: $reasonEn, ')
@@ -3677,14 +3708,15 @@ class Referral extends DataClass implements Insertable<Referral> {
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, motherId, toFacility, reasonKn, reasonEn, status, visitId, createdAt);
+  int get hashCode => Object.hash(id, motherId, fromUser, toFacility, reasonKn,
+      reasonEn, status, visitId, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Referral &&
           other.id == this.id &&
           other.motherId == this.motherId &&
+          other.fromUser == this.fromUser &&
           other.toFacility == this.toFacility &&
           other.reasonKn == this.reasonKn &&
           other.reasonEn == this.reasonEn &&
@@ -3696,6 +3728,7 @@ class Referral extends DataClass implements Insertable<Referral> {
 class ReferralsCompanion extends UpdateCompanion<Referral> {
   final Value<String> id;
   final Value<String> motherId;
+  final Value<String> fromUser;
   final Value<String> toFacility;
   final Value<String> reasonKn;
   final Value<String> reasonEn;
@@ -3706,6 +3739,7 @@ class ReferralsCompanion extends UpdateCompanion<Referral> {
   const ReferralsCompanion({
     this.id = const Value.absent(),
     this.motherId = const Value.absent(),
+    this.fromUser = const Value.absent(),
     this.toFacility = const Value.absent(),
     this.reasonKn = const Value.absent(),
     this.reasonEn = const Value.absent(),
@@ -3717,6 +3751,7 @@ class ReferralsCompanion extends UpdateCompanion<Referral> {
   ReferralsCompanion.insert({
     required String id,
     required String motherId,
+    this.fromUser = const Value.absent(),
     required String toFacility,
     required String reasonKn,
     required String reasonEn,
@@ -3733,6 +3768,7 @@ class ReferralsCompanion extends UpdateCompanion<Referral> {
   static Insertable<Referral> custom({
     Expression<String>? id,
     Expression<String>? motherId,
+    Expression<String>? fromUser,
     Expression<String>? toFacility,
     Expression<String>? reasonKn,
     Expression<String>? reasonEn,
@@ -3744,6 +3780,7 @@ class ReferralsCompanion extends UpdateCompanion<Referral> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (motherId != null) 'mother_id': motherId,
+      if (fromUser != null) 'from_user': fromUser,
       if (toFacility != null) 'to_facility': toFacility,
       if (reasonKn != null) 'reason_kn': reasonKn,
       if (reasonEn != null) 'reason_en': reasonEn,
@@ -3757,6 +3794,7 @@ class ReferralsCompanion extends UpdateCompanion<Referral> {
   ReferralsCompanion copyWith(
       {Value<String>? id,
       Value<String>? motherId,
+      Value<String>? fromUser,
       Value<String>? toFacility,
       Value<String>? reasonKn,
       Value<String>? reasonEn,
@@ -3767,6 +3805,7 @@ class ReferralsCompanion extends UpdateCompanion<Referral> {
     return ReferralsCompanion(
       id: id ?? this.id,
       motherId: motherId ?? this.motherId,
+      fromUser: fromUser ?? this.fromUser,
       toFacility: toFacility ?? this.toFacility,
       reasonKn: reasonKn ?? this.reasonKn,
       reasonEn: reasonEn ?? this.reasonEn,
@@ -3785,6 +3824,9 @@ class ReferralsCompanion extends UpdateCompanion<Referral> {
     }
     if (motherId.present) {
       map['mother_id'] = Variable<String>(motherId.value);
+    }
+    if (fromUser.present) {
+      map['from_user'] = Variable<String>(fromUser.value);
     }
     if (toFacility.present) {
       map['to_facility'] = Variable<String>(toFacility.value);
@@ -3815,6 +3857,7 @@ class ReferralsCompanion extends UpdateCompanion<Referral> {
     return (StringBuffer('ReferralsCompanion(')
           ..write('id: $id, ')
           ..write('motherId: $motherId, ')
+          ..write('fromUser: $fromUser, ')
           ..write('toFacility: $toFacility, ')
           ..write('reasonKn: $reasonKn, ')
           ..write('reasonEn: $reasonEn, ')
@@ -6420,6 +6463,7 @@ typedef $$AlertsTableProcessedTableManager = ProcessedTableManager<
 typedef $$ReferralsTableCreateCompanionBuilder = ReferralsCompanion Function({
   required String id,
   required String motherId,
+  Value<String> fromUser,
   required String toFacility,
   required String reasonKn,
   required String reasonEn,
@@ -6431,6 +6475,7 @@ typedef $$ReferralsTableCreateCompanionBuilder = ReferralsCompanion Function({
 typedef $$ReferralsTableUpdateCompanionBuilder = ReferralsCompanion Function({
   Value<String> id,
   Value<String> motherId,
+  Value<String> fromUser,
   Value<String> toFacility,
   Value<String> reasonKn,
   Value<String> reasonEn,
@@ -6470,6 +6515,9 @@ class $$ReferralsTableFilterComposer
   });
   ColumnFilters<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get fromUser => $composableBuilder(
+      column: $table.fromUser, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get toFacility => $composableBuilder(
       column: $table.toFacility, builder: (column) => ColumnFilters(column));
@@ -6522,6 +6570,9 @@ class $$ReferralsTableOrderingComposer
   ColumnOrderings<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get fromUser => $composableBuilder(
+      column: $table.fromUser, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get toFacility => $composableBuilder(
       column: $table.toFacility, builder: (column) => ColumnOrderings(column));
 
@@ -6572,6 +6623,9 @@ class $$ReferralsTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get fromUser =>
+      $composableBuilder(column: $table.fromUser, builder: (column) => column);
 
   GeneratedColumn<String> get toFacility => $composableBuilder(
       column: $table.toFacility, builder: (column) => column);
@@ -6637,6 +6691,7 @@ class $$ReferralsTableTableManager extends RootTableManager<
           updateCompanionCallback: ({
             Value<String> id = const Value.absent(),
             Value<String> motherId = const Value.absent(),
+            Value<String> fromUser = const Value.absent(),
             Value<String> toFacility = const Value.absent(),
             Value<String> reasonKn = const Value.absent(),
             Value<String> reasonEn = const Value.absent(),
@@ -6648,6 +6703,7 @@ class $$ReferralsTableTableManager extends RootTableManager<
               ReferralsCompanion(
             id: id,
             motherId: motherId,
+            fromUser: fromUser,
             toFacility: toFacility,
             reasonKn: reasonKn,
             reasonEn: reasonEn,
@@ -6659,6 +6715,7 @@ class $$ReferralsTableTableManager extends RootTableManager<
           createCompanionCallback: ({
             required String id,
             required String motherId,
+            Value<String> fromUser = const Value.absent(),
             required String toFacility,
             required String reasonKn,
             required String reasonEn,
@@ -6670,6 +6727,7 @@ class $$ReferralsTableTableManager extends RootTableManager<
               ReferralsCompanion.insert(
             id: id,
             motherId: motherId,
+            fromUser: fromUser,
             toFacility: toFacility,
             reasonKn: reasonKn,
             reasonEn: reasonEn,

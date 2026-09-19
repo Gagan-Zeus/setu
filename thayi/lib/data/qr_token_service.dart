@@ -122,9 +122,6 @@ class QrTokenService {
           ? jsonDecode(res.data as String) as Map<String, dynamic>
           : (res.data as Map).cast<String, dynamic>();
 
-      if (res.status == 403) {
-        return const QrTokenResult.failed(QrFailure.notAMother);
-      }
       final token = body['qr_token'] as String?;
       final ttl = (body['expires_in_seconds'] as num?)?.toInt() ?? 300;
       if (token == null) return const QrTokenResult.failed(QrFailure.offline);
@@ -133,6 +130,17 @@ class QrTokenService {
       await _prefs.setString(_tokenKey, token);
       await _prefs.setString(_expiryKey, expiresAt.toIso8601String());
       return QrTokenResult.ok(QrToken(token: token, expiresAt: expiresAt));
+    } on sb.FunctionException catch (error) {
+      // `invoke` throws on any non-2xx, so the status has to be read off the
+      // exception. Testing `res.status` after the call — which is what this
+      // did — could never see a 403: the throw happened first, the 403 fell
+      // into the catch below, and an account with no mother record behind it
+      // was told to check its connection forever.
+      if (error.status == 403) {
+        return const QrTokenResult.failed(QrFailure.notAMother);
+      }
+      debugPrint('QR mint failed: ${error.status} ${error.details}');
+      return const QrTokenResult.failed(QrFailure.offline);
     } catch (error) {
       // No signal, a dropped connection, a function that is down. All the same
       // to her, and all recoverable by trying again in a moment.

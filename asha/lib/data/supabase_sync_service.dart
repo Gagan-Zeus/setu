@@ -236,6 +236,7 @@ class SupabaseSyncService implements SyncService {
           'home_lat',
           'home_lng',
           'home_note',
+          'home_located_at',
           'risk_level',
           'email',
           'email_verified',
@@ -243,7 +244,30 @@ class SupabaseSyncService implements SyncService {
           if (p.containsKey(key)) key: p[key],
       };
       if (patch.isEmpty) return;
-      await _client.from('mothers').update(patch).eq('id', id);
+      // .select() is load-bearing, exactly as in _pushTask. Without it
+      // PostgREST answers 204 No Content whether the filter matched her row or
+      // nothing at all, the Dart client returns normally, and the worker marks
+      // the outbox row synced. Two ordinary situations match nothing: her
+      // insert was refused earlier in this same drain (drain() bumps the retry
+      // and moves on to the next row rather than stopping), and the "staff
+      // update mothers" policy filters her out because the sub-centre on the
+      // server is no longer the one this worker is posted to. In both, a home
+      // pin or a verified email was reported sent and is nowhere — and a
+      // verified email that never lands is a mother whose own sign-in is
+      // refused with "this email is not registered".
+      final rows = await _client
+          .from('mothers')
+          .update(patch)
+          .eq('id', id)
+          .select('id');
+      if (rows.isEmpty) {
+        throw const SyncFailure(
+          'The server would not accept this change to her record — it has no '
+          'mother with this id, or she is no longer in your sub-centre. Send '
+          'everything again from Sync Status; if it is still refused, ask your '
+          'supervisor to check which sub-centre she is filed under.',
+        );
+      }
       return;
     }
 
@@ -280,9 +304,16 @@ class SupabaseSyncService implements SyncService {
       'guardian_en': p['husband_name'],
       'guardian_kn': p['husband_name'],
       'prev_complications': _asList(p['prev_complications']),
-      'home_note': p['home_note'],
+      // Sent only when this handset holds one. No enqueue ever carried
+      // home_note, so this read found nothing and wrote an explicit null — and
+      // because an insert is a full upsert that re-runs on every re-send, that
+      // null erased "Third house past the temple, blue door" from the server
+      // each time. The landmark is how the next worker finds the house.
+      if (p['home_note'] != null) 'home_note': p['home_note'],
       'home_lat': p['home_lat'],
       'home_lng': p['home_lng'],
+      if (p['home_located_at'] != null)
+        'home_located_at': p['home_located_at'],
       'gravida': p['gravida'] ?? 1,
       'para': p['para'] ?? 0,
       'height_cm': p['height_cm'],
@@ -426,9 +457,23 @@ class SupabaseSyncService implements SyncService {
       }
     });
 
-    if (motherLocalId.isNotEmpty) {
-      await _pullVisits(db, motherLocalId, unsent);
-      await _pullTasks(db, motherLocalId, unsent);
+    // Keyed off every mother this phone holds, not only the ones rewritten in
+    // this pass.
+    //
+    // motherLocalId is filled at the end of the loop body, after the `unsent`
+    // and `lmp` guards, so a mother with one stuck outbox row was skipped and
+    // her doctor-assigned tasks were never even requested — and while every
+    // mother had an unsent row, the isNotEmpty gate meant _pullTasks did not
+    // run at all. Work she could not see is the one failure this screen exists
+    // to prevent. Re-read after the transaction so mothers pulled just now are
+    // included. uuidFor passes a server uuid through untouched, so this is
+    // correct for rows created here and rows that came down.
+    final caseload = {
+      for (final m in await db.allMothers()) uuidFor(m.id): m.id
+    };
+    if (caseload.isNotEmpty) {
+      await _pullVisits(db, caseload, unsent);
+      await _pullTasks(db, caseload, unsent);
     }
     return touched;
   }
@@ -601,7 +646,7 @@ class SupabaseSyncService implements SyncService {
       'id': uuidFor(p['id'] as String),
       'mother_id': uuidFor(p['mother_id'] as String),
       'visit_no': p['visit_no'],
-      'visit_date': p['visit_date'] ?? p['created_at'],
+      'visit_date': p['visit_date'] ?? p['client_created_at'],
       'bp_sys': p['bp_sys'],
       'bp_dia': p['bp_dia'],
       'weight_kg': p['weight_kg'],
@@ -610,23 +655,27 @@ class SupabaseSyncService implements SyncService {
       'fetal_hr': p['fetal_hr'],
       'urine_albumin': p['urine_albumin'],
       'danger_signs': _asList(p['danger_signs']),
+      'fetal_movement': p['fetal_movement'],
       'ifa_taken': p['ifa_taken'],
       'calcium_taken': p['calcium_taken'],
       'tt_dose_given': p['tt_dose_given'],
       'notes': p['notes'],
       'gps_lat': p['gps_lat'],
       'gps_lng': p['gps_lng'],
+      'photo_paths': _asList(p['photo_paths']),
       'recorded_by': p['recorded_by'],
       'source': 'asha_app',
       // The correction chain has to survive the trip, or the append-only
       // history means nothing once it is on the server.
       'corrects_id':
           p['corrects_id'] == null ? null : uuidFor(p['corrects_id'] as String),
-      'client_created_at': p['created_at'],
+      // The queued key is client_created_at. Reading 'created_at' here found
+      // nothing and sent a null into a not-null column.
+      'client_created_at': p['client_created_at'],
     }, onConflict: 'id');
 
     // Her latest visit date drives "overdue" on the doctor's dashboard.
-    final visitDate = p['visit_date'] ?? p['created_at'];
+    final visitDate = p['visit_date'] ?? p['client_created_at'];
     if (visitDate != null) {
       await _client
           .from('mothers')
@@ -643,6 +692,9 @@ class SupabaseSyncService implements SyncService {
       'mother_id': uuidFor(p['mother_id'] as String),
       'rule_id': p['rule_id'],
       'severity': p['severity'],
+      // These fell back to '' because the payload never carried them, so a red
+      // alert reached the doctor with a severity and no reason. saveAlerts now
+      // queues both; the fallback stays only so an older queued row still goes.
       'message_kn': p['message_kn'] ?? '',
       'message_en': p['message_en'] ?? '',
       'visit_id':
@@ -675,10 +727,31 @@ class SupabaseSyncService implements SyncService {
 
   Future<void> _pushTask(Map<String, dynamic> p) async {
     // Tasks originate with the doctor, so an ASHA only ever closes one.
-    await _client.from('tasks').update({
+    //
+    // .select() is load-bearing, not decoration. Without it PostgREST answers
+    // 204 No Content whether the filter matched one row or none, the client
+    // returns normally, and the worker marks the outbox row synced — so a task
+    // she ticked done on a handset that held a stale id was reported sent and
+    // never changed on the server, and the doctor went on chasing work that
+    // was already finished. Asking for the row back turns that silence into a
+    // failure the Sync Status screen can show her.
+    final rows = await _client.from('tasks').update({
       'status': p['status'],
       if (p['closed_at'] != null) 'closed_at': p['closed_at'],
-    }).eq('id', uuidFor(p['id'] as String));
+      // The visit that closed it. Queued as a local id, keyed on uuid up here.
+      // Safe against the foreign key because saveVisit queues the visit inside
+      // its own transaction before closeTask queues this row, and the outbox
+      // drains in createdAt order.
+      if (p['closed_by_visit_id'] != null)
+        'closed_by_visit_id': uuidFor(p['closed_by_visit_id'] as String),
+    }).eq('id', uuidFor(p['id'] as String)).select('id');
+
+    if (rows.isEmpty) {
+      throw const SyncFailure(
+        'The server has no task with this id, so it was not marked done. It '
+        'may have been withdrawn by the doctor.',
+      );
+    }
   }
 
   // ------------------------------------------------------------- helpers

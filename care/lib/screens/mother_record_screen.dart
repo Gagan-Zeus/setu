@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
-import '../data/mock_data.dart';
 import '../data/models.dart';
 import '../data/supabase_care_api.dart';
 import '../features/assign_task_sheet.dart';
@@ -514,9 +514,29 @@ class _NotesTabState extends ConsumerState<_NotesTab> {
     final body = _controller.text.trim();
     if (body.isEmpty || _busy) return;
     setState(() => _busy = true);
-    await ref.read(apiProvider).addNote(motherId: widget.motherId, body: body);
-    ref.invalidate(notesProvider(widget.motherId));
-    _controller.clear();
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref
+          .read(apiProvider)
+          .addNote(motherId: widget.motherId, body: body);
+      ref.invalidate(notesProvider(widget.motherId));
+      // Cleared only once the row is actually in the database. An unguarded
+      // await here meant a refused or dropped insert threw past the send
+      // button: _busy stayed true, so the button was dead for the rest of the
+      // visit, and she was never told the note had not been saved.
+      _controller.clear();
+    } catch (error) {
+      final refused = error is PostgrestException &&
+          (error.code == '42501' ||
+              error.message.contains('row-level security'));
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(refused
+              ? 'She has not given you access yet, so the note was not saved.'
+              : 'Could not save the note. Check the connection and try again.'),
+        ),
+      );
+    }
     if (mounted) setState(() => _busy = false);
   }
 
@@ -750,7 +770,6 @@ class _RxButton extends ConsumerWidget {
         context,
         ref,
         motherId: motherId,
-        doctorName: MockData.doctorName,
       ),
       iconSize: 20,
       style: IconButton.styleFrom(

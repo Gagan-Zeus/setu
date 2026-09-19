@@ -186,6 +186,25 @@ async function createStaff(req: Request): Promise<Response> {
     }),
   }))?.[0];
 
+  // Everything after the staff row is undone if it fails. The row is committed
+  // the moment it is written, so without this a directory insert that threw
+  // returned a 500 to the portal — "Something went wrong", nothing created as
+  // far as the administrator could see — while the staff row stayed behind.
+  // Her next attempt hit the email clash check above and was refused with
+  // "<name> is already registered with that email address", naming a person she
+  // had just been told did not get registered. The address was then unusable
+  // from the portal entirely.
+  const rollbackStaff = async (why: unknown) => {
+    console.error("staff creation failed after the staff row was written", why);
+    try {
+      await db(`staff?id=eq.${staff.id}`, { method: "DELETE" });
+    } catch (error) {
+      // Worth its own line: this is the case that leaves the inconsistent
+      // record, and it is the one a human has to clear up by hand.
+      console.error("could not roll back staff row", staff.id, error);
+    }
+  };
+
   // An ASHA is two things: a login, and an entry in the directory a mother
   // browses to find someone to call. Without the second she can be signed in
   // and still invisible to every pregnant woman in her village, which is the
@@ -199,32 +218,41 @@ async function createStaff(req: Request): Promise<Response> {
     // worker ever registered through the portal.
     //
     // The form sends the village's id; the directory column is its name.
-    let villageName: string | null = null;
-    const villageId = b.villages?.[0];
-    if (villageId) {
-      const v = await db(`villages?id=eq.${villageId}&select=name`);
-      villageName = v?.[0]?.name ?? null;
-    }
+    try {
+      let villageName: string | null = null;
+      const villageId = b.villages?.[0];
+      if (villageId) {
+        const v = await db(`villages?id=eq.${villageId}&select=name`);
+        villageName = v?.[0]?.name ?? null;
+      }
 
-    const dir = (await db("asha_workers", {
-      method: "POST",
-      headers: { Prefer: "return=representation" },
-      body: JSON.stringify({
-        name_en: b.name.trim(),
-        // name_kn is NOT NULL and the mother reads it. Falling back to the
-        // English name keeps her findable; it can be corrected later.
-        name_kn: (b.name_kn?.trim() || b.name.trim()),
-        phone: b.phone.trim(),
-        sub_centre_en: b.sub_centre?.trim() || phc.name_en,
-        sub_centre_kn: b.sub_centre?.trim() || phc.name_en,
-        village: villageName,
-        // No latitude here on purpose. A trigger on asha_workers inherits the
-        // PHC's coordinate from staff_id, so she is locatable the instant this
-        // row exists and there is one place that decides where a worker is.
-        staff_id: staff.id,
-      }),
-    }))?.[0];
-    directoryId = dir?.id ?? null;
+      const dir = (await db("asha_workers", {
+        method: "POST",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify({
+          name_en: b.name.trim(),
+          // name_kn is NOT NULL and the mother reads it. Falling back to the
+          // English name keeps her findable; it can be corrected later.
+          name_kn: (b.name_kn?.trim() || b.name.trim()),
+          phone: b.phone.trim(),
+          sub_centre_en: b.sub_centre?.trim() || phc.name_en,
+          sub_centre_kn: b.sub_centre?.trim() || phc.name_en,
+          village: villageName,
+          // No latitude here on purpose. A trigger on asha_workers inherits the
+          // PHC's coordinate from staff_id, so she is locatable the instant this
+          // row exists and there is one place that decides where a worker is.
+          staff_id: staff.id,
+        }),
+      }))?.[0];
+      directoryId = dir?.id ?? null;
+    } catch (error) {
+      // An ASHA who exists as a login but not in the directory is invisible to
+      // every pregnant woman in her village, which is the one thing the
+      // directory is for. Half a registration is worse than none, so undo it
+      // and let the administrator try again on a clean address.
+      await rollbackStaff(error);
+      throw error;
+    }
   }
 
   // The login. email_confirm because the address was chosen by an
@@ -274,7 +302,17 @@ async function createStaff(req: Request): Promise<Response> {
     console.error("auth user create threw", error);
   }
 
-  const invited = await sendInvite(email, b.name.trim(), b.role, phc.name_en);
+  // The registration is already real by this point — the row, the directory
+  // entry and the login all exist. A mailer that is down or unreachable must
+  // not turn that into a 500 the administrator reads as "nothing happened" and
+  // retries, because the retry is refused as a duplicate address. It is one
+  // field in the response instead, and the portal can offer to resend.
+  let invited = false;
+  try {
+    invited = await sendInvite(email, b.name.trim(), b.role, phc.name_en);
+  } catch (error) {
+    console.error("invite send threw", error);
+  }
 
   return json({
     created: true,

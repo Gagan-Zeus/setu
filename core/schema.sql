@@ -83,6 +83,14 @@ returns text language sql stable security definer set search_path = public as $$
   select sub_centre from public.staff where auth_user_id = auth.uid()
 $$;
 
+-- The facility the signed-in staff member belongs to. Null for a mother's own
+-- login and for an administrator, so neither matches a row by accident —
+-- null = null is null, not true.
+create or replace function public.current_phc()
+returns uuid language sql stable security definer set search_path = public as $$
+  select phc_id from public.staff where auth_user_id = auth.uid()
+$$;
+
 create or replace function public.is_doctor()
 returns boolean language sql stable security definer set search_path = public as $$
   select exists (
@@ -289,8 +297,8 @@ create policy "read mothers in scope" on public.mothers
   for select to authenticated
   using (
     auth_user_id = (select auth.uid())
-    or public.is_doctor()
     or sub_centre = public.current_sub_centre()
+    or (public.is_doctor() and phc_id = public.current_phc())
   );
 
 drop policy if exists "staff insert mothers" on public.mothers;

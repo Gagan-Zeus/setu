@@ -153,12 +153,19 @@ class Alerts extends Table {
 class Referrals extends Table {
   TextColumn get id => text()();
   TextColumn get motherId => text().references(Mothers, #id)();
+
+  /// Who sent her. NOT NULL on the server with no default, and this column did
+  /// not exist at all — so every referral was refused with 23502 and the
+  /// facility never heard that a woman was on her way.
+  TextColumn get fromUser => text().withDefault(const Constant(''))();
   TextColumn get toFacility => text()();
   TextColumn get reasonKn => text()();
   TextColumn get reasonEn => text()();
 
-  /// pending | accepted | completed
-  TextColumn get status => text().withDefault(const Constant('pending'))();
+  /// open | arrived | closed — the server's own check constraint. It read
+  /// `pending | accepted | completed` here, three values the database would
+  /// have rejected had any of them ever been pushed.
+  TextColumn get status => text().withDefault(const Constant('open'))();
   TextColumn get visitId => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
 
@@ -196,7 +203,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   /// Without this, every phone that already has the database would crash on
   /// "no such column: email" — a fresh install would look fine and every real
@@ -213,6 +220,12 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 4) {
             await m.addColumn(mothers, mothers.emailVerified);
+          }
+          if (from < 6) {
+            await m.addColumn(referrals, referrals.fromUser);
+            // 'pending' is not a value the server's check constraint allows.
+            await customStatement(
+                "update referrals set status = 'open' where status = 'pending'");
           }
           if (from < 5) {
             await m.addColumn(mothers, mothers.workerCreated);
@@ -379,6 +392,8 @@ class AppDatabase extends _$AppDatabase {
           'abha_id': m.abhaId,
           'home_lat': m.homeLat,
           'home_lng': m.homeLng,
+          'home_note': m.homeNote,
+          'home_located_at': m.homeLocatedAt?.toIso8601String(),
           'lmp': m.lmp.toIso8601String(),
           'gravida': m.gravida,
           'para': m.para,
@@ -406,9 +421,10 @@ class AppDatabase extends _$AppDatabase {
           'bp_dia': v.bpDia,
           'weight_kg': v.weightKg,
           'hb': v.hb,
-          'danger_signs': v.dangerSigns,
+          'danger_signs': _decodeIds(v.dangerSigns),
           'fundal_height_cm': v.fundalHeightCm,
           'fetal_hr': v.fetalHr,
+          'fetal_movement': v.fetalMovement,
           'urine_albumin': v.urineAlbumin,
           'ifa_taken': v.ifaTaken,
           'calcium_taken': v.calciumTaken,
@@ -416,9 +432,15 @@ class AppDatabase extends _$AppDatabase {
           'notes': v.notes,
           'gps_lat': v.gpsLat,
           'gps_lng': v.gpsLng,
+          'photo_paths': _decodeIds(v.photoPaths),
           'recorded_by': v.recordedBy,
           'corrects_id': v.correctsId,
-          'created_at': v.clientCreatedAt.toIso8601String(),
+          // The key _pushVisit reads is client_created_at, and the column is
+          // NOT NULL. Queuing it as 'created_at' meant the push found nothing,
+          // sent an explicit null, and every re-sent visit was refused with
+          // 23502 — so "Send everything again", the one button whose whole job
+          // is to rescue stranded rows, could never rescue a visit.
+          'client_created_at': v.clientCreatedAt.toIso8601String(),
         },
       );
     }

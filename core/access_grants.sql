@@ -50,7 +50,16 @@ returns boolean language sql stable security definer set search_path = public as
   )
 $$;
 
--- Clinical data. A doctor needs a grant; the mother and her own ASHA do not.
+-- Clinical data. The mother and her own ASHA need no grant, and neither does
+-- the medical officer at the PHC the mother is registered at — that is the
+-- ordinary case, and gating it on consent meant a doctor could list a mother
+-- and then not assign her ASHA any work, which is where doctor-assigned tasks
+-- were being lost. A grant is what carries the cases that cross a facility:
+-- a referral hospital, or a doctor she is not registered with.
+--
+-- This must stay in step with the "read mothers in scope" policy in
+-- schema.sql. When the two disagree, one of them is silently wrong and the
+-- symptom is a write refused for a row the app just displayed.
 create or replace function public.can_access_mother(m_id uuid)
 returns boolean language sql stable security definer set search_path = public as $$
   select exists (
@@ -59,10 +68,23 @@ returns boolean language sql stable security definer set search_path = public as
       and (
         m.auth_user_id = auth.uid()
         or m.sub_centre = public.current_sub_centre()
+        or (public.is_doctor() and m.phc_id = public.current_phc())
         or (public.is_doctor() and public.has_active_grant(m.id))
       )
   )
 $$;
+
+-- The read policy, restated here so it matches the function above. schema.sql
+-- creates it before access_grants exists, so it cannot mention grants there.
+drop policy if exists "read mothers in scope" on public.mothers;
+create policy "read mothers in scope" on public.mothers
+  for select to authenticated
+  using (
+    auth_user_id = (select auth.uid())
+    or sub_centre = public.current_sub_centre()
+    or (public.is_doctor() and phc_id = public.current_phc())
+    or (public.is_doctor() and public.has_active_grant(id))
+  );
 
 -- --------------------------------------------------------------- requesting
 
@@ -133,6 +155,40 @@ begin
    where id = p_grant_id;
   return true;
 end $$;
+
+-- -------------------------------------------- the name on the request she sees
+
+-- Thayi Setu reads `staff(name)` through the grant, so the consent card can say
+-- WHO is asking before she answers. Nothing let her: the only select policies
+-- on public.staff are "staff reads self" (auth_user_id = auth.uid(), or a
+-- doctor) and the administrators' one in the portal migrations, and a mother is
+-- neither. PostgREST answered the embed as null rather than as an error, so the
+-- card read "— has asked to see your record" with an empty name and she was
+-- being asked to consent to a stranger.
+--
+-- Security definer because the test reads access_grants and mothers. Writing it
+-- as a subquery inside the policy would evaluate those tables' own policies,
+-- and the access_grants policy itself subqueries staff — the two would recurse.
+create or replace function public.staff_requested_me(p_staff uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1
+      from public.access_grants g
+      join public.mothers m on m.id = g.mother_id
+     where g.staff_id = p_staff
+       and m.auth_user_id = auth.uid()
+  )
+$$;
+
+-- Additive: policies are OR'd, so this widens nothing for staff or admins. It
+-- exposes exactly the rows she is already being shown a request from.
+drop policy if exists "mother reads staff who asked" on public.staff;
+create policy "mother reads staff who asked" on public.staff
+  for select to authenticated
+  using (public.staff_requested_me(id));
+
+revoke all on function public.staff_requested_me(uuid) from public;
+grant execute on function public.staff_requested_me(uuid) to authenticated;
 
 -- ------------------------------------------------------------ row security
 

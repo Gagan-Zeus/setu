@@ -513,6 +513,10 @@ class VisitRepository {
   }) async {
     final now = DateTime.now();
     final id = 'v-$motherId-${now.microsecondsSinceEpoch}';
+    // One value, written to the local row and queued for the server. It used
+    // to be computed inline here and never queued at all, which is what made
+    // every visit fail its way to the server.
+    final visitDate = DateTime(now.year, now.month, now.day);
 
     await _db.transaction(() async {
       await _db.into(_db.ancVisits).insert(
@@ -520,7 +524,7 @@ class VisitRepository {
               id: id,
               motherId: motherId,
               visitNo: visitNo,
-              visitDate: DateTime(now.year, now.month, now.day),
+              visitDate: visitDate,
               bpSys: Value(bpSys),
               bpDia: Value(bpDia),
               weightKg: Value(weightKg),
@@ -547,15 +551,41 @@ class VisitRepository {
         entityTable: 'anc_visits',
         recordId: id,
         operation: 'insert',
+        // Every column _pushVisit sends has to be in here.
+        //
+        // This carried nine keys while the push read twenty-two, so thirteen
+        // went up as an explicit null — and an explicit null does not fall
+        // back to a column default, it violates the constraint. Every visit an
+        // ASHA recorded was refused with 23502 on visit_date and never reached
+        // the doctor, while her phone reported it sent. The nullable ones were
+        // not refused; they were simply dropped, so fundal height, albumin and
+        // the photographed card stayed on the handset.
+        //
+        // If a column is added to anc_visits, it belongs here as well as in
+        // _pushVisit. sync_payload_test.dart fails when the two disagree.
         payload: payloadOf({
           'id': id,
           'mother_id': motherId,
           'visit_no': visitNo,
+          'visit_date': visitDate,
           'bp_sys': bpSys,
           'bp_dia': bpDia,
           'weight_kg': weightKg,
           'hb': hb,
+          'fundal_height_cm': fundalHeightCm,
+          'urine_albumin': urineAlbumin,
+          'fetal_hr': fetalHr,
+          'fetal_movement': fetalMovement,
           'danger_signs': dangerSigns,
+          'ifa_taken': ifaTaken,
+          'calcium_taken': calciumTaken,
+          'tt_dose_given': ttDoseGiven,
+          'notes': notes,
+          'gps_lat': gpsLat,
+          'gps_lng': gpsLng,
+          'photo_paths': photoPaths,
+          'recorded_by': recordedBy,
+          'corrects_id': correctsId,
           'client_created_at': now,
         }),
       );
@@ -596,6 +626,11 @@ class VisitRepository {
             'mother_id': motherId,
             'rule_id': a.ruleId,
             'severity': a.isRed ? 'red' : 'amber',
+            // The message is the alert. Without these the doctor received a
+            // severity and no reason, because _pushAlert fell back to ''.
+            'message_kn': a.messageKn,
+            'message_en': a.messageEn,
+            'visit_id': visitId,
             'created_at': now,
           }),
         );
@@ -609,6 +644,7 @@ class VisitRepository {
     required String facility,
     required String reasonKn,
     required String reasonEn,
+    required String referredBy,
     String? visitId,
   }) async {
     final now = DateTime.now();
@@ -618,6 +654,7 @@ class VisitRepository {
             ReferralsCompanion.insert(
               id: id,
               motherId: motherId,
+              fromUser: Value(referredBy),
               toFacility: facility,
               reasonKn: reasonKn,
               reasonEn: reasonEn,
@@ -625,6 +662,13 @@ class VisitRepository {
               createdAt: now,
             ),
           );
+      // Every column _pushReferral sends has to be in here.
+      //
+      // This carried four keys. from_user is NOT NULL on the server with no
+      // default, so every referral an ASHA raised was refused with 23502 and
+      // the receiving facility never heard she was coming — while the screen
+      // told her it had been sent. The reason was dropped the same way, so
+      // even a referral that had landed would have arrived with no reason.
       await _db.enqueue(
         entityTable: 'referrals',
         recordId: id,
@@ -632,7 +676,12 @@ class VisitRepository {
         payload: payloadOf({
           'id': id,
           'mother_id': motherId,
+          'from_user': referredBy,
           'to_facility': facility,
+          'reason_kn': reasonKn,
+          'reason_en': reasonEn,
+          'visit_id': visitId,
+          'status': 'open',
           'created_at': now,
         }),
       );
@@ -727,18 +776,27 @@ class VisitRepository {
     required double lat,
     required double lng,
   }) async {
+    final locatedAt = DateTime.now();
     await (_db.update(_db.mothers)..where((m) => m.id.equals(motherId))).write(
       MothersCompanion(
         homeLat: Value(lat),
         homeLng: Value(lng),
-        homeLocatedAt: Value(DateTime.now()),
+        homeLocatedAt: Value(locatedAt),
       ),
     );
     await _db.enqueue(
       entityTable: 'mothers',
       recordId: motherId,
       operation: 'update',
-      payload: payloadOf({'id': motherId, 'home_lat': lat, 'home_lng': lng}),
+      // home_located_at is a real column on public.mothers and nothing in this
+      // app ever wrote it. When the pin was taken is what tells the next worker
+      // whether to trust it, and it was stamped on the handset and left there.
+      payload: payloadOf({
+        'id': motherId,
+        'home_lat': lat,
+        'home_lng': lng,
+        'home_located_at': locatedAt,
+      }),
     );
   }
 
@@ -758,10 +816,11 @@ class VisitRepository {
   }
 
   Future<void> closeTask(String taskId, {String? visitId}) async {
+    final closedAt = DateTime.now();
     await (_db.update(_db.tasks)..where((t) => t.id.equals(taskId))).write(
       TasksCompanion(
         status: const Value('done'),
-        closedAt: Value(DateTime.now()),
+        closedAt: Value(closedAt),
         closedByVisitId: Value(visitId),
       ),
     );
@@ -769,7 +828,17 @@ class VisitRepository {
       entityTable: 'tasks',
       recordId: taskId,
       operation: 'update',
-      payload: payloadOf({'id': taskId, 'status': 'done'}),
+      // _pushTask reads closed_at and closed_by_visit_id, and neither was ever
+      // queued — the `if (p['closed_at'] != null)` guard up there could never
+      // fire. So the doctor saw the task flip to done with no time on it and no
+      // link to the visit that closed it, and "when was this done, and by which
+      // visit" was answerable only on the handset that did it.
+      payload: payloadOf({
+        'id': taskId,
+        'status': 'done',
+        'closed_at': closedAt,
+        'closed_by_visit_id': visitId,
+      }),
     );
   }
 }

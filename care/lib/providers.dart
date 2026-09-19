@@ -32,10 +32,11 @@ final apiProvider = Provider<CareApi>((ref) {
       // written into clinical_notes.author_name and tasks.created_by in the
       // real database — and the ASHA receiving the task read that name as the
       // person who had asked her for the work.
-      doctorName: () async => ref.read(staffProvider.future).then(
-            (staff) =>
-                staff?.name ?? client.auth.currentUser?.email ?? 'Medical officer',
-          ),
+      //
+      // One definition, shared with every other writer, so a second caller
+      // cannot quietly reintroduce a constant the way the prescription upload
+      // did.
+      doctorName: () => ref.read(authorNameProvider.future),
     );
   }
   return MockCareApi();
@@ -112,6 +113,25 @@ final staffProvider = FutureProvider<StaffProfile?>((ref) async {
     // Offline. Nothing invented is better than somebody else's name.
     return null;
   }
+});
+
+/// Her name as the clinical record should carry it: her staff row, or failing
+/// that the address she signed in on.
+///
+/// Null when neither could be read — offline, or a session whose staff row has
+/// not been linked yet. Null, not a stand-in: whoever is writing decides what
+/// to do with that, and must not remember whatever it chooses. A name cached
+/// from a failed lookup becomes the permanent author of everything written for
+/// the rest of the session.
+final authorNameProvider = FutureProvider<String?>((ref) async {
+  // Read before the await. Riverpod forbids ref calls once a dependency has
+  // changed mid-build, which the auth stream can do while the staff row is in
+  // flight — and that would have thrown here instead of resolving her name.
+  final client = ref.watch(supabaseClientProvider);
+  final staff = await ref.watch(staffProvider.future);
+  final name = staff?.name.trim();
+  if (name != null && name.isNotEmpty) return name;
+  return client?.auth.currentUser?.email;
 });
 
 /// Her facility. Null rather than a stand-in, so a screen shows a dash.
