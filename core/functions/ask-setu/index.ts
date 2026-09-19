@@ -4,16 +4,48 @@
 // A key shipped inside an APK can be pulled out of it in a minute and spent by
 // anyone. It lives here as a project secret and never leaves the server.
 //
-// The function is also where grounding happens. Her question is used to pull
-// approved answers out of pregnancy_faqs, and the model is told to answer only
-// from those. It rewrites clinician-approved material in her words; it is not
-// the source of the medical fact.
+// The function is also where grounding happens. Her question pulls approved
+// answers out of pregnancy_faqs, and those are what the model rewrites in her
+// words whenever they cover what she asked.
+//
+// They cannot cover everything. Twenty-odd rows never will, and a woman who
+// asks something outside them and is told "I do not know, ask your ASHA
+// worker" has been handed nothing — she may not see that worker for a
+// fortnight. So where the approved set falls short the model answers from
+// standard WHO and MoHFW guidance rather than refusing, and the reply carries
+// grounded:false so it is never mistaken for clinician-reviewed material.
+//
+// What does not bend, approved answer or not: no medicine, brand or dose; no
+// diagnosis; never talking her out of the health centre; nothing on abortion
+// or the sex of the baby; and any danger sign ends the reply by sending her to
+// the health centre now.
 
 const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-const MODEL = "gemini-3.6-flash";
+// Tried in order, first one that answers wins.
+//
+// This is a list rather than a single id because of how the free tier meters:
+// twenty requests per day, counted separately for each model. One model alone
+// gives the assistant twenty questions a day across every woman using it,
+// which a single afternoon of testing spends. Five give it five times that,
+// for no cost and no loss — they are all current Flash-class models and any
+// of them handles simple Kannada health guidance.
+//
+// The order is quality first. Later entries are lighter models, used only
+// when the ones above them have nothing left.
+//
+// None of this makes the free tier sufficient for real use. It buys headroom
+// for a pilot; a deployment needs billing enabled on the Google AI Studio
+// project, which replaces the per-day cap with a per-minute one.
+const MODELS = [
+  "gemini-3.6-flash",
+  "gemini-3.8-flash",
+  "gemini-3.5-flash",
+  "gemini-3.1-flash-lite",
+  "gemini-3.5-flash-lite",
+];
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -40,12 +72,20 @@ HOW YOU SPEAK
   her, never imply she has been careless.
 
 WHAT YOU MAY SAY
-- Answer using the APPROVED ANSWERS supplied below. They are reviewed by a
-  clinician. Rewrite them in your own simple words to fit exactly what she asked.
-- If the approved answers do not cover her question, say plainly that you do not
-  know this one and that her ASHA worker can tell her. Then stop. Never fill the
-  gap from your own knowledge, never guess, and never say something that merely
-  sounds reasonable.
+- The APPROVED ANSWERS below are reviewed by a clinician. Whenever they cover
+  what she asked, they are your source: rewrite them in your own simple words
+  to fit exactly the question she asked.
+- When they do not cover it, you must still answer her. Use standard maternal
+  health guidance — WHO and India's MoHFW — on pregnancy, labour and delivery,
+  the weeks after birth, and the newborn's health. Never reply that you do not
+  know a question that falls inside those subjects, and never close a reply by
+  sending her to her ASHA worker in place of an answer.
+- Stay with what is settled, ordinary guidance that would be given at any
+  health centre. Where something genuinely differs from woman to woman, give
+  her the general picture first and then say her ASHA worker or the health
+  centre can tell her what is right for her.
+- If she asks about something outside pregnancy, birth, the time after it, or
+  the baby, say kindly that you can only help with those.
 
 WHAT YOU MUST NEVER DO
 - Never name a medicine, a brand, a dose, or how much of anything to take. Not
@@ -121,12 +161,14 @@ Deno.serve(async (req: Request) => {
     );
     if (res.ok) approved = await res.json();
   } catch {
-    // Retrieval failing is not fatal — the model still has to answer within
-    // its rules, and with no approved material it will say it does not know.
+    // Retrieval failing is not fatal. The model still answers within its
+    // rules, from standard guidance rather than from an approved row, and the
+    // reply comes back grounded:false to say so.
   }
 
   const context = approved.length === 0
-    ? "(no approved answer matched this question)"
+    ? "(nothing in the approved set matched this question. Answer her anyway, " +
+      "from standard maternal health guidance, within the rules above.)"
     : approved
       .map((r, i) =>
         `--- approved answer ${i + 1} (${r.category}, urgency: ${r.urgency}) ---\n` +
@@ -148,36 +190,73 @@ Deno.serve(async (req: Request) => {
     },
   ];
 
+  const geminiBody = JSON.stringify({
+    contents,
+    systemInstruction: { parts: [{ text: SYSTEM }] },
+    generationConfig: {
+      temperature: 0.3, // low: this is health information, not writing
+      maxOutputTokens: 900,
+      thinkingConfig: { thinkingLevel: "low" },
+    },
+    safetySettings: [
+      "HARM_CATEGORY_HARASSMENT",
+      "HARM_CATEGORY_HATE_SPEECH",
+      "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+      "HARM_CATEGORY_DANGEROUS_CONTENT",
+    ].map((category) => ({ category, threshold: "BLOCK_ONLY_HIGH" })),
+  });
+
   let reply = "";
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
-      {
-        method: "POST",
-        headers: {
-          "x-goog-api-key": GEMINI_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents,
-          systemInstruction: { parts: [{ text: SYSTEM }] },
-          generationConfig: {
-            temperature: 0.3, // low: this is health information, not writing
-            maxOutputTokens: 900,
-            thinkingConfig: { thinkingLevel: "low" },
+    // Walk down MODELS until one answers.
+    //
+    // The free tier's limit is twenty requests per day PER MODEL, so a 429 on
+    // the first model says nothing about the second — each has its own
+    // untouched allowance. Falling through the list multiplies what a free
+    // key can serve, which is the difference between an assistant that dies
+    // mid-afternoon and one that lasts the day.
+    //
+    // Waiting is deliberately not part of this. A per-day quota does not
+    // refill in the nine seconds Gemini suggests, so sleeping would only make
+    // her stare at a spinner before failing anyway. Moving to the next model
+    // costs her nothing and usually works.
+    let res!: Response;
+    let lastStatus = 0;
+    let lastDetail = "";
+
+    for (const model of MODELS) {
+      res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: "POST",
+          headers: {
+            "x-goog-api-key": GEMINI_KEY,
+            "Content-Type": "application/json",
           },
-          safetySettings: [
-            "HARM_CATEGORY_HARASSMENT",
-            "HARM_CATEGORY_HATE_SPEECH",
-            "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            "HARM_CATEGORY_DANGEROUS_CONTENT",
-          ].map((category) => ({ category, threshold: "BLOCK_ONLY_HIGH" })),
-        }),
-      },
-    );
+          body: geminiBody,
+        },
+      );
+
+      if (res.ok) break;
+
+      lastStatus = res.status;
+      lastDetail = (await res.text()).slice(0, 200);
+      console.error("gemini", model, res.status, lastDetail);
+
+      // Out of quota (429), or the model itself is overloaded (5xx): the next
+      // one may well be fine. Anything else is our own bad request and every
+      // model will reject it identically, so stop rather than send it four
+      // more times.
+      if (res.status !== 429 && res.status < 500) break;
+    }
 
     if (!res.ok) {
-      console.error("gemini", res.status, (await res.text()).slice(0, 300));
+      // Quota is worth separating from a genuine outage: it is the one the
+      // operator can fix, and it is invisible inside a generic 502.
+      if (lastStatus === 429) {
+        console.error("gemini: every model out of quota");
+        return json({ error: "assistant_busy" }, 503);
+      }
       return json({ error: "assistant_unavailable" }, 502);
     }
 

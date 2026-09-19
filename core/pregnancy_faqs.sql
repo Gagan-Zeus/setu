@@ -39,6 +39,20 @@ create index if not exists pregnancy_faqs_fts
   on public.pregnancy_faqs
   using gin (to_tsvector('english', question || ' ' || answer));
 
+-- The same over the Kannada columns, which is not optional: Kannada is the
+-- app's default language, so most questions arrive in it. Searching only the
+-- English columns meant every one of them retrieved nothing and the assistant
+-- answered "ask your ASHA worker" to questions this table already answers.
+--
+-- 'simple' is the right configuration, not a compromise. Postgres ships no
+-- Kannada one, and 'simple' does what is actually wanted here: lowercase and
+-- split on punctuation, with no stemming and no stopword list. An English
+-- stemmer let loose on Kannada would cut real characters off real words.
+create index if not exists pregnancy_faqs_fts_kn
+  on public.pregnancy_faqs
+  using gin (to_tsvector('simple',
+    coalesce(question_kn, '') || ' ' || coalesce(answer_kn, '')));
+
 alter table public.pregnancy_faqs enable row level security;
 
 -- Published answers are health education, readable by any signed-in user.
@@ -49,7 +63,32 @@ create policy "read published faqs" on public.pregnancy_faqs
 
 grant select on public.pregnancy_faqs to anon, authenticated;
 
+-- Any of her words, not all of them.
+--
+-- plainto_tsquery joins terms with AND, which is the wrong shape for a spoken
+-- question. "ನಾನು ಗರ್ಭಿಣಿ, ಏನು ತಿನ್ನಬೇಕು?" carries words no FAQ row contains,
+-- and one of those is enough to make an AND query match nothing at all. OR
+-- plus ts_rank is what retrieval wants: a row matching three of her words
+-- outranks one matching a single word, and the assistant is handed the best
+-- five rather than an empty list.
+--
+-- Rewriting the parsed tsquery is safe. plainto_tsquery has already stripped
+-- punctuation and quoted every lexeme, so no '&' can survive inside a token
+-- and nothing here is open to injection.
+create or replace function public.faq_any_tsquery(
+  p_config regconfig, p_query text)
+returns tsquery
+language sql immutable parallel safe as $$
+  select nullif(
+           replace(plainto_tsquery(p_config, p_query)::text, '&', '|'),
+           '')::tsquery
+$$;
+
 -- Retrieval used by the assistant: best matches, published only.
+--
+-- Both languages are searched on every call. Which one she typed in is not
+-- known here and does not need to be — a Kannada question simply scores zero
+-- against the English vector, and an English one zero against the Kannada.
 create or replace function public.search_pregnancy_faqs(
   p_query text, p_limit int default 5)
 returns table (
@@ -63,14 +102,26 @@ language sql stable security definer set search_path = public as $$
    where f.is_published
      and (
        to_tsvector('english', f.question || ' ' || f.answer)
-         @@ plainto_tsquery('english', p_query)
+         @@ faq_any_tsquery('english', p_query)
+       or to_tsvector('simple',
+            coalesce(f.question_kn, '') || ' ' || coalesce(f.answer_kn, ''))
+          @@ faq_any_tsquery('simple', p_query)
        or f.question ilike '%' || p_query || '%'
+       or f.question_kn ilike '%' || p_query || '%'
      )
-   order by ts_rank(
-     to_tsvector('english', f.question || ' ' || f.answer),
-     plainto_tsquery('english', p_query)) desc
+   order by greatest(
+     coalesce(ts_rank(
+       to_tsvector('english', f.question || ' ' || f.answer),
+       faq_any_tsquery('english', p_query)), 0),
+     coalesce(ts_rank(
+       to_tsvector('simple',
+         coalesce(f.question_kn, '') || ' ' || coalesce(f.answer_kn, '')),
+       faq_any_tsquery('simple', p_query)), 0)
+   ) desc
    limit greatest(1, least(p_limit, 8))
 $$;
 
 grant execute on function public.search_pregnancy_faqs(text, int)
+  to anon, authenticated;
+grant execute on function public.faq_any_tsquery(regconfig, text)
   to anon, authenticated;

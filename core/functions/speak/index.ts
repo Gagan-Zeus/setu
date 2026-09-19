@@ -14,7 +14,20 @@
 
 const KEY = Deno.env.get("ELEVENLABS_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+// Storage will not take the key Supabase injects here.
+//
+// On a project using the new API key system, SUPABASE_SERVICE_ROLE_KEY arrives
+// as the `sb_secret_...` form, which is not a JWT. Storage rejects it with
+// 403 "Invalid Compact JWS" — on the read as well as the write, so the cache
+// silently missed on every request and ElevenLabs was paid for every one.
+// Nothing surfaced, because a non-2xx response is not a thrown error and the
+// write's .catch never fired.
+//
+// STORAGE_SERVICE_KEY holds the legacy service_role JWT, which Storage does
+// accept. The injected key stays as the fallback for projects still issuing
+// JWTs there, so this works either way.
+const SERVICE_KEY = Deno.env.get("STORAGE_SERVICE_KEY") ??
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 // Kannada is only supported on v3. Multilingual v2 and Flash v2.5 do not
 // include it, so this model id is not interchangeable.
@@ -117,7 +130,7 @@ Deno.serve(async (req: Request) => {
 
   // Cache write is best-effort: failing to store must not fail the request,
   // she is waiting to hear it.
-  fetch(`${storage}/${BUCKET}/${key}`, {
+  const write = fetch(`${storage}/${BUCKET}/${key}`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${SERVICE_KEY}`,
@@ -126,6 +139,17 @@ Deno.serve(async (req: Request) => {
     },
     body: audio,
   }).catch((e) => console.error("cache write failed", e));
+
+  // Best-effort is not the same as abandoned. Returning the Response ends the
+  // isolate, and anything still in flight is cancelled with it — so the write
+  // above was started and then killed, every single time. Nothing was ever
+  // cached, every request was a miss, and ElevenLabs billed for each one.
+  // waitUntil is what keeps the isolate alive until the write lands.
+  const runtime = (globalThis as {
+    EdgeRuntime?: { waitUntil(p: Promise<unknown>): void };
+  }).EdgeRuntime;
+  if (runtime) runtime.waitUntil(write);
+  else await write; // local `supabase functions serve` has no EdgeRuntime
 
   return new Response(audio, {
     headers: { ...CORS, "Content-Type": "application/octet-stream", "X-Cache": "miss" },
