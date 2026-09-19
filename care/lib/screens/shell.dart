@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/mock_data.dart';
 import '../providers.dart';
+import '../features/scan_thayi_card.dart';
+import 'mother_record_screen.dart';
 import '../theme/tokens.dart';
 import 'analytics_screen.dart';
 import 'asha_screen.dart';
@@ -32,6 +34,15 @@ class _ShellState extends ConsumerState<Shell> {
     'Analytics',
   ];
 
+  /// She holds out her phone; her record opens. No name, no searching.
+  Future<void> _scanAndOpen(BuildContext context) async {
+    final motherId = await ScanThayiCard.show(context);
+    if (motherId == null || !context.mounted) return;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => MotherRecordScreen(motherId: motherId)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,6 +61,20 @@ class _ShellState extends ConsumerState<Shell> {
           ],
         ),
         actions: [
+          // Scanning answers "who is this", so it sits in the header of the
+          // screen where that is asked rather than inside a record you can only
+          // reach by already knowing the answer.
+          //
+          // It went next to the search box first and broke it: a TextField in a
+          // Row needs its width negotiated, and squeezing a button in beside one
+          // styled by the theme is a fight not worth having for a control that
+          // belongs in the header anyway.
+          if (_index == 1)
+            IconButton(
+              tooltip: 'Scan her code',
+              icon: const Icon(Icons.qr_code_scanner, color: C.teal),
+              onPressed: () => _scanAndOpen(context),
+            ),
           _UserMenu(),
           const SizedBox(width: S.sm),
         ],
