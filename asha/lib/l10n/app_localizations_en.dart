@@ -467,7 +467,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileTabSchemes => 'Schemes';
 
   @override
-  String get profileTabQr => 'QR card';
+  String get profileTabQr => 'Her code';
 
   @override
   String gaLabel(int weeks, int days) {
@@ -525,6 +525,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chartNoData => 'No readings yet';
+
+  @override
+  String get qrOnHerPhone => 'Her code is on her own phone';
+
+  @override
+  String get qrWhyNotHere =>
+      'It changes every few minutes, so a photograph of it stops working almost at once. This phone cannot produce it — her holding out her own phone is what gives permission, and that is not something you can do for her.';
+
+  @override
+  String qrHelpSignIn(String email) {
+    return 'She opens Thayi Setu and signs in with $email, then taps Thayi card.';
+  }
+
+  @override
+  String get qrNoEmail =>
+      'There is no email on her record yet, so she cannot sign in to Thayi Setu. Add one and verify it on this visit.';
 
   @override
   String get qrCaption => 'Show this code at the facility';

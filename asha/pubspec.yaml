@@ -27,7 +27,6 @@ dependencies:
   image_picker: ^1.1.2
   shared_preferences: ^2.3.3
   url_launcher: ^6.3.1
-  qr_flutter: ^4.1.0
   supabase_flutter: ^2.16.0
   # Local ids are text (m-<micros>); Supabase keys on uuid. v5 maps one to the
   # other deterministically, so a retry never creates a second row.

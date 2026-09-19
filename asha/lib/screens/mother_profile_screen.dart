@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 import '../data/home_location.dart';
 import '../db/database.dart';
@@ -470,6 +469,23 @@ class _Schemes extends StatelessWidget {
   }
 }
 
+/// Her code is not here, and this says so rather than faking one.
+///
+/// This tab used to render a QR built from `mother.id.hashCode`. That was never
+/// a token — nothing in the database would ever match it — so scanning it at a
+/// facility was always going to be refused, and the ASHA would have had no way
+/// to know why. A control that looks like it works and cannot is worse than no
+/// control, because it fails in front of the person it was meant to help.
+///
+/// It could not be made to work either. Her code is now a short-lived token
+/// minted for whoever holds her session, and a phone in someone else's hand
+/// producing it would be her consent manufactured without her — the same reason
+/// an administrator cannot mint one. Her holding out her own phone IS the
+/// permission.
+///
+/// So this became the useful thing instead: where her code actually lives, and
+/// what to do about it if she cannot get to it — which, in a house with one
+/// shared handset, is the question an ASHA is actually going to be asked.
 class _QrCard extends StatelessWidget {
   const _QrCard({required this.mother});
 
@@ -478,7 +494,7 @@ class _QrCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final size = MediaQuery.of(context).size.width * 0.6;
+    final email = mother.email;
 
     return ListView(
       padding: const EdgeInsets.all(S.screen),
@@ -486,25 +502,46 @@ class _QrCard extends StatelessWidget {
         SetuCard(
           padding: const EdgeInsets.all(S.lg),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Same payload shape as the Thayi app: id and token only, never
-              // her name or anything clinical.
-              QrImageView(
-                data: 'setu://m/${mother.id}?t=${mother.id.hashCode.abs()}',
-                version: QrVersions.auto,
-                size: size,
-                backgroundColor: C.card,
-                eyeStyle: const QrEyeStyle(
-                  eyeShape: QrEyeShape.square,
-                  color: C.ink,
-                ),
-                dataModuleStyle: const QrDataModuleStyle(
-                  dataModuleShape: QrDataModuleShape.square,
-                  color: C.ink,
-                ),
+              Row(
+                children: [
+                  const Icon(Icons.qr_code_2_rounded, size: 34, color: C.teal),
+                  const SizedBox(width: S.sm),
+                  Expanded(child: Text(l.qrOnHerPhone, style: T.h2)),
+                ],
               ),
               const SizedBox(height: S.md),
-              Text(l.qrCaption, style: T.h2, textAlign: TextAlign.center),
+              Text(l.qrWhyNotHere, style: T.bodySoft),
+              const SizedBox(height: S.lg),
+              if (email != null && email.trim().isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(S.md),
+                  decoration: BoxDecoration(
+                    color: C.tealSoft,
+                    borderRadius: BorderRadius.circular(S.radius),
+                  ),
+                  child: Text(l.qrHelpSignIn(email), style: T.body),
+                )
+              else
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(S.md),
+                  decoration: BoxDecoration(
+                    color: C.amberSoft,
+                    borderRadius: BorderRadius.circular(S.radius),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.warning_amber_rounded,
+                          size: 24, color: C.amber),
+                      const SizedBox(width: S.sm),
+                      Expanded(child: Text(l.qrNoEmail, style: T.body)),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),

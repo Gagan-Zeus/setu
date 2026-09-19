@@ -220,7 +220,7 @@
   "profileTabTimeline": "Timeline",
   "profileTabVitals": "Vitals",
   "profileTabSchemes": "Schemes",
-  "profileTabQr": "QR card",
+  "profileTabQr": "Her code",
   "gaLabel": "GA {weeks}w {days}d",
   "@gaLabel": {
     "placeholders": {
@@ -262,6 +262,11 @@
   "vitalsWeight": "WEIGHT",
   "vitalsHb": "HAEMOGLOBIN",
   "chartNoData": "No readings yet",
+  "qrOnHerPhone": "Her code is on her own phone",
+  "qrWhyNotHere": "It changes every few minutes, so a photograph of it stops working almost at once. This phone cannot produce it — her holding out her own phone is what gives permission, and that is not something you can do for her.",
+  "qrHelpSignIn": "She opens Thayi Setu and signs in with {email}, then taps Thayi card.",
+  "@qrHelpSignIn": { "placeholders": { "email": { "type": "String" } } },
+  "qrNoEmail": "There is no email on her record yet, so she cannot sign in to Thayi Setu. Add one and verify it on this visit.",
   "qrCaption": "Show this code at the facility",
   "callMother": "Call her",
   "newVisitTitle": "New ANC visit",

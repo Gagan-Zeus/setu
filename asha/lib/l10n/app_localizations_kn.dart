@@ -465,7 +465,7 @@ class AppLocalizationsKn extends AppLocalizations {
   String get profileTabSchemes => 'ಯೋಜನೆ';
 
   @override
-  String get profileTabQr => 'ಕ್ಯೂಆರ್';
+  String get profileTabQr => 'ಅವರ ಕೋಡ್';
 
   @override
   String gaLabel(int weeks, int days) {
@@ -523,6 +523,22 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get chartNoData => 'ಇನ್ನೂ ಅಳತೆ ಆಗಿಲ್ಲ';
+
+  @override
+  String get qrOnHerPhone => 'ಕೋಡ್ ಅವರ ಸ್ವಂತ ಫೋನ್‌ನಲ್ಲಿ ಇರುತ್ತದೆ';
+
+  @override
+  String get qrWhyNotHere =>
+      'ಕೆಲವು ನಿಮಿಷಕ್ಕೊಮ್ಮೆ ಅದು ಬದಲಾಗುತ್ತದೆ, ಹಾಗಾಗಿ ಫೋಟೋ ತೆಗೆದರೂ ಬೇಗನೆ ನಿಷ್ಪ್ರಯೋಜಕವಾಗುತ್ತದೆ. ಈ ಫೋನ್‌ನಲ್ಲಿ ಅದನ್ನು ಮಾಡಲು ಆಗುವುದಿಲ್ಲ — ಅವರೇ ತಮ್ಮ ಫೋನ್ ತೋರಿಸುವುದೇ ಅನುಮತಿ, ಅದನ್ನು ನೀವು ಅವರ ಪರವಾಗಿ ಮಾಡಲಾಗದು.';
+
+  @override
+  String qrHelpSignIn(String email) {
+    return 'ಅವರು ತಾಯಿ ಸೇತು ತೆರೆದು $email ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ, ನಂತರ ತಾಯಿ ಕಾರ್ಡ್ ಒತ್ತಲಿ.';
+  }
+
+  @override
+  String get qrNoEmail =>
+      'ಅವರ ದಾಖಲೆಯಲ್ಲಿ ಇಮೇಲ್ ಇಲ್ಲ, ಹಾಗಾಗಿ ತಾಯಿ ಸೇತುಗೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ಆಗುವುದಿಲ್ಲ. ಈ ಭೇಟಿಯಲ್ಲೇ ಒಂದು ಸೇರಿಸಿ ಪರಿಶೀಲಿಸಿ.';
 
   @override
   String get qrCaption => 'ಆಸ್ಪತ್ರೆಯಲ್ಲಿ ಈ ಕೋಡ್ ತೋರಿಸಿ';

@@ -941,7 +941,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileTabQr.
   ///
   /// In en, this message translates to:
-  /// **'QR card'**
+  /// **'Her code'**
   String get profileTabQr;
 
   /// No description provided for @gaLabel.
@@ -1045,6 +1045,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No readings yet'**
   String get chartNoData;
+
+  /// No description provided for @qrOnHerPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Her code is on her own phone'**
+  String get qrOnHerPhone;
+
+  /// No description provided for @qrWhyNotHere.
+  ///
+  /// In en, this message translates to:
+  /// **'It changes every few minutes, so a photograph of it stops working almost at once. This phone cannot produce it — her holding out her own phone is what gives permission, and that is not something you can do for her.'**
+  String get qrWhyNotHere;
+
+  /// No description provided for @qrHelpSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'She opens Thayi Setu and signs in with {email}, then taps Thayi card.'**
+  String qrHelpSignIn(String email);
+
+  /// No description provided for @qrNoEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no email on her record yet, so she cannot sign in to Thayi Setu. Add one and verify it on this visit.'**
+  String get qrNoEmail;
 
   /// No description provided for @qrCaption.
   ///
