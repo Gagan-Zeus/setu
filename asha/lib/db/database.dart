@@ -337,7 +337,7 @@ class AppDatabase extends _$AppDatabase {
         .toList();
 
     for (final m in allMothers) {
-      await enqueue(
+      await requeue(
         entityTable: 'mothers',
         recordId: m.id,
         operation: 'insert',
@@ -367,7 +367,7 @@ class AppDatabase extends _$AppDatabase {
     }
 
     for (final v in allVisits) {
-      await enqueue(
+      await requeue(
         entityTable: 'anc_visits',
         recordId: v.id,
         operation: 'insert',
@@ -398,6 +398,69 @@ class AppDatabase extends _$AppDatabase {
     }
 
     return allMothers.length + allVisits.length;
+  }
+
+  /// Queues a record again without leaving a second entry for it behind.
+  ///
+  /// [enqueue] mints a fresh outbox id on every call
+  /// (`ob-<recordId>-<microseconds>`). That is right for a genuinely new
+  /// change and wrong for a re-send: "Send everything again" called it for
+  /// every mother and visit on the phone, so each press appended another
+  /// identical row, and the Sync Status screen grew a whole extra copy of the
+  /// caseload each time. Nothing was duplicated on the server — every push is
+  /// an upsert keyed on a uuid derived from the local id — but the one screen
+  /// whose job is to tell her what has not been sent became unreadable, which
+  /// looks from the outside exactly like the data itself being duplicated.
+  ///
+  /// Collapsing to one row is also what the payload means: it carries the
+  /// whole of what this handset holds for the record, not a delta, so any
+  /// entry still queued for it is already superseded.
+  Future<void> requeue({
+    required String entityTable,
+    required String recordId,
+    required String operation,
+    required Map<String, dynamic> payload,
+  }) async {
+    await transaction(() async {
+      // A row mid-flight is left alone: the worker is holding its id and will
+      // write a result against it.
+      final existing = await (select(outbox)
+            ..where((o) =>
+                o.entityTable.equals(entityTable) &
+                o.recordId.equals(recordId) &
+                o.status.equals('syncing').not())
+            ..orderBy([(o) => OrderingTerm(expression: o.createdAt)]))
+          .get();
+
+      if (existing.isEmpty) {
+        await enqueue(
+          entityTable: entityTable,
+          recordId: recordId,
+          operation: operation,
+          payload: payload,
+        );
+        return;
+      }
+
+      // Keep the oldest so its place in the queue is kept, and clear out the
+      // copies earlier presses left behind.
+      if (existing.length > 1) {
+        final stale = existing.skip(1).map((e) => e.id).toList();
+        await (delete(outbox)..where((o) => o.id.isIn(stale))).go();
+      }
+
+      await (update(outbox)..where((o) => o.id.equals(existing.first.id)))
+          .write(
+        OutboxCompanion(
+          operation: Value(operation),
+          payload: Value(jsonEncode(payload)),
+          status: const Value('pending'),
+          retryCount: const Value(0),
+          lastError: const Value(null),
+          syncedAt: const Value(null),
+        ),
+      );
+    });
   }
 
   /// The only way anything gets written. Local row and outbox entry go in one

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../data/sync_service.dart';
 import '../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme/tokens.dart';
@@ -26,9 +25,7 @@ class _SyncStatusScreenState extends ConsumerState<SyncStatusScreen> {
     setState(() => _draining = true);
     final service = ref.read(syncServiceProvider);
     service.forceOffline = ref.read(offlineModeProvider);
-    if (service is MockSyncService) {
-      service.networkUp = ref.read(connectivityProvider).valueOrNull ?? true;
-    }
+    service.networkUp = ref.read(connectivityProvider).valueOrNull ?? true;
     await ref.read(syncWorkerProvider).drain();
     if (mounted) setState(() => _draining = false);
   }

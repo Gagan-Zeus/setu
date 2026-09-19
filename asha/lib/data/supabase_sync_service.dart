@@ -31,6 +31,7 @@ class SupabaseSyncService implements SyncService {
   final SupabaseClient _client;
 
   bool _forceOffline = false;
+  bool _networkUp = true;
 
   /// Fixed namespace, so a local id maps to the same uuid on every handset.
   /// Changing it would orphan everything already synced.
@@ -53,7 +54,11 @@ class SupabaseSyncService implements SyncService {
   set forceOffline(bool value) => _forceOffline = value;
 
   @override
-  bool get isOnline => !_forceOffline && _client.auth.currentSession != null;
+  set networkUp(bool value) => _networkUp = value;
+
+  @override
+  bool get isOnline =>
+      !_forceOffline && _networkUp && _client.auth.currentSession != null;
 
   /// The signed-in worker's own posting, read once per session.
   ///
@@ -61,36 +66,101 @@ class SupabaseSyncService implements SyncService {
   /// `sub_centre = current_sub_centre()`, so a mother synced without one is
   /// invisible to the very worker who registered her, and can_access_mother
   /// then refuses every visit she tries to add afterwards.
+  ///
+  /// This used to end in `catch (_) { return null; }`, and the mother was
+  /// pushed anyway. Every way of holding the wrong identity — no Supabase
+  /// session at all, a session left behind by a different account, an account
+  /// never registered as staff — arrived at the same place: the insert went
+  /// up, `current_role_name()` came back null, the "staff insert mothers"
+  /// policy refused the row, and the worker was shown a flat "failed to sync"
+  /// naming none of it. Each case now says which one it is, because the thing
+  /// she has to do about it is different in each and only she can do it.
   Map<String, dynamic>? _posting;
 
-  Future<Map<String, dynamic>?> _postingOf() async {
-    if (_posting != null) return _posting;
+  /// Whose posting [_posting] holds, so signing in as somebody else cannot
+  /// keep filing mothers under the previous worker's sub-centre.
+  String? _postingFor;
+
+  Future<Map<String, dynamic>> _postingOf() async {
     final user = _client.auth.currentUser;
-    if (user == null) return null;
+    if (user == null) {
+      throw const SyncFailure(
+        'This phone is not signed in to the health record. Sign out, then '
+        'sign in again with your ASHA email.',
+      );
+    }
+    if (_posting != null && _postingFor == user.id) return _posting!;
+
+    final Map<String, dynamic>? staff;
     try {
-      final staff = await _client
+      staff = await _client
           .from('staff')
-          .select('name, sub_centre')
+          .select('name, sub_centre, facility')
           .eq('auth_user_id', user.id)
           .maybeSingle();
-      if (staff == null) return null;
-
-      // asha_workers is the row mothers actually point at; staff is the login.
-      final worker = await _client
-          .from('asha_workers')
-          .select('id')
-          .eq('sub_centre_en', staff['sub_centre'] as Object)
-          .limit(1)
-          .maybeSingle();
-
-      return _posting = {
-        'name': staff['name'],
-        'sub_centre': staff['sub_centre'],
-        'asha_worker_id': worker?['id'],
-      };
-    } catch (_) {
-      return null;
+    } on PostgrestException catch (error) {
+      throw SyncFailure('Could not read your worker profile: ${error.message}');
     }
+
+    if (staff == null) {
+      throw SyncFailure(
+        'Signed in as ${user.email ?? 'this account'}, which is not registered '
+        'as an ASHA worker. Ask your supervisor to add you in the admin '
+        'portal, then sign out and sign in again on this phone.',
+      );
+    }
+
+    final subCentre = (staff['sub_centre'] as String?)?.trim();
+    if (subCentre == null || subCentre.isEmpty) {
+      throw SyncFailure(
+        '${staff['name'] ?? 'Your account'} has no sub-centre. A mother has to '
+        'belong to one, or nobody — including you — can open her afterwards. '
+        'Ask your supervisor to set it in the admin portal.',
+      );
+    }
+
+    // asha_workers is the row mothers actually point at; staff is the login.
+    // Matched on the sub-centre rather than the name, because two workers can
+    // share a name and only one can hold a posting.
+    final worker = await _client
+        .from('asha_workers')
+        .select('id')
+        .eq('sub_centre_en', subCentre)
+        .limit(1)
+        .maybeSingle();
+
+    // Her facility, so the mother lands inside a PHC that the admin portal and
+    // the doctor can both see. district_en was the literal string 'Hassan' for
+    // every mother ever registered, wherever she lived; it comes from the
+    // facility now, and stays null rather than guessed if that is unknown.
+    Map<String, dynamic>? centre;
+    final facility = (staff['facility'] as String?)?.trim();
+    if (facility != null && facility.isNotEmpty) {
+      try {
+        centre = await _client
+            .from('health_centres')
+            .select('id, districts(name, name_kn)')
+            .eq('name_en', facility)
+            .limit(1)
+            .maybeSingle();
+      } on PostgrestException {
+        // Not being able to name her district is not a reason to strand her
+        // on the handset. The columns it fills are nullable.
+        centre = null;
+      }
+    }
+
+    _postingFor = user.id;
+    return _posting = {
+      'name': staff['name'],
+      'sub_centre': subCentre,
+      'asha_worker_id': worker?['id'],
+      'phc_id': centre?['id'],
+      // districts names its columns `name`/`name_kn`, not the `_en`/`_kn` pair
+      // mothers uses.
+      'district_en': (centre?['districts'] as Map?)?['name'],
+      'district_kn': (centre?['districts'] as Map?)?['name_kn'],
+    };
   }
 
   @override
@@ -120,8 +190,27 @@ class SupabaseSyncService implements SyncService {
       // 4xx from PostgREST is our bug or a rejected value — retrying will not
       // fix it, but the worker still records it against the row so it shows up
       // on the Sync Status screen rather than vanishing.
-      throw SyncFailure('${error.code}: ${error.message}');
+      throw SyncFailure(_plainly(error));
     }
+  }
+
+  /// PostgREST's own words are accurate and unreadable at a doorstep.
+  ///
+  /// `42501: new row violates row-level security policy for table "mothers"`
+  /// is what the worker was actually shown, under a red "Failed", with no way
+  /// to tell from it that the phone was signed in as the wrong account.
+  static String _plainly(PostgrestException error) {
+    if (error.code == '42501' ||
+        error.message.contains('row-level security')) {
+      return 'The server would not accept this from the account signed in on '
+          'this phone. Sign out and sign in again with your ASHA email; if it '
+          'is still refused, ask your supervisor to check that you are '
+          'registered as an ASHA worker.';
+    }
+    if (error.code == '23505') {
+      return 'A record with these details is already on the server.';
+    }
+    return error.message;
   }
 
   // ------------------------------------------------------------- mothers
@@ -168,7 +257,9 @@ class SupabaseSyncService implements SyncService {
       'age': p['age'] ?? 0,
       'village_en': village,
       'village_kn': village,
-      'district_en': 'Hassan',
+      'district_en': posting['district_en'],
+      'district_kn': posting['district_kn'],
+      'phc_id': posting['phc_id'],
       'lmp': p['lmp'],
       'email': (p['email'] as String?)?.trim().isEmpty ?? true
           ? null
@@ -184,9 +275,13 @@ class SupabaseSyncService implements SyncService {
       'risk_level': p['risk_level'] ?? 'green',
       'abha_id': p['abha_id'],
       'email_verified': p['email_verified'] ?? false,
-      // Without these she is registered into nobody's caseload.
-      'sub_centre': p['sub_centre'] ?? posting?['sub_centre'],
-      'asha_worker_id': posting?['asha_worker_id'],
+      // Without these she is registered into nobody's caseload. The worker's
+      // own posting wins over whatever the form held: an ASHA may only
+      // register into the sub-centre she is posted to, and that field was
+      // pre-filled from the practice data, so mothers were being filed into a
+      // sub-centre the worker who entered them could not read back.
+      'sub_centre': posting['sub_centre'],
+      'asha_worker_id': posting['asha_worker_id'],
     }, onConflict: 'id');
   }
 

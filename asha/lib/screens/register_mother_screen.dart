@@ -31,7 +31,12 @@ class _RegisterMotherScreenState extends ConsumerState<RegisterMotherScreen> {
   final _phone = TextEditingController();
   final _email = TextEditingController();
   final _village = TextEditingController();
-  final _subCentre = TextEditingController(text: 'ಹೊಸಳ್ಳಿ ಉಪ ಕೇಂದ್ರ');
+  // Her posting, filled in from her staff row in initState. It used to open
+  // pre-filled with a sub-centre out of the practice caseload, which every
+  // worker then registered every mother into — and since Row Level Security
+  // scopes an ASHA to her own sub-centre, those were mothers she could not
+  // open again once the form closed.
+  final _subCentre = TextEditingController();
   final _abha = TextEditingController();
   final _gravida = TextEditingController(text: '1');
   final _para = TextEditingController(text: '0');
@@ -61,6 +66,7 @@ class _RegisterMotherScreenState extends ConsumerState<RegisterMotherScreen> {
   @override
   void initState() {
     super.initState();
+    _subCentre.text = ref.read(authControllerProvider).subCentre ?? '';
     // She is at the house right now, so take the fix immediately rather than
     // making her remember to press something at the end.
     _pinHouse();
@@ -119,7 +125,9 @@ class _RegisterMotherScreenState extends ConsumerState<RegisterMotherScreen> {
       _husband.text = result.husbandName ?? '';
       _phone.text = result.phone ?? '';
       _village.text = result.village ?? '';
-      _subCentre.text = result.subCentre ?? _subCentre.text;
+      // Deliberately not taken from the scan: which sub-centre a mother
+      // belongs to is the worker's posting, not something read off a card.
+      // _subCentre is left as it is.
       _abha.text = result.abhaId ?? '';
       _gravida.text = result.gravida?.toString() ?? '1';
       _para.text = result.para?.toString() ?? '0';

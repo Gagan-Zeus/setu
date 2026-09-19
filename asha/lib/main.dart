@@ -94,7 +94,11 @@ class _SetuAshaAppState extends ConsumerState<SetuAshaApp> {
   /// pushes are upserts, so anything already up there is written again to the
   /// same row rather than duplicated.
   // v2: the first pass also uploaded the handset's practice caseload.
-  static const _repairKey = 'outbox_repaired_v2';
+  // v3: re-queueing appended a new outbox row per record per run, so phones
+  //     that have already repaired are carrying several identical entries for
+  //     every mother. Running once more now collapses them, because requeue()
+  //     reuses the row that is already there.
+  static const _repairKey = 'outbox_repaired_v3';
 
   Future<void> _repairOnce() async {
     final prefs = ref.read(prefsProvider);
@@ -110,7 +114,7 @@ class _SetuAshaAppState extends ConsumerState<SetuAshaApp> {
     final forced = ref.read(offlineModeProvider);
 
     service.forceOffline = forced;
-    if (service is MockSyncService) service.networkUp = connected;
+    service.networkUp = connected;
     if (!service.isOnline) return;
 
     await _repairOnce();
