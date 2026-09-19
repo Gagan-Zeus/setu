@@ -7,12 +7,16 @@ import '../providers.dart';
 import '../theme/tokens.dart';
 import '../widgets/care_widgets.dart';
 
-/// Scanning the Thayi Card a mother holds out at the counter.
+/// Scanning the code a mother holds out at the counter.
 ///
 /// This is the one path into her record that needs no request: she is standing
-/// here and has physically presented the card, which is the consent. The QR
-/// carries only her id and a token — no name, no clinical data — so the token
-/// is what proves the card was actually shown.
+/// here and has physically presented it, which is the consent.
+///
+/// Her phone now shows a five-minute signed token rather than a permanent card
+/// id, so a photograph of it is useless minutes later and the thing being shown
+/// is proof she was here, not merely that someone once saw her card. The older
+/// `setu://m/<uuid>?t=<token>` form is still accepted, because a handset that
+/// has not been updated yet is not her problem to solve at a counter.
 class ScanThayiCard extends ConsumerStatefulWidget {
   const ScanThayiCard({super.key});
 
@@ -43,15 +47,22 @@ class _ScanThayiCardState extends ConsumerState<ScanThayiCard> {
     super.dispose();
   }
 
-  /// Parses `setu://m/{uuid}?t={token}`.
-  (String id, String token)? _parse(String raw) {
+  /// The old card: `setu://m/{uuid}?t={token}`.
+  (String id, String token)? _parseLegacy(String raw) {
     final uri = Uri.tryParse(raw.trim());
-    if (uri == null) return null;
+    if (uri == null || uri.scheme != 'setu') return null;
     final token = uri.queryParameters['t'];
     final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.last : null;
     if (id == null || id.isEmpty || token == null || token.isEmpty) return null;
     return (id, token);
   }
+
+  /// Three dot-separated base64url segments. Only shape is checked here — the
+  /// signature is an HMAC and only the server holds the key, so a token that
+  /// looks right and is forged fails there, which is where it should.
+  bool _looksLikeToken(String raw) =>
+      RegExp(r'^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$')
+          .hasMatch(raw.trim());
 
   Future<void> _onDetect(BarcodeCapture capture) async {
     if (_handling) return;
@@ -60,9 +71,10 @@ class _ScanThayiCardState extends ConsumerState<ScanThayiCard> {
         .firstWhere((v) => v != null && v.isNotEmpty, orElse: () => null);
     if (raw == null) return;
 
-    final parsed = _parse(raw);
-    if (parsed == null) {
-      setState(() => _error = 'That is not a Thayi Card');
+    final legacy = _parseLegacy(raw);
+    final isToken = legacy == null && _looksLikeToken(raw);
+    if (legacy == null && !isToken) {
+      setState(() => _error = 'That is not a Thayi code');
       return;
     }
 
@@ -73,13 +85,30 @@ class _ScanThayiCardState extends ConsumerState<ScanThayiCard> {
 
     final api = ref.read(apiProvider);
     if (api is! SupabaseCareApi) {
+      // The offline demo build has no server to verify against.
       if (!mounted) return;
-      Navigator.of(context).pop(parsed.$1);
+      Navigator.of(context).pop(legacy?.$1 ?? 'demo');
       return;
     }
 
     try {
-      final ok = await api.grantByQr(parsed.$1, parsed.$2);
+      if (isToken) {
+        final outcome = await api.resolveQrToken(raw.trim());
+        if (!mounted) return;
+        if (!outcome.ok) {
+          setState(() {
+            _handling = false;
+            // The scanner suppresses duplicates, so without this she would have
+            // to move the phone away and back before a second try registered.
+            _error = outcome.message;
+          });
+          return;
+        }
+        Navigator.of(context).pop(outcome.motherId);
+        return;
+      }
+
+      final ok = await api.grantByQr(legacy!.$1, legacy.$2);
       if (!mounted) return;
       if (!ok) {
         setState(() {
@@ -88,7 +117,7 @@ class _ScanThayiCardState extends ConsumerState<ScanThayiCard> {
         });
         return;
       }
-      Navigator.of(context).pop(parsed.$1);
+      Navigator.of(context).pop(legacy.$1);
     } catch (_) {
       if (!mounted) return;
       setState(() {
@@ -105,7 +134,7 @@ class _ScanThayiCardState extends ConsumerState<ScanThayiCard> {
       appBar: AppBar(
         backgroundColor: C.ink,
         foregroundColor: C.onDark,
-        title: const Text('Scan Thayi Card',
+        title: const Text('Scan her code',
             style: TextStyle(color: C.onDark, fontSize: 19)),
       ),
       body: Stack(

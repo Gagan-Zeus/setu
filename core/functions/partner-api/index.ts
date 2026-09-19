@@ -434,6 +434,93 @@ async function mintQrForSelf(req: Request): Promise<Response> {
   });
 }
 
+// ------------------------------------------- a clinician scans the same code
+/// Setu Care scans the QR a mother holds out at the counter.
+///
+/// A doctor is not a partner and does not get the partner summary: he already
+/// has RLS access to the mothers in his facility, and the record he opens is
+/// the full one, read through his own session. The QR is how he finds the right
+/// woman in a queue, and scanning it opens the 24-hour grant the consent flow
+/// expects — the same grant the old static card gave, for the same reason. She
+/// held out her phone to this person, once.
+///
+/// The token is spent here exactly as it is for a partner. A doctor scanning it
+/// and a hospital scanning it are the same act from the record's point of view,
+/// and one scan should mean one disclosure however senior the person holding
+/// the phone.
+async function resolveQrForStaff(req: Request): Promise<Response> {
+  const ip = clientIp(req);
+  const base = { endpoint: "/qr/resolve", ip_address: ip, user_agent: req.headers.get("user-agent") };
+
+  const uid = await authUserId(req);
+  if (!uid) return json({ message: "Sign in first" }, 401);
+
+  const staff = (await db(
+    `staff?auth_user_id=eq.${uid}&active=is.true&select=id,name,role`,
+  ))?.[0];
+  if (!staff) {
+    return json({ message: "Only clinical staff can scan a mother's code" }, 403);
+  }
+  if (!QR_SECRET) return json({ message: "QR verification is not configured" }, 500);
+
+  let body: { qr_token?: string };
+  try { body = await req.json(); } catch { body = {}; }
+  if (!body.qr_token) return json({ message: "qr_token is required" }, 400);
+
+  const verified = await verifyQrToken(body.qr_token, QR_SECRET);
+  if (!verified.ok) {
+    await logAccess({ ...base, response_status: verified.reason === "expired" ? 410 : 400,
+                      failure_reason: `qr_${verified.reason}` });
+    return json({
+      error: verified.reason === "expired" ? "qr_expired" : "bad_request",
+      message: verified.reason === "expired"
+        ? "That code has expired. Ask her to show it again — it refreshes on her phone."
+        : "That is not a Thayi code",
+    }, verified.reason === "expired" ? 410 : 400);
+  }
+
+  const { sub: motherId, jti, exp } = verified.claims;
+
+  try {
+    await db("qr_token_jti_used", {
+      method: "POST",
+      body: JSON.stringify({
+        jti, mother_id: motherId, used_at: new Date().toISOString(),
+        expires_at: new Date(exp * 1000).toISOString(),
+      }),
+    });
+  } catch (error) {
+    const e = error as Error & { status?: number; body?: string };
+    if (e.status === 409 || (e.body ?? "").includes("23505")) {
+      await logAccess({ ...base, mother_id: motherId, qr_token_jti: jti,
+                        response_status: 409, failure_reason: "qr_replayed" });
+      return json({
+        error: "qr_already_used",
+        message: "That code has already been used. Ask her to show it again.",
+      }, 409);
+    }
+    console.error("qr_token_jti_used insert failed", e.status, e.body);
+    return json({ error: "server_error", message: "Something went wrong" }, 500);
+  }
+
+  const granted = await rpc("grant_access_after_qr", {
+    p_mother_id: motherId, p_staff_id: staff.id,
+  });
+  if (granted !== true) {
+    await logAccess({ ...base, mother_id: motherId, qr_token_jti: jti,
+                      response_status: 404, failure_reason: "grant_failed" });
+    return json({ error: "not_found", message: "No record for that code" }, 404);
+  }
+
+  // Logged like any other read of a mother's file. A clinician scanning is not
+  // a third-party disclosure, but it is still a disclosure, and "who opened
+  // this record and when" should have one answer rather than two.
+  await logAccess({ ...base, mother_id: motherId, qr_token_jti: jti, response_status: 200 });
+
+  const mother = (await db(`mothers?id=eq.${motherId}&select=id,name_en`))?.[0];
+  return json({ mother_id: motherId, name: mother?.name_en });
+}
+
 // ------------------------------------- a sandbox token, for integration tests
 /// Sandbox records only, and the refusal says why.
 ///
@@ -478,6 +565,8 @@ Deno.serve(async (req) => {
     if (path === "/admin/issue-key") return await issueKey(req);
     // Her own app, her own session, her own record.
     if (path === "/qr/mint") return await mintQrForSelf(req);
+    // A doctor or ASHA scanning her code at the counter.
+    if (path === "/qr/resolve") return await resolveQrForStaff(req);
     // Sandbox records only - see the note on mintSandboxQr.
     if (path === "/admin/mint-sandbox-qr") return await mintSandboxQr(req);
     if (path === "/v1/mothers/lookup") return await lookup(req);

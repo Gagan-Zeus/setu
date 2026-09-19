@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'care_api.dart';
@@ -311,6 +315,38 @@ class SupabaseCareApi implements CareApi {
     return ok == true;
   }
 
+  /// Resolves the short-lived token a mother's phone now shows.
+  ///
+  /// The signature is an HMAC, which no database function can check, so the
+  /// verification happens in an Edge Function that holds the secret. It also
+  /// spends the token and opens the same 24-hour grant the card used to, and
+  /// gives back the id so the record can be opened.
+  ///
+  /// Returns a message instead when the code cannot be used, because "expired"
+  /// and "already scanned" mean different things to the person holding the
+  /// phone: one is solved by her tapping her card again, the other by waiting
+  /// for the code to roll over.
+  Future<QrScanOutcome> resolveQrToken(String token) async {
+    try {
+      final res = await _client.functions.invoke(
+        'partner-api/qr/resolve',
+        body: {'qr_token': token},
+      );
+      final data = res.data is String
+          ? jsonDecode(res.data as String) as Map<String, dynamic>
+          : (res.data as Map).cast<String, dynamic>();
+
+      final id = data['mother_id'] as String?;
+      if (id != null) return QrScanOutcome.found(id, data['name'] as String?);
+      return QrScanOutcome.refused(
+          data['message'] as String? ?? 'That code could not be used');
+    } catch (error) {
+      debugPrint('QR resolve failed: $error');
+      return const QrScanOutcome.refused(
+          'Could not reach the server. Check the connection and try again.');
+    }
+  }
+
   /// none | pending | approved | rejected | expired
   Future<String> accessState(String motherId) async {
     final rows = await _client
@@ -429,4 +465,22 @@ class SupabaseCareApi implements CareApi {
   static String _dateOnly(DateTime d) => '${d.year.toString().padLeft(4, '0')}-'
       '${d.month.toString().padLeft(2, '0')}-'
       '${d.day.toString().padLeft(2, '0')}';
+}
+
+
+/// What came back from scanning a code.
+@immutable
+class QrScanOutcome {
+  const QrScanOutcome.found(this.motherId, this.name) : message = null;
+  const QrScanOutcome.refused(this.message)
+      : motherId = null,
+        name = null;
+
+  final String? motherId;
+  final String? name;
+
+  /// Plain enough to read aloud at a counter, and specific enough to act on.
+  final String? message;
+
+  bool get ok => motherId != null;
 }
