@@ -23,6 +23,15 @@ export const phcSchema = z.object({
 })
 export type PhcInput = z.infer<typeof phcSchema>
 
+/// As printed on the certificate. Upper-cased because a registration number is
+/// not case sensitive and the uniqueness index compares it that way.
+export const kmcNumber = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .min(5, 'Enter the KMC registration number')
+  .regex(/^[A-Z0-9-]+$/, 'A registration number is letters, digits and hyphens only')
+
 export const staffSchema = z.object({
   name: z.string().trim().min(3, 'Name is required'),
   email,
@@ -30,19 +39,23 @@ export const staffSchema = z.object({
   employee_code: z.string().trim().min(2, 'Employee code is required'),
   phc_id: z.string().uuid('Choose a PHC'),
   role: z.enum(['doctor', 'asha']),
+  // Doctor only. An ASHA worker is not registered with a medical council.
+  kmc_registration_number: kmcNumber.optional(),
   // ASHA only.
   villages: z.array(z.string().uuid()).default([]),
   medical_officer_id: z.string().uuid().optional(),
 })
 export type StaffInput = z.infer<typeof staffSchema>
 
+/// The contact's name, email and phone are deliberately absent: they come from
+/// the medical register, which is the point of asking for a KMC number. A form
+/// field for them would be a second copy of something the council already holds
+/// and the two would eventually disagree.
 export const partnerRequestSchema = z.object({
+  kmc_registration_number: kmcNumber,
   legal_name: z.string().trim().min(3, 'Legal name is required'),
   type: z.enum(['private_hospital', 'lab', 'ngo']),
   registration_number: z.string().trim().min(3, 'Registration number is required'),
-  contact_name: z.string().trim().min(3, 'Contact name is required'),
-  contact_email: email,
-  contact_phone: phone,
   address: z.string().trim().min(5, 'Address is required'),
   district_id: z.string().uuid().optional(),
   intended_use: z

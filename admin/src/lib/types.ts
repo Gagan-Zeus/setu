@@ -37,6 +37,7 @@ export interface Staff {
   phc_id: string | null
   district_id: string | null
   employee_code: string | null
+  kmc_registration_number: string | null
   active: boolean
 }
 
@@ -120,4 +121,32 @@ export interface PhiAccessRow {
   response_status: number
   failure_reason: string | null
   accessed_at: string
+}
+
+export interface KmcDoctor {
+  registration_number: string
+  full_name: string
+  father_name: string | null
+  gender: string | null
+  date_of_birth: string | null
+  qualification: string
+  university: string
+  year_of_passing: number | null
+  registration_date: string
+  state_medical_council: string
+  status: 'active' | 'renewed' | 'expired' | 'suspended'
+  renewal_due: string | null
+  address: string | null
+  phone: string | null
+  email: string | null
+}
+
+export interface KmcLookup {
+  found: boolean
+  reason?: 'empty' | 'not_in_registry'
+  is_demo?: boolean
+  in_good_standing?: boolean
+  already_registered?: boolean
+  existing_staff?: { id: string; name: string; email: string | null; phc_id: string | null }
+  doctor?: KmcDoctor
 }

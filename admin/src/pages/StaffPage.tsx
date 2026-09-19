@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { usePhcs, useStaff } from '../lib/queries'
 import { CanWrite } from '../components/Shell'
+import { KmcLookupStep } from '../components/KmcLookup'
 import { ErrorNote, Field, Loading, Page, Table } from '../components/ui'
 import { staffSchema } from '../lib/schemas'
-import type { AdminUser } from '../lib/types'
+import type { AdminUser, KmcDoctor } from '../lib/types'
 
 /// Registering staff creates a Supabase auth user AND a staff row, which has to
 /// happen together and cannot happen from a browser: it needs the service role
@@ -14,6 +15,7 @@ const ADMIN_API = import.meta.env.VITE_ADMIN_API ?? ''
 export default function StaffPage({ me }: { me: AdminUser }) {
   const staff = useStaff(), phcs = usePhcs()
   const [role, setRole] = useState<'doctor' | 'asha' | null>(null)
+  const [kmcDoctor, setKmcDoctor] = useState<KmcDoctor | null>(null)
   const [filter, setFilter] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -41,7 +43,7 @@ export default function StaffPage({ me }: { me: AdminUser }) {
     })
     if (!res.ok) { setError((await res.json().catch(() => ({}))).message ?? `HTTP ${res.status}`); return }
     setNotice('Registered. An invite is on its way; they set their own password.')
-    setRole(null); staff.refetch()
+    setRole(null); setKmcDoctor(null); staff.refetch()
   }
 
   return (
@@ -59,12 +61,18 @@ export default function StaffPage({ me }: { me: AdminUser }) {
       <ErrorNote error={error} />
       {notice && <div className="card border-good/40 bg-good-soft p-3 text-good mb-3">{notice}</div>}
 
-      {role && (
-        <StaffForm role={role} phcs={(phcs.data ?? []).filter((p) => p.active)}
-          onCancel={() => setRole(null)} onSubmit={register} />
+      {role === 'doctor' && !kmcDoctor && (
+        <KmcLookupStep onFound={setKmcDoctor} onCancel={() => setRole(null)} />
       )}
 
-      <Table head={['Name', 'Role', 'PHC', 'Employee code', 'Contact', 'Login', 'Status']}
+      {((role === 'doctor' && kmcDoctor) || role === 'asha') && (
+        <StaffForm role={role!} doctor={kmcDoctor}
+          phcs={(phcs.data ?? []).filter((p) => p.active)}
+          onCancel={() => { setRole(null); setKmcDoctor(null) }}
+          onSubmit={register} />
+      )}
+
+      <Table head={['Name', 'Role', 'PHC', 'KMC / Employee code', 'Contact', 'Login', 'Status']}
         empty="No staff yet.">
         {rows.map((s) => (
           <tr key={s.id} className={s.active ? '' : 'opacity-50'}>
@@ -78,7 +86,12 @@ export default function StaffPage({ me }: { me: AdminUser }) {
               {(phcs.data ?? []).find((p) => p.id === s.phc_id)?.name_en
                 ?? <span className="text-soft">unassigned</span>}
             </td>
-            <td className="td font-mono text-[11px]">{s.employee_code ?? '—'}</td>
+            <td className="td font-mono text-[11px]">
+              {s.kmc_registration_number && <div>{s.kmc_registration_number}</div>}
+              <div className={s.kmc_registration_number ? 'text-soft' : ''}>
+                {s.employee_code ?? '—'}
+              </div>
+            </td>
             <td className="td">
               <div>{s.email ?? '—'}</div>
               <div className="text-[11px] text-soft">{s.phone ?? ''}</div>
@@ -100,8 +113,9 @@ export default function StaffPage({ me }: { me: AdminUser }) {
   )
 }
 
-function StaffForm({ role, phcs, onSubmit, onCancel }: {
+function StaffForm({ role, doctor, phcs, onSubmit, onCancel }: {
   role: 'doctor' | 'asha'
+  doctor: KmcDoctor | null
   phcs: { id: string; name_en: string }[]
   onSubmit: (v: Record<string, unknown>) => void
   onCancel: () => void
@@ -111,7 +125,15 @@ function StaffForm({ role, phcs, onSubmit, onCancel }: {
   function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const raw = Object.fromEntries(new FormData(e.currentTarget).entries())
-    const parsed = staffSchema.safeParse({ ...raw, role, villages: [] })
+    const parsed = staffSchema.safeParse({
+      ...raw,
+      role,
+      // The name and the registration come from the register, never from the
+      // form: a disabled input submits nothing, and re-typing them would be a
+      // way to register someone under a number that is not theirs.
+      ...(doctor ? { name: doctor.full_name, kmc_registration_number: doctor.registration_number } : {}),
+      villages: [],
+    })
     if (!parsed.success) {
       const next: Record<string, string> = {}
       for (const i of parsed.error.issues) next[String(i.path[0])] = i.message
@@ -122,15 +144,30 @@ function StaffForm({ role, phcs, onSubmit, onCancel }: {
 
   return (
     <form onSubmit={submit} className="card p-4 mb-4">
-      <div className="font-semibold mb-3">
+      <div className="font-semibold mb-1">
         Register {role === 'doctor' ? 'a medical officer' : 'an ASHA worker'}
       </div>
+      {doctor && (
+        <p className="text-soft mb-3">
+          From the register: <span className="font-medium text-ink">{doctor.full_name}</span>,{' '}
+          {doctor.qualification} · <span className="font-mono">{doctor.registration_number}</span>.
+          Add what the council does not know.
+        </p>
+      )}
       <div className="grid md:grid-cols-3 gap-3">
         <Field label="Full name" error={errors.name}>
-          <input name="name" className="input" autoFocus />
+          <input name="name" className="input disabled:bg-paper disabled:text-soft"
+            autoFocus={!doctor}
+            defaultValue={doctor?.full_name ?? ''} disabled={!!doctor}
+            title={doctor ? 'From the KMC register — not editable here' : undefined} />
         </Field>
-        <Field label="Email" error={errors.email}><input name="email" className="input" /></Field>
-        <Field label="Phone" error={errors.phone}><input name="phone" className="input" /></Field>
+        <Field label="Email" error={errors.email}>
+          <input name="email" className="input" autoFocus={!!doctor}
+            defaultValue={doctor?.email ?? ''} />
+        </Field>
+        <Field label="Phone" error={errors.phone}>
+          <input name="phone" className="input" defaultValue={doctor?.phone ?? ''} />
+        </Field>
         <Field label="Employee code" error={errors.employee_code}>
           <input name="employee_code" className="input" />
         </Field>
