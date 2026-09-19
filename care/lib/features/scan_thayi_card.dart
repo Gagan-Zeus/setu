@@ -85,9 +85,17 @@ class _ScanThayiCardState extends ConsumerState<ScanThayiCard> {
 
     final api = ref.read(apiProvider);
     if (api is! SupabaseCareApi) {
-      // The offline demo build has no server to verify against.
+      // Not signed in to the real record, so there is nothing to resolve
+      // against. This used to pop with the literal string 'demo' as a mother
+      // id, which opened a record screen for a row that does not exist: the
+      // scan appeared to work and then showed nothing, with no way to tell
+      // that the app was on demo data rather than the code being bad.
       if (!mounted) return;
-      Navigator.of(context).pop(legacy?.$1 ?? 'demo');
+      setState(() {
+        _handling = false;
+        _error = 'Not connected to the health record. Sign out and sign in '
+            'again, then scan.';
+      });
       return;
     }
 
