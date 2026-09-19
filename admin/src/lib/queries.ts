@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from './supabase'
 import type {
-  AdminUser, ApiKey, Assignment, AuditRow, District, Mother, PartnerOrg,
+  AdminUser, ApiKey, Assignment, AuditRow, District, KmcLookup, Mother, PartnerOrg,
   PhiAccessRow, Phc, Staff, Village,
 } from './types'
 
@@ -180,6 +180,23 @@ export function useUpsert<T extends object>(table: string, invalidate: readonly 
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: invalidate })
       qc.invalidateQueries({ queryKey: keys.audit })
+    },
+  })
+}
+
+/// Looks a registration number up in the council registry.
+///
+/// A mutation rather than a query: it runs when the administrator asks, not
+/// when a component renders, and a half-typed number must not fire a lookup on
+/// every keystroke.
+export function useKmcLookup() {
+  return useMutation({
+    mutationFn: async (registrationNumber: string): Promise<KmcLookup> => {
+      const { data, error } = await supabase.rpc('kmc_lookup', {
+        p_registration_number: registrationNumber,
+      })
+      if (error) throw new Error(error.message)
+      return data as KmcLookup
     },
   })
 }
